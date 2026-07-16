@@ -1,4 +1,4 @@
-.PHONY: up down logs backend-install backend-lint backend-test backend-migrate backend-seed
+.PHONY: up down logs backend-install backend-lint backend-test backend-migrate backend-seed backend-generate-jwt-keys
 
 # --- Local stack (infra/docker-compose.yml — PLAN §8.4, §20.1) --------------
 up:
@@ -25,3 +25,6 @@ backend-migrate:
 
 backend-seed:
 	cd backend && .venv/bin/python -m app.db.seeds.run_seeds
+
+backend-generate-jwt-keys:
+	cd backend && .venv/bin/python scripts/generate_dev_jwt_keys.py

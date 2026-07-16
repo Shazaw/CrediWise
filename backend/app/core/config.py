@@ -50,6 +50,13 @@ class Settings(BaseSettings):
     storage_secret_key: str = Field(...)
     storage_use_ssl: bool = False
 
+    # SECURITY_* (RS256 JWT signing — PLAN §18.1)
+    security_jwt_private_key: str = Field(...)
+    security_jwt_public_key: str = Field(...)
+    security_jwt_kid: str = "local-dev-1"
+    security_access_token_ttl_minutes: int = 15
+    security_refresh_token_ttl_days: int = 30
+
     @property
     def sqlalchemy_database_uri(self) -> str:
         return (
@@ -60,6 +67,15 @@ class Settings(BaseSettings):
     @property
     def redis_url(self) -> str:
         return f"redis://{self.redis_host}:{self.redis_port}/{self.redis_db}"
+
+    @property
+    def jwt_private_key_pem(self) -> str:
+        """PEM keys are stored as single-line env vars with literal ``\\n``."""
+        return self.security_jwt_private_key.replace("\\n", "\n")
+
+    @property
+    def jwt_public_key_pem(self) -> str:
+        return self.security_jwt_public_key.replace("\\n", "\n")
 
 
 @lru_cache

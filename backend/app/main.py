@@ -1,9 +1,9 @@
-"""FastAPI application factory (PLAN §8.4, Sprint 0).
+"""FastAPI application factory (PLAN §8.4).
 
 Wires: structured logging, correlation-id middleware, the domain-error
-exception handler, and the liveness/readiness endpoints. Versioned business
-routers (``app/api/v1``) are mounted starting Sprint 1 — this module stays
-thin per the layering rule in PLAN §10.1.
+exception handler, the liveness/readiness endpoints, and the versioned
+``/api/v1`` router. This module stays thin per the layering rule in
+PLAN §10.1 — routers own their own logic.
 """
 
 import logging
@@ -15,8 +15,9 @@ from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
+from app.api.v1 import router as api_v1_router
 from app.core.config import Settings, get_settings
-from app.core.errors import CrediWiseError
+from app.core.errors import CrediWiseError, RateLimitError
 from app.core.logging import configure_logging, get_correlation_id, set_correlation_id
 from app.db.session import engine
 
@@ -41,7 +42,7 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(CrediWiseError)
     async def crediwise_error_handler(request: Request, exc: CrediWiseError) -> JSONResponse:
-        return JSONResponse(
+        response = JSONResponse(
             status_code=exc.http_status,
             content={
                 "error": {
@@ -52,6 +53,11 @@ def create_app() -> FastAPI:
                 }
             },
         )
+        if isinstance(exc, RateLimitError) and "retry_after" in exc.details:
+            response.headers["Retry-After"] = str(exc.details["retry_after"])
+        return response
+
+    app.include_router(api_v1_router)
 
     @app.get("/health", tags=["ops"])
     async def health() -> dict[str, str]:

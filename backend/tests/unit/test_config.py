@@ -24,6 +24,8 @@ def _base_env() -> dict[str, str]:
         "storage_bucket": "crediwise-test",
         "storage_access_key": "crediwise",
         "storage_secret_key": "secret",
+        "security_jwt_private_key": "dummy-private-key",
+        "security_jwt_public_key": "dummy-public-key",
     }
 
 
@@ -48,6 +50,19 @@ def test_settings_computes_sqlalchemy_database_uri() -> None:
 def test_settings_computes_redis_url() -> None:
     settings = _make_settings(**_base_env())
     assert settings.redis_url == "redis://localhost:6379/0"
+
+
+def test_settings_jwt_ttl_defaults() -> None:
+    settings = _make_settings(**_base_env())
+    assert settings.security_access_token_ttl_minutes == 15
+    assert settings.security_refresh_token_ttl_days == 30
+
+
+def test_settings_unescapes_literal_newlines_in_pem_keys() -> None:
+    env = _base_env()
+    env["security_jwt_private_key"] = "-----BEGIN KEY-----\\nabc\\n-----END KEY-----"
+    settings = _make_settings(**env)
+    assert settings.jwt_private_key_pem == "-----BEGIN KEY-----\nabc\n-----END KEY-----"
 
 
 def test_settings_fails_fast_on_missing_required_field(monkeypatch: pytest.MonkeyPatch) -> None:
