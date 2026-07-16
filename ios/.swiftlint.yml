@@ -1,0 +1,14 @@
+disabled_rules:
+  - trailing_comma
+
+line_length:
+  warning: 120
+  error: 140
+  ignores_comments: true
+  ignores_urls: true
+
+type_body_length:
+  warning: 300
+
+excluded:
+  - CrediWise.xcodeproj
