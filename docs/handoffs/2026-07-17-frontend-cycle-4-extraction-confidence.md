@@ -35,9 +35,11 @@ Start Cycle 4 frontend work while following `PLAN.md`, `CLAUDE.md`, and the para
 
 ## Validation evidence
 - `sh ios/scripts/lint-positioning-copy.sh` passed.
+- Strict SwiftLint passed with 0 violations across 84 Swift files.
 - `git diff --check` passed.
 - Static code review found no remaining code issue after correction-integrity, conflict-reload, ownership-concern, date-correction, and accessibility-focus fixes.
-- Swift/XCTest/UI-test execution was not available on this Linux host because `swiftlint`, `swift`, and `xcodebuild` are absent. CI/macOS validation remains required.
+- GitHub `frontend-ci` run `29538765589` passed on macOS: simulator selection/boot, Xcode build-for-testing, unit tests, and UI tests.
+- Local Xcode execution remains unavailable on this Linux host; CI provides the required macOS validation evidence.
 
 ## Files changed
 - `ios/CrediWise/Features/Upload/**`: extraction review model, repository boundary, mocks, ViewModel, and views.
