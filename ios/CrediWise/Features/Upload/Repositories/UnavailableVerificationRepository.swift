@@ -1,4 +1,4 @@
-struct UnavailableDocumentVerificationRepository: DocumentVerificationRepository {
+struct UnavailableVerificationRepository: DocumentVerificationRepository {
     func review(documentID: String) async throws -> ExtractionReview {
         throw DocumentVerificationRepositoryError.unavailable
     }

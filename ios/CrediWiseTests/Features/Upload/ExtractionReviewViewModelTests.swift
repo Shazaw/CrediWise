@@ -73,7 +73,7 @@ final class ExtractionReviewViewModelTests: XCTestCase {
     func testUnavailableReviewOffersRetryableFailure() async {
         let viewModel = ExtractionReviewViewModel(
             documentID: "synthetic-document-id",
-            repository: UnavailableDocumentVerificationRepository()
+            repository: UnavailableVerificationRepository()
         )
 
         await viewModel.load()

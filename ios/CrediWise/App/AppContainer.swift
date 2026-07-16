@@ -43,7 +43,7 @@ struct AppContainer {
             return AppDependencies(
                 authenticationRepository: UnavailableAuthenticationRepository(),
                 documentUploadRepository: UnavailableDocumentUploadRepository(),
-                documentVerificationRepository: UnavailableDocumentVerificationRepository(),
+                documentVerificationRepository: UnavailableVerificationRepository(),
                 isDocumentUploadAvailable: false
             )
         }
@@ -67,7 +67,7 @@ struct AppContainer {
                 baseURL: baseURL,
                 authInterceptor: authInterceptor
             ),
-            documentVerificationRepository: UnavailableDocumentVerificationRepository(),
+            documentVerificationRepository: UnavailableVerificationRepository(),
             isDocumentUploadAvailable: true
         )
     }

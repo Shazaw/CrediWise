@@ -78,7 +78,7 @@
 		A00000000000000000000045 /* DataConfidenceReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000047 /* DataConfidenceReport.swift */; };
 		A00000000000000000000046 /* DocumentVerificationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000048 /* DocumentVerificationRepository.swift */; };
 		A00000000000000000000047 /* DocumentVerificationRepositoryError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000049 /* DocumentVerificationRepositoryError.swift */; };
-		A00000000000000000000048 /* UnavailableDocumentVerificationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000004A /* UnavailableDocumentVerificationRepository.swift */; };
+		A00000000000000000000048 /* UnavailableVerificationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000004A /* UnavailableVerificationRepository.swift */; };
 		A00000000000000000000049 /* MockDocumentVerificationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000004B /* MockDocumentVerificationRepository.swift */; };
 		A0000000000000000000004A /* IDRFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000004C /* IDRFormatter.swift */; };
 		A0000000000000000000004B /* ExtractionReviewViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000004D /* ExtractionReviewViewState.swift */; };
@@ -185,7 +185,7 @@
 		B00000000000000000000047 /* DataConfidenceReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataConfidenceReport.swift; sourceTree = "<group>"; };
 		B00000000000000000000048 /* DocumentVerificationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentVerificationRepository.swift; sourceTree = "<group>"; };
 		B00000000000000000000049 /* DocumentVerificationRepositoryError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentVerificationRepositoryError.swift; sourceTree = "<group>"; };
-		B0000000000000000000004A /* UnavailableDocumentVerificationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnavailableDocumentVerificationRepository.swift; sourceTree = "<group>"; };
+		B0000000000000000000004A /* UnavailableVerificationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnavailableVerificationRepository.swift; sourceTree = "<group>"; };
 		B0000000000000000000004B /* MockDocumentVerificationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDocumentVerificationRepository.swift; sourceTree = "<group>"; };
 		B0000000000000000000004C /* IDRFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IDRFormatter.swift; sourceTree = "<group>"; };
 		B0000000000000000000004D /* ExtractionReviewViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtractionReviewViewState.swift; sourceTree = "<group>"; };
@@ -471,7 +471,7 @@
 				B00000000000000000000032 /* DocumentUploadRepositoryError.swift */,
 				B0000000000000000000004B /* MockDocumentVerificationRepository.swift */,
 				B00000000000000000000033 /* MockDocumentUploadRepository.swift */,
-				B0000000000000000000004A /* UnavailableDocumentVerificationRepository.swift */,
+				B0000000000000000000004A /* UnavailableVerificationRepository.swift */,
 				B00000000000000000000034 /* UnavailableDocumentUploadRepository.swift */,
 			);
 			path = Repositories;
@@ -739,7 +739,7 @@
 				A00000000000000000000045 /* DataConfidenceReport.swift in Sources */,
 				A00000000000000000000046 /* DocumentVerificationRepository.swift in Sources */,
 				A00000000000000000000047 /* DocumentVerificationRepositoryError.swift in Sources */,
-				A00000000000000000000048 /* UnavailableDocumentVerificationRepository.swift in Sources */,
+				A00000000000000000000048 /* UnavailableVerificationRepository.swift in Sources */,
 				A00000000000000000000049 /* MockDocumentVerificationRepository.swift in Sources */,
 				A0000000000000000000004A /* IDRFormatter.swift in Sources */,
 				A0000000000000000000004B /* ExtractionReviewViewState.swift in Sources */,

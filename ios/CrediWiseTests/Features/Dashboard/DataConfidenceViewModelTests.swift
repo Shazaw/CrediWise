@@ -43,7 +43,7 @@ final class DataConfidenceViewModelTests: XCTestCase {
     func testUnavailableReportOffersRetryableFailure() async {
         let viewModel = DataConfidenceViewModel(
             documentID: "synthetic-document-id",
-            repository: UnavailableDocumentVerificationRepository()
+            repository: UnavailableVerificationRepository()
         )
 
         await viewModel.load()
