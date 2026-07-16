@@ -33,6 +33,23 @@ final class AppCoordinatorTests: XCTestCase {
         XCTAssertEqual(coordinator.path, [.upload])
     }
 
+    func testRoutesDocumentFromUploadThroughReviewAndConfidence() {
+        let coordinator = AppCoordinator()
+
+        coordinator.showUpload()
+        coordinator.showExtractionReview(documentID: "document-123")
+        coordinator.showDataConfidence(documentID: "document-123")
+
+        XCTAssertEqual(
+            coordinator.path,
+            [
+                .upload,
+                .extractionReview(documentID: "document-123"),
+                .dataConfidence(documentID: "document-123")
+            ]
+        )
+    }
+
     func testReturnsToWelcomeFromNestedRoute() {
         let coordinator = AppCoordinator()
         coordinator.showRegistration()
