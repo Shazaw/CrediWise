@@ -66,36 +66,36 @@ deterministic engines.
 
 ```text
 .
-├── backend/
-│   ├── app/
-│   │   ├── api/v1/             # Versioned HTTP controllers
-│   │   ├── core/               # Configuration, security, logging, dependencies
-│   │   ├── db/seeds/           # Database bootstrap and idempotent seed data
-│   │   ├── engines/config/     # Pure engines and versioned model configuration
-│   │   ├── integrations/       # Storage, local AI, and mock provider adapters
-│   │   ├── models/             # SQLAlchemy entities
-│   │   ├── pipeline/           # Celery tasks and stage orchestration
-│   │   ├── repositories/       # Persistence queries
-│   │   ├── schemas/            # Pydantic request and response DTOs
-│   │   └── services/           # Application use cases
-│   ├── alembic/versions/       # Database migrations
-│   └── tests/                  # Unit, integration, and end-to-end tests
-├── docs/
-│   ├── adr/                    # Architecture Decision Records
-│   ├── api/                    # OpenAPI snapshots
-│   ├── fixtures/               # Synthetic financial fixtures and expected output
-│   └── handoffs/               # Workstream handover notes
-├── infra/
-│   └── github-actions/         # CI workflow sources
-├── ios/Krediwise/
-│   ├── App/                    # App entry point, coordinator, dependency container
-│   ├── Core/                   # Networking, auth, persistence, design system, utilities
-│   ├── Features/               # Feature-scoped views and view models
-│   ├── Models/                 # Codable API DTOs and domain models
-│   └── Resources/              # Localizations and asset catalogs
-├── CLAUDE.md                   # Terminal-agent operating manual
-├── PLAN.md                     # Product and technical source of truth
-└── README.md
+|-- backend/
+|   |-- app/
+|   |   |-- api/v1/             # Versioned HTTP controllers
+|   |   |-- core/               # Configuration, security, logging, dependencies
+|   |   |-- db/seeds/           # Database bootstrap and idempotent seed data
+|   |   |-- engines/config/     # Pure engines and versioned model configuration
+|   |   |-- integrations/       # Storage, local AI, and mock provider adapters
+|   |   |-- models/             # SQLAlchemy entities
+|   |   |-- pipeline/           # Celery tasks and stage orchestration
+|   |   |-- repositories/       # Persistence queries
+|   |   |-- schemas/            # Pydantic request and response DTOs
+|   |   `-- services/           # Application use cases
+|   |-- alembic/versions/       # Database migrations
+|   `-- tests/                  # Unit, integration, and end-to-end tests
+|-- docs/
+|   |-- adr/                    # Architecture Decision Records
+|   |-- api/                    # OpenAPI snapshots
+|   |-- fixtures/               # Synthetic financial fixtures and expected output
+|   `-- handoffs/               # Workstream handover notes
+|-- infra/
+|   `-- github-actions/         # CI workflow sources
+|-- ios/Krediwise/
+|   |-- App/                    # App entry point, coordinator, dependency container
+|   |-- Core/                   # Networking, auth, persistence, design system, utilities
+|   |-- Features/               # Feature-scoped views and view models
+|   |-- Models/                 # Codable API DTOs and domain models
+|   `-- Resources/              # Localizations and asset catalogs
+|-- CLAUDE.md                   # Terminal-agent operating manual
+|-- PLAN.md                     # Product and technical source of truth
+`-- README.md
 ```
 
 Empty directories contain `.gitkeep` markers so Git preserves the approved
