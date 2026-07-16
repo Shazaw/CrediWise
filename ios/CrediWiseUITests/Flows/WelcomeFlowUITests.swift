@@ -21,6 +21,6 @@ final class WelcomeFlowUITests: XCTestCase {
 
         app.buttons["welcome.create_account"].tap()
 
-        XCTAssertTrue(app.otherElements["auth.placeholder"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["auth.placeholder.title"].waitForExistence(timeout: 2))
     }
 }

@@ -20,6 +20,7 @@ struct AuthPlaceholderView: View {
                     .font(TypographyTokens.title)
                     .foregroundStyle(CrediWiseColors.textPrimary)
                     .multilineTextAlignment(.center)
+                    .accessibilityIdentifier("auth.placeholder.title")
 
                 Text(LocalizedStringKey(messageKey))
                     .font(TypographyTokens.body)
