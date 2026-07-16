@@ -1,12 +1,12 @@
-# CLAUDE.md — Krediwise Terminal Agent Operating Manual
+# CLAUDE.md — CrediWise Terminal Agent Operating Manual
 
-> This file governs every terminal-agent session in the Krediwise repository.
+> This file governs every terminal-agent session in the CrediWise repository.
 > `PLAN.md` is the product and technical source of truth. This file defines how agents execute that plan safely, consistently, and without creating cross-agent conflicts.
 
-- **Project:** Krediwise — Two-Way Credit Safety Engine
+- **Project:** CrediWise — Two-Way Credit Safety Engine
 - **Primary specification:** `PLAN.md`
 - **Applies to:** Claude Code and any equivalent terminal coding agent
-- **Owner:** Krediwise founding engineering team
+- **Owner:** CrediWise founding engineering team
 - **Default locale:** `id-ID`
 - **Default timezone:** `Asia/Jakarta`
 
@@ -24,7 +24,7 @@ At the start of every session:
 6. Inspect only the files and contracts needed for the assigned task.
 7. Do not begin implementation until the scope and measurable outcome are clear.
 
-`PLAN.md` defines what Krediwise is, what the system must do, its approved architecture, schemas, scoring rules, security constraints, and roadmap. Never silently contradict it.
+`PLAN.md` defines what CrediWise is, what the system must do, its approved architecture, schemas, scoring rules, security constraints, and roadmap. Never silently contradict it.
 
 If implementation reveals that `PLAN.md` is incomplete or wrong, do not silently invent a replacement architecture. Follow the Confusion Protocol and update the relevant ADR or decision log after the decision is made.
 
@@ -140,7 +140,7 @@ Passing tests without understanding the code is not completion.
 
 ## 4. Deterministic Work vs AI Work
 
-Krediwise handles financial data. Deterministic logic must remain deterministic.
+CrediWise handles financial data. Deterministic logic must remain deterministic.
 
 ### 4.1 Deterministic space
 
@@ -198,7 +198,7 @@ AI produces evidence, suggestions, labels, or prose. Deterministic, versioned en
 
 ## 5. Local Kimi AI Requirement
 
-Krediwise uses a local or self-hosted Kimi-compatible model for AI-assisted document fraud and anomaly analysis.
+CrediWise uses a local or self-hosted Kimi-compatible model for AI-assisted document fraud and anomaly analysis.
 
 ### 5.1 Privacy requirement
 
@@ -285,7 +285,7 @@ Never make the general test suite depend on a local model being available. Gate 
 
 ---
 
-## 6. Krediwise Architecture Rules
+## 6. CrediWise Architecture Rules
 
 Follow the repository structure and dependency directions defined in `PLAN.md`.
 
@@ -722,13 +722,13 @@ Track progress from real state, not estimates invented by the model. Use a scrip
 Write progress to:
 
 ```text
-/tmp/krediwise-<job-name>/progress.log
+/tmp/crediwise-<job-name>/progress.log
 ```
 
 Print the command:
 
 ```bash
-tail -f /tmp/krediwise-<job-name>/progress.log
+tail -f /tmp/crediwise-<job-name>/progress.log
 ```
 
 ### 14.2 Data safety
@@ -757,7 +757,7 @@ Produce:
 
 ## 15. Security and Privacy
 
-Krediwise processes highly sensitive financial information.
+CrediWise processes highly sensitive financial information.
 
 ### 15.1 Absolute rules
 
@@ -770,7 +770,7 @@ Krediwise processes highly sensitive financial information.
 - Never weaken consent checks silently.
 - Never remove audit events to make tests easier.
 - Never label a user dishonest solely because data confidence is low.
-- Never call Krediwise output an official credit score.
+- Never call CrediWise output an official credit score.
 
 ### 15.2 Destructive commands
 
@@ -798,11 +798,11 @@ Before touching production:
 
 ---
 
-## 16. Krediwise Product Guardrails
+## 16. CrediWise Product Guardrails
 
 Every implementation must preserve these rules:
 
-- Krediwise produces an **estimated financial-risk, affordability, and credit-readiness assessment**, not an official credit score.
+- CrediWise produces an **estimated financial-risk, affordability, and credit-readiness assessment**, not an official credit score.
 - Data Confidence is separate from user behavior.
 - Low Data Confidence means the evidence is incomplete or difficult to verify, not that the user is dishonest.
 - The lender remains responsible for the final credit decision.
