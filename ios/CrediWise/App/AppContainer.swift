@@ -14,8 +14,11 @@ struct AppContainer {
             ? AppDependencies(
                 authenticationRepository: MockAuthenticationRepository(),
                 documentUploadRepository: MockDocumentUploadRepository(
-                    statuses: [.securityCheck, .complete]
+                    statuses: ProcessInfo.processInfo.arguments.contains("--review-flow")
+                        ? [.reviewPending]
+                        : [.securityCheck, .complete]
                 ),
+                documentVerificationRepository: MockDocumentVerificationRepository(),
                 isDocumentUploadAvailable: true
             )
             : makeProductionDependencies(tokenStore: tokenStore, sessionManager: sessionManager)
@@ -24,6 +27,7 @@ struct AppContainer {
             sessionManager: sessionManager,
             authenticationRepository: dependencies.authenticationRepository,
             documentUploadRepository: dependencies.documentUploadRepository,
+            documentVerificationRepository: dependencies.documentVerificationRepository,
             uploadPollingPolicy: DocumentUploadPollingPolicy(),
             allowsSyntheticUpload: isUITesting,
             isDocumentUploadAvailable: dependencies.isDocumentUploadAvailable
@@ -39,6 +43,7 @@ struct AppContainer {
             return AppDependencies(
                 authenticationRepository: UnavailableAuthenticationRepository(),
                 documentUploadRepository: UnavailableDocumentUploadRepository(),
+                documentVerificationRepository: UnavailableVerificationRepository(),
                 isDocumentUploadAvailable: false
             )
         }
@@ -62,6 +67,10 @@ struct AppContainer {
                 baseURL: baseURL,
                 authInterceptor: authInterceptor
             ),
+            documentVerificationRepository: APIDocumentVerificationRepository(
+                baseURL: baseURL,
+                authInterceptor: authInterceptor
+            ),
             isDocumentUploadAvailable: true
         )
     }
@@ -82,5 +91,6 @@ struct AppContainer {
 private struct AppDependencies {
     let authenticationRepository: any AuthenticationRepository
     let documentUploadRepository: any DocumentUploadRepository
+    let documentVerificationRepository: any DocumentVerificationRepository
     let isDocumentUploadAvailable: Bool
 }

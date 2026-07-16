@@ -65,6 +65,14 @@ class Settings(BaseSettings):
     max_pdf_pages: int = 60
     max_image_pixels: int = 25_000_000
 
+    # --- KIMI_* (local/self-hosted anomaly-assistance runtime — CLAUDE.md
+    # §5, PLAN §16.3). Unset by default: `kimi_base_url` is `None` until an
+    # operator points it at their own private, self-hosted endpoint. Never a
+    # public-cloud URL (CLAUDE.md §15.1).
+    kimi_base_url: str | None = None
+    kimi_model: str = "kimi-local"
+    kimi_timeout_seconds: float = 10.0
+
     @property
     def sqlalchemy_database_uri(self) -> str:
         return (

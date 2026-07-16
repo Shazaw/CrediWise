@@ -74,6 +74,29 @@
 		A00000000000000000000041 /* DocumentSourceType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000043 /* DocumentSourceType.swift */; };
 		A00000000000000000000042 /* UploadPasswordCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000044 /* UploadPasswordCard.swift */; };
 		A00000000000000000000043 /* UploadSourcePickerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000045 /* UploadSourcePickerCard.swift */; };
+		A00000000000000000000044 /* ExtractionReview.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000046 /* ExtractionReview.swift */; };
+		A00000000000000000000045 /* DataConfidenceReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000047 /* DataConfidenceReport.swift */; };
+		A00000000000000000000046 /* DocumentVerificationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000048 /* DocumentVerificationRepository.swift */; };
+		A00000000000000000000047 /* DocumentVerificationRepositoryError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000049 /* DocumentVerificationRepositoryError.swift */; };
+		A00000000000000000000048 /* UnavailableVerificationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000004A /* UnavailableVerificationRepository.swift */; };
+		A00000000000000000000049 /* MockDocumentVerificationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000004B /* MockDocumentVerificationRepository.swift */; };
+		A0000000000000000000004A /* IDRFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000004C /* IDRFormatter.swift */; };
+		A0000000000000000000004B /* ExtractionReviewViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000004D /* ExtractionReviewViewState.swift */; };
+		A0000000000000000000004C /* ExtractionReviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000004E /* ExtractionReviewViewModel.swift */; };
+		A0000000000000000000004D /* DataConfidenceViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000004F /* DataConfidenceViewState.swift */; };
+		A0000000000000000000004E /* DataConfidenceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000050 /* DataConfidenceViewModel.swift */; };
+		A0000000000000000000004F /* ExtractionTransactionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000051 /* ExtractionTransactionCard.swift */; };
+		A00000000000000000000050 /* ExtractionReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000052 /* ExtractionReviewView.swift */; };
+		A00000000000000000000051 /* DataConfidenceCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000053 /* DataConfidenceCard.swift */; };
+		A00000000000000000000052 /* DataConfidenceDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000054 /* DataConfidenceDetailView.swift */; };
+		A00000000000000000000053 /* DataConfidenceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000055 /* DataConfidenceView.swift */; };
+		A00000000000000000000054 /* ExtractionReviewViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000056 /* ExtractionReviewViewModelTests.swift */; };
+		A00000000000000000000055 /* DataConfidenceViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000057 /* DataConfidenceViewModelTests.swift */; };
+		A00000000000000000000056 /* IDRFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000058 /* IDRFormatterTests.swift */; };
+		A00000000000000000000057 /* DocumentVerificationDTOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000059 /* DocumentVerificationDTOs.swift */; };
+		A00000000000000000000058 /* APIDocumentVerificationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000005A /* APIDocumentVerificationRepository.swift */; };
+		A00000000000000000000059 /* APIDocumentVerificationRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000005B /* APIDocumentVerificationRepositoryTests.swift */; };
+		A0000000000000000000005A /* DocumentVerificationMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000005C /* DocumentVerificationMapper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -162,6 +185,29 @@
 		B00000000000000000000043 /* DocumentSourceType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentSourceType.swift; sourceTree = "<group>"; };
 		B00000000000000000000044 /* UploadPasswordCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadPasswordCard.swift; sourceTree = "<group>"; };
 		B00000000000000000000045 /* UploadSourcePickerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadSourcePickerCard.swift; sourceTree = "<group>"; };
+		B00000000000000000000046 /* ExtractionReview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtractionReview.swift; sourceTree = "<group>"; };
+		B00000000000000000000047 /* DataConfidenceReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataConfidenceReport.swift; sourceTree = "<group>"; };
+		B00000000000000000000048 /* DocumentVerificationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentVerificationRepository.swift; sourceTree = "<group>"; };
+		B00000000000000000000049 /* DocumentVerificationRepositoryError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentVerificationRepositoryError.swift; sourceTree = "<group>"; };
+		B0000000000000000000004A /* UnavailableVerificationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnavailableVerificationRepository.swift; sourceTree = "<group>"; };
+		B0000000000000000000004B /* MockDocumentVerificationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDocumentVerificationRepository.swift; sourceTree = "<group>"; };
+		B0000000000000000000004C /* IDRFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IDRFormatter.swift; sourceTree = "<group>"; };
+		B0000000000000000000004D /* ExtractionReviewViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtractionReviewViewState.swift; sourceTree = "<group>"; };
+		B0000000000000000000004E /* ExtractionReviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtractionReviewViewModel.swift; sourceTree = "<group>"; };
+		B0000000000000000000004F /* DataConfidenceViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataConfidenceViewState.swift; sourceTree = "<group>"; };
+		B00000000000000000000050 /* DataConfidenceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataConfidenceViewModel.swift; sourceTree = "<group>"; };
+		B00000000000000000000051 /* ExtractionTransactionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtractionTransactionCard.swift; sourceTree = "<group>"; };
+		B00000000000000000000052 /* ExtractionReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtractionReviewView.swift; sourceTree = "<group>"; };
+		B00000000000000000000053 /* DataConfidenceCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataConfidenceCard.swift; sourceTree = "<group>"; };
+		B00000000000000000000054 /* DataConfidenceDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataConfidenceDetailView.swift; sourceTree = "<group>"; };
+		B00000000000000000000055 /* DataConfidenceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataConfidenceView.swift; sourceTree = "<group>"; };
+		B00000000000000000000056 /* ExtractionReviewViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtractionReviewViewModelTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000057 /* DataConfidenceViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataConfidenceViewModelTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000058 /* IDRFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IDRFormatterTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000059 /* DocumentVerificationDTOs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentVerificationDTOs.swift; sourceTree = "<group>"; };
+		B0000000000000000000005A /* APIDocumentVerificationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDocumentVerificationRepository.swift; sourceTree = "<group>"; };
+		B0000000000000000000005B /* APIDocumentVerificationRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDocumentVerificationRepositoryTests.swift; sourceTree = "<group>"; };
+		B0000000000000000000005C /* DocumentVerificationMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentVerificationMapper.swift; sourceTree = "<group>"; };
 		B00000000000000000000100 /* CrediWise.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrediWise.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B00000000000000000000101 /* CrediWiseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrediWiseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B00000000000000000000102 /* CrediWiseUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrediWiseUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -250,13 +296,17 @@
 		};
 		D00000000000000000000009 /* Utils */ = {
 			isa = PBXGroup;
-			children = (B0000000000000000000000D /* PositioningStrings.swift */);
+			children = (
+				B0000000000000000000004C /* IDRFormatter.swift */,
+				B0000000000000000000000D /* PositioningStrings.swift */,
+			);
 			path = Utils;
 			sourceTree = "<group>";
 		};
 		D0000000000000000000000A /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				D0000000000000000000001F /* Dashboard */,
 				D0000000000000000000000B /* Onboarding */,
 				D00000000000000000000019 /* Upload */,
 			);
@@ -297,7 +347,9 @@
 			children = (
 				D00000000000000000000017 /* Auth */,
 				D00000000000000000000018 /* Networking */,
+				D00000000000000000000023 /* Utils Tests */,
 				D0000000000000000000000F /* Features */,
+				D00000000000000000000022 /* Dashboard Tests */,
 				D0000000000000000000001E /* Upload Tests */,
 			);
 			path = CrediWiseTests;
@@ -411,6 +463,7 @@
 				B00000000000000000000043 /* DocumentSourceType.swift */,
 				B00000000000000000000030 /* DocumentStatusSnapshot.swift */,
 				B0000000000000000000002F /* DocumentUploadReceipt.swift */,
+				B00000000000000000000046 /* ExtractionReview.swift */,
 				B0000000000000000000002D /* SelectedUploadFile.swift */,
 			);
 			path = Models;
@@ -419,10 +472,17 @@
 		D0000000000000000000001B /* Repositories */ = {
 			isa = PBXGroup;
 			children = (
+				B0000000000000000000005A /* APIDocumentVerificationRepository.swift */,
 				B00000000000000000000041 /* APIDocumentUploadRepository.swift */,
+				B00000000000000000000059 /* DocumentVerificationDTOs.swift */,
+				B0000000000000000000005C /* DocumentVerificationMapper.swift */,
+				B00000000000000000000048 /* DocumentVerificationRepository.swift */,
+				B00000000000000000000049 /* DocumentVerificationRepositoryError.swift */,
 				B00000000000000000000031 /* DocumentUploadRepository.swift */,
 				B00000000000000000000032 /* DocumentUploadRepositoryError.swift */,
+				B0000000000000000000004B /* MockDocumentVerificationRepository.swift */,
 				B00000000000000000000033 /* MockDocumentUploadRepository.swift */,
+				B0000000000000000000004A /* UnavailableVerificationRepository.swift */,
 				B00000000000000000000034 /* UnavailableDocumentUploadRepository.swift */,
 			);
 			path = Repositories;
@@ -432,6 +492,8 @@
 			isa = PBXGroup;
 			children = (
 				B00000000000000000000037 /* DocumentUploadPollingPolicy.swift */,
+				B0000000000000000000004E /* ExtractionReviewViewModel.swift */,
+				B0000000000000000000004D /* ExtractionReviewViewState.swift */,
 				B00000000000000000000035 /* UploadFileValidationError.swift */,
 				B00000000000000000000036 /* UploadFileValidator.swift */,
 				B00000000000000000000038 /* UploadViewState.swift */,
@@ -443,6 +505,8 @@
 		D0000000000000000000001D /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000052 /* ExtractionReviewView.swift */,
+				B00000000000000000000051 /* ExtractionTransactionCard.swift */,
 				B0000000000000000000003A /* ProcessingChecklist.swift */,
 				B0000000000000000000003F /* UploadFileCard.swift */,
 				B00000000000000000000044 /* UploadPasswordCard.swift */,
@@ -456,12 +520,55 @@
 		D0000000000000000000001E /* Upload Tests */ = {
 			isa = PBXGroup;
 			children = (
+				B0000000000000000000005B /* APIDocumentVerificationRepositoryTests.swift */,
 				B00000000000000000000042 /* APIDocumentUploadRepositoryTests.swift */,
 				B0000000000000000000003D /* DocumentUploadPollingPolicyTests.swift */,
+				B00000000000000000000056 /* ExtractionReviewViewModelTests.swift */,
 				B0000000000000000000003C /* UploadFileValidatorTests.swift */,
 				B0000000000000000000003E /* UploadViewModelTests.swift */,
 			);
 			path = Features/Upload;
+			sourceTree = "<group>";
+		};
+		D0000000000000000000001F /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				D00000000000000000000020 /* ViewModels */,
+				D00000000000000000000021 /* Views */,
+			);
+			path = Dashboard;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000020 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000047 /* DataConfidenceReport.swift */,
+				B00000000000000000000050 /* DataConfidenceViewModel.swift */,
+				B0000000000000000000004F /* DataConfidenceViewState.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000021 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000053 /* DataConfidenceCard.swift */,
+				B00000000000000000000054 /* DataConfidenceDetailView.swift */,
+				B00000000000000000000055 /* DataConfidenceView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000022 /* Dashboard Tests */ = {
+			isa = PBXGroup;
+			children = (B00000000000000000000057 /* DataConfidenceViewModelTests.swift */);
+			path = Features/Dashboard;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000023 /* Utils Tests */ = {
+			isa = PBXGroup;
+			children = (B00000000000000000000058 /* IDRFormatterTests.swift */);
+			path = Core/Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -640,10 +747,29 @@
 				A00000000000000000000041 /* DocumentSourceType.swift in Sources */,
 				A00000000000000000000042 /* UploadPasswordCard.swift in Sources */,
 				A00000000000000000000043 /* UploadSourcePickerCard.swift in Sources */,
+				A00000000000000000000044 /* ExtractionReview.swift in Sources */,
+				A00000000000000000000045 /* DataConfidenceReport.swift in Sources */,
+				A00000000000000000000046 /* DocumentVerificationRepository.swift in Sources */,
+				A00000000000000000000047 /* DocumentVerificationRepositoryError.swift in Sources */,
+				A00000000000000000000048 /* UnavailableVerificationRepository.swift in Sources */,
+				A00000000000000000000049 /* MockDocumentVerificationRepository.swift in Sources */,
+				A0000000000000000000004A /* IDRFormatter.swift in Sources */,
+				A0000000000000000000004B /* ExtractionReviewViewState.swift in Sources */,
+				A0000000000000000000004C /* ExtractionReviewViewModel.swift in Sources */,
+				A0000000000000000000004D /* DataConfidenceViewState.swift in Sources */,
+				A0000000000000000000004E /* DataConfidenceViewModel.swift in Sources */,
+				A0000000000000000000004F /* ExtractionTransactionCard.swift in Sources */,
+				A00000000000000000000050 /* ExtractionReviewView.swift in Sources */,
+				A00000000000000000000051 /* DataConfidenceCard.swift in Sources */,
+				A00000000000000000000052 /* DataConfidenceDetailView.swift in Sources */,
+				A00000000000000000000053 /* DataConfidenceView.swift in Sources */,
+				A00000000000000000000057 /* DocumentVerificationDTOs.swift in Sources */,
+				A00000000000000000000058 /* APIDocumentVerificationRepository.swift in Sources */,
+				A0000000000000000000005A /* DocumentVerificationMapper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F00000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A0000000000000000000002A /* APIAuthenticationRepositoryTests.swift in Sources */, A00000000000000000000040 /* APIDocumentUploadRepositoryTests.swift in Sources */, A00000000000000000000012 /* AppCoordinatorTests.swift in Sources */, A00000000000000000000027 /* AuthenticationViewModelTests.swift in Sources */, A00000000000000000000026 /* AuthInterceptorTests.swift in Sources */, A00000000000000000000025 /* SessionManagerTests.swift in Sources */, A0000000000000000000003A /* UploadFileValidatorTests.swift in Sources */, A0000000000000000000003B /* DocumentUploadPollingPolicyTests.swift in Sources */, A0000000000000000000003C /* UploadViewModelTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+		F00000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A0000000000000000000002A /* APIAuthenticationRepositoryTests.swift in Sources */, A00000000000000000000059 /* APIDocumentVerificationRepositoryTests.swift in Sources */, A00000000000000000000040 /* APIDocumentUploadRepositoryTests.swift in Sources */, A00000000000000000000012 /* AppCoordinatorTests.swift in Sources */, A00000000000000000000027 /* AuthenticationViewModelTests.swift in Sources */, A00000000000000000000026 /* AuthInterceptorTests.swift in Sources */, A00000000000000000000055 /* DataConfidenceViewModelTests.swift in Sources */, A0000000000000000000003B /* DocumentUploadPollingPolicyTests.swift in Sources */, A00000000000000000000054 /* ExtractionReviewViewModelTests.swift in Sources */, A00000000000000000000056 /* IDRFormatterTests.swift in Sources */, A00000000000000000000025 /* SessionManagerTests.swift in Sources */, A0000000000000000000003A /* UploadFileValidatorTests.swift in Sources */, A0000000000000000000003C /* UploadViewModelTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
 		F00000000000000000000007 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000013 /* WelcomeFlowUITests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 

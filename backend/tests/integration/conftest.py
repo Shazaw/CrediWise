@@ -24,6 +24,7 @@ from sqlalchemy.orm import Session, sessionmaker
 import app.models  # noqa: F401 - populates Base.metadata
 from app.core.config import Settings, get_settings
 from app.db.base import Base
+from app.db.seeds import model_versions
 from app.db.session import get_db
 from app.integrations.storage import set_storage_port
 from app.integrations.storage.s3_adapter import S3StorageAdapter
@@ -39,6 +40,13 @@ def db_engine() -> Iterator[Engine]:
         conn.execute(text('CREATE EXTENSION IF NOT EXISTS "citext"'))
         conn.commit()
     Base.metadata.create_all(engine)
+    with sessionmaker(bind=engine, future=True)() as seed_session:
+        # Sprint 3's verification pipeline requires an ACTIVE model_versions
+        # row to stamp on `document_verification_results` (PLAN §19.2); the
+        # real app bootstraps this via `make backend-seed`, so gate tests
+        # reuse the same idempotent seed module here (PLAN §21.1).
+        model_versions.run(seed_session)
+        seed_session.commit()
     yield engine
     Base.metadata.drop_all(engine)
     engine.dispose()
@@ -75,13 +83,13 @@ def authed_client(db_session: Session) -> Iterator[TestClient]:
 
 @pytest.fixture(autouse=True)
 def _inline_document_processing(db_session: Session) -> Iterator[None]:
-    """Runs `process_document`'s logic inline against the test's own
-    `db_session` instead of a real Celery broker + a second, separately
-    connected `SessionLocal` (see `app/pipeline/dispatch.py`)."""
-    from app.pipeline.document_tasks import run_security_and_enqueue_extraction
+    """Runs `process_document`'s full stage sequence inline against the
+    test's own `db_session` instead of a real Celery broker + a second,
+    separately connected `SessionLocal` (see `app/pipeline/dispatch.py`)."""
+    from app.pipeline.document_tasks import run_document_pipeline
 
     dispatch.set_dispatch_override(
-        lambda document_id: run_security_and_enqueue_extraction(db_session, document_id)
+        lambda document_id: run_document_pipeline(db_session, document_id)
     )
     yield
     dispatch.set_dispatch_override(None)

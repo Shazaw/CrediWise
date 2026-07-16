@@ -92,7 +92,17 @@ struct AppRootView: View {
             UploadView(
                 viewModel: coordinator.makeUploadViewModel(),
                 allowsSyntheticSelection: coordinator.shouldOfferSyntheticUpload,
-                isServiceAvailable: coordinator.shouldEnableDocumentUpload
+                isServiceAvailable: coordinator.shouldEnableDocumentUpload,
+                onReviewReady: coordinator.showExtractionReview
+            )
+        case let .extractionReview(documentID):
+            ExtractionReviewView(
+                viewModel: coordinator.makeExtractionReviewViewModel(documentID: documentID),
+                onConfirmed: coordinator.showDataConfidence
+            )
+        case let .dataConfidence(documentID):
+            DataConfidenceView(
+                viewModel: coordinator.makeDataConfidenceViewModel(documentID: documentID)
             )
         }
     }

@@ -50,6 +50,9 @@ the development machine's LAN address when testing on a physical device.
 - XCTest covers coordinator navigation and the Welcome UI flow.
 - `Features/Upload` owns supported-file validation, upload state, processing polling,
   accessible progress, and deterministic mock fixtures for Cycle 3.
+- Cycle 4 adds extraction review with immutable source/normalized values, separate
+  proposed corrections, explicit ownership confirmation or concern reporting, and
+  a Data Confidence card with seven supplied dimensions and attributable reasons.
 
 Authentication uses the versioned `/api/v1/auth` backend contract and stores
 session tokens in Keychain. The current bundle identifier is
@@ -62,3 +65,9 @@ Normal builds use the authenticated `POST /api/v1/documents` and
 Protected-PDF passwords exist only for the active retry call, and image uploads
 require the user to declare screenshot or camera-photo lineage. UI tests launch
 with deterministic synthetic upload data and never treat mocks as source truth.
+
+Normal builds also use the authenticated transaction, review, confirmation, and
+verification endpoints committed in the additive Cycle 4 OpenAPI contract. The
+adapter submits structured raw/system/proposed correction lineage and renders
+server-supplied Trust Layer scores without recalculation. `--ui-testing
+--review-flow` continues to use deterministic fixtures for isolated UI coverage.
