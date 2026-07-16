@@ -7,12 +7,9 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+import app.models  # noqa: F401 - populates Base.metadata for autogenerate
 from app.core.config import get_settings
 from app.db.base import Base
-
-# Import every model module here so Base.metadata is fully populated before
-# autogenerate compares it against the live database. Empty in Sprint 0 —
-# populated as `app/models/*.py` are added.
 
 config = context.config
 

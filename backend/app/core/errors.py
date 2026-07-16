@@ -55,3 +55,8 @@ class PipelineError(CrediWiseError):
 class IntegrationError(CrediWiseError):
     code = "INTEGRATION_ERROR"
     http_status = 502
+
+
+class RateLimitError(CrediWiseError):
+    code = "RATE_LIMITED"
+    http_status = 429
