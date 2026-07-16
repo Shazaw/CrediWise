@@ -6,10 +6,16 @@ struct AppContainer {
         let isUITesting = ProcessInfo.processInfo.arguments.contains("--ui-testing")
         let tokenStore: any TokenStore
         let authenticationRepository: any AuthenticationRepository
+        let documentUploadRepository: any DocumentUploadRepository
+        let uploadPollingPolicy: DocumentUploadPollingPolicy
 
         if isUITesting {
             tokenStore = VolatileTokenStore()
             authenticationRepository = MockAuthenticationRepository()
+            documentUploadRepository = MockDocumentUploadRepository(
+                statuses: [.complete]
+            )
+            uploadPollingPolicy = DocumentUploadPollingPolicy()
         } else {
             tokenStore = KeychainTokenStore(
                 service: Bundle.main.bundleIdentifier ?? "com.crediwise.app"
@@ -22,12 +28,19 @@ struct AppContainer {
             } else {
                 authenticationRepository = UnavailableAuthenticationRepository()
             }
+            // The concrete document adapter is added after Cycle 3 backend publishes OpenAPI.
+            documentUploadRepository = UnavailableDocumentUploadRepository()
+            uploadPollingPolicy = DocumentUploadPollingPolicy()
         }
         let sessionManager = SessionManager(tokenStore: tokenStore)
 
         return AppCoordinator(
             sessionManager: sessionManager,
-            authenticationRepository: authenticationRepository
+            authenticationRepository: authenticationRepository,
+            documentUploadRepository: documentUploadRepository,
+            uploadPollingPolicy: uploadPollingPolicy,
+            allowsSyntheticUpload: isUITesting,
+            isDocumentUploadAvailable: isUITesting
         )
     }
 

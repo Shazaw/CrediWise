@@ -48,9 +48,16 @@ the development machine's LAN address when testing on a physical device.
 - `Resources/id.lproj` is primary; `Resources/en.lproj` is the fallback.
 - Every app build rejects prohibited positioning claims in localization files.
 - XCTest covers coordinator navigation and the Welcome UI flow.
+- `Features/Upload` owns supported-file validation, upload state, processing polling,
+  accessible progress, and deterministic mock fixtures for Cycle 3.
 
 Authentication uses the versioned `/api/v1/auth` backend contract and stores
 session tokens in Keychain. The current bundle identifier is
 `com.crediwise.app`; replace it with the registered identifier before code
 signing or TestFlight distribution. An app icon must also be supplied before
 archiving.
+
+The concrete document-upload adapter remains fail-closed until the backend
+publishes `POST /api/v1/documents` and `GET /api/v1/documents/{id}/status` in
+`docs/api/openapi-v1.json`. UI tests launch with deterministic synthetic upload
+data; normal builds never treat the mock as financial source truth.

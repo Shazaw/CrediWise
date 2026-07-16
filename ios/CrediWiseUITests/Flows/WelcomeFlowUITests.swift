@@ -36,17 +36,31 @@ final class WelcomeFlowUITests: XCTestCase {
 
     func testSignInTransitionsToAuthenticatedFlow() {
         let app = launchApp()
-        app.buttons["welcome.sign_in"].tap()
-        app.textFields["auth.email"].tap()
-        app.textFields["auth.email"].typeText("person@example.com")
-        app.secureTextFields["auth.password"].tap()
-        app.secureTextFields["auth.password"].typeText("safePassword1")
-        app.swipeUp()
-
-        app.buttons["auth.submit"].tap()
+        signIn(app)
 
         XCTAssertTrue(app.staticTexts["session.authenticated.title"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["session.start_upload"].exists)
         XCTAssertTrue(app.buttons["session.sign_out"].exists)
+    }
+
+    func testSyntheticUploadCompletesAccessibleProcessingFlow() {
+        let app = launchApp()
+        signIn(app)
+        XCTAssertTrue(app.buttons["session.start_upload"].waitForExistence(timeout: 3))
+
+        app.buttons["session.start_upload"].tap()
+
+        XCTAssertTrue(app.otherElements["upload.screen"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["upload.choose_file"].exists)
+        app.buttons["upload.synthetic_fixture"].tap()
+        XCTAssertTrue(app.otherElements["upload.file"].waitForExistence(timeout: 2))
+
+        app.buttons["upload.submit"].tap()
+
+        XCTAssertTrue(app.staticTexts["upload.processing.status"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.otherElements["upload.completion"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.otherElements["upload.processing.checklist"].exists)
+        XCTAssertTrue(app.staticTexts["positioning.disclaimer"].exists)
     }
 
     private func launchApp() -> XCUIApplication {
@@ -54,5 +68,15 @@ final class WelcomeFlowUITests: XCTestCase {
         app.launchArguments = ["--ui-testing"]
         app.launch()
         return app
+    }
+
+    private func signIn(_ app: XCUIApplication) {
+        app.buttons["welcome.sign_in"].tap()
+        app.textFields["auth.email"].tap()
+        app.textFields["auth.email"].typeText("person@example.com")
+        app.secureTextFields["auth.password"].tap()
+        app.secureTextFields["auth.password"].typeText("safePassword1")
+        app.swipeUp()
+        app.buttons["auth.submit"].tap()
     }
 }

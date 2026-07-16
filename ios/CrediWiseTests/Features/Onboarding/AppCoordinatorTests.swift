@@ -25,6 +25,14 @@ final class AppCoordinatorTests: XCTestCase {
         XCTAssertEqual(coordinator.path, [.signIn])
     }
 
+    func testRoutesAuthenticatedUserToUpload() {
+        let coordinator = AppCoordinator()
+
+        coordinator.showUpload()
+
+        XCTAssertEqual(coordinator.path, [.upload])
+    }
+
     func testReturnsToWelcomeFromNestedRoute() {
         let coordinator = AppCoordinator()
         coordinator.showRegistration()
