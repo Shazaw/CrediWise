@@ -43,6 +43,7 @@ struct ExtractionReviewView: View {
             Text("review.title")
                 .font(TypographyTokens.title)
                 .foregroundStyle(CrediWiseColors.textPrimary)
+                .accessibilityIdentifier("review.title")
             Text("review.subtitle")
                 .font(TypographyTokens.body)
                 .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))

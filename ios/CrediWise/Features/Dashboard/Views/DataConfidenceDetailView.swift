@@ -10,6 +10,7 @@ struct DataConfidenceDetailView: View {
                 VStack(alignment: .leading, spacing: SpacingTokens.large) {
                     Text("confidence.detail.title")
                         .font(TypographyTokens.title)
+                        .accessibilityIdentifier("confidence.detail.title")
                     Text("confidence.detail.subtitle")
                         .font(TypographyTokens.body)
                         .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))
@@ -31,6 +32,7 @@ struct DataConfidenceDetailView: View {
         VStack(alignment: .leading, spacing: SpacingTokens.standard) {
             Text("confidence.dimensions.title")
                 .font(TypographyTokens.cardTitle)
+                .accessibilityIdentifier("confidence.dimensions.title")
             ForEach(report.dimensions) { dimension in
                 VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                     HStack {

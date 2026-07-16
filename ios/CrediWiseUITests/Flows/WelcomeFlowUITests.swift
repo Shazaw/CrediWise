@@ -71,7 +71,7 @@ final class WelcomeFlowUITests: XCTestCase {
 
         XCTAssertTrue(app.buttons["upload.review"].waitForExistence(timeout: 5))
         app.buttons["upload.review"].tap()
-        XCTAssertTrue(app.otherElements["review.screen"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["review.title"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.staticTexts["review.correction_count"].exists)
 
         app.swipeUp()
@@ -83,8 +83,8 @@ final class WelcomeFlowUITests: XCTestCase {
 
         XCTAssertTrue(app.buttons["confidence.card"].waitForExistence(timeout: 3))
         app.buttons["confidence.card"].tap()
-        XCTAssertTrue(app.otherElements["confidence.detail.screen"].waitForExistence(timeout: 3))
-        XCTAssertTrue(app.otherElements["confidence.dimensions"].exists)
+        XCTAssertTrue(app.staticTexts["confidence.detail.title"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["confidence.dimensions.title"].exists)
     }
 
     private func launchApp(arguments: [String] = []) -> XCUIApplication {
