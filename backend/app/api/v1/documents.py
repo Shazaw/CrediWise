@@ -11,22 +11,36 @@ this route's `{id}` path parameter.
 
 import uuid
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.deps import require
 from app.core.rate_limit import rate_limit
 from app.db.session import get_db
+from app.models.document_verification_result import DocumentVerificationResult
 from app.models.enums import RoleEnum, SourceTypeEnum
 from app.models.source_document import SourceDocument
+from app.models.transaction import Transaction
 from app.models.user import User
-from app.schemas.document import DocumentStatusResponse, DocumentUploadResponse
-from app.services.document_service import DocumentService
+from app.schemas.document import (
+    ConfirmResponse,
+    DocumentStatusResponse,
+    DocumentUploadResponse,
+    DocumentVerificationResponse,
+    ReasonCodeResponse,
+    ReviewRequest,
+    ReviewResponse,
+    TransactionListResponse,
+    TransactionResponse,
+)
+from app.services.document_service import CorrectionInput, DocumentService
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
 _READ_CHUNK_BYTES = 1024 * 1024
+_DEFAULT_TRANSACTIONS_LIMIT = 100
+_MAX_TRANSACTIONS_LIMIT = 500
 
 
 def _to_status_response(document: SourceDocument) -> DocumentStatusResponse:
@@ -104,3 +118,115 @@ def get_document_status(
 ) -> DocumentStatusResponse:
     document = DocumentService(db).get_status(current_user, document_id)
     return _to_status_response(document)
+
+
+def _to_verification_response(
+    document_id: uuid.UUID, result: DocumentVerificationResult
+) -> DocumentVerificationResponse:
+    flags = result.flags_json or {}
+    reason_codes = [
+        ReasonCodeResponse(code=r["code"], description=r["description"])
+        for r in flags.get("reason_codes", [])
+    ]
+    return DocumentVerificationResponse(
+        document_id=document_id,
+        data_confidence_score=result.data_confidence_score,
+        band=result.confidence_band,
+        provenance_score=result.provenance_score,
+        consistency_score=result.consistency_score,
+        metadata_score=result.metadata_score,
+        ocr_score=result.ocr_score,
+        visual_score=result.visual_score,
+        completeness_score=result.completeness_score,
+        ownership_score=result.ownership_score,
+        reason_codes=reason_codes,
+        recommendation=flags.get("recommendation"),
+        verified_at=result.verified_at,
+    )
+
+
+def _to_transaction_response(transaction: Transaction) -> TransactionResponse:
+    return TransactionResponse(
+        transaction_id=transaction.id,
+        transaction_date=transaction.transaction_date,
+        transaction_time=transaction.transaction_time,
+        amount=transaction.amount,
+        direction=transaction.direction,
+        balance_after=transaction.balance_after,
+        raw_description=transaction.raw_description,
+        category=transaction.category,
+        transaction_context=transaction.transaction_context,
+        is_internal_transfer=transaction.is_internal_transfer,
+        is_recurring=transaction.is_recurring,
+        extraction_confidence=transaction.extraction_confidence,
+    )
+
+
+@router.get(
+    "/{document_id}/verification",
+    response_model=DocumentVerificationResponse,
+    dependencies=[Depends(rate_limit("general"))],
+)
+def get_document_verification(
+    document_id: uuid.UUID,
+    current_user: User = Depends(require(RoleEnum.USER)),
+    db: Session = Depends(get_db),
+) -> DocumentVerificationResponse:
+    result = DocumentService(db).get_verification(current_user, document_id)
+    return _to_verification_response(document_id, result)
+
+
+@router.get(
+    "/{document_id}/transactions",
+    response_model=TransactionListResponse,
+    dependencies=[Depends(rate_limit("general"))],
+)
+def get_document_transactions(
+    document_id: uuid.UUID,
+    limit: int = Query(default=_DEFAULT_TRANSACTIONS_LIMIT, ge=1, le=_MAX_TRANSACTIONS_LIMIT),
+    cursor: uuid.UUID | None = Query(default=None),
+    current_user: User = Depends(require(RoleEnum.USER)),
+    db: Session = Depends(get_db),
+) -> TransactionListResponse:
+    transactions = DocumentService(db).list_transactions(
+        current_user, document_id, limit=limit, cursor=cursor
+    )
+    next_cursor = transactions[-1].id if len(transactions) == limit else None
+    return TransactionListResponse(
+        items=[_to_transaction_response(t) for t in transactions], next_cursor=next_cursor
+    )
+
+
+@router.post(
+    "/{document_id}/review",
+    response_model=ReviewResponse,
+    dependencies=[Depends(rate_limit("general"))],
+)
+def review_document(
+    document_id: uuid.UUID,
+    body: ReviewRequest,
+    current_user: User = Depends(require(RoleEnum.USER)),
+    db: Session = Depends(get_db),
+) -> ReviewResponse:
+    corrections = [
+        CorrectionInput(
+            transaction_id=c.transaction_id, correction_type=c.correction_type.value, note=c.note
+        )
+        for c in body.corrections
+    ]
+    count = DocumentService(db).review(current_user, document_id, corrections)
+    return ReviewResponse(document_id=document_id, corrections_recorded=count)
+
+
+@router.post(
+    "/{document_id}/confirm",
+    response_model=ConfirmResponse,
+    dependencies=[Depends(rate_limit("general"))],
+)
+def confirm_document(
+    document_id: uuid.UUID,
+    current_user: User = Depends(require(RoleEnum.USER)),
+    db: Session = Depends(get_db),
+) -> ConfirmResponse:
+    document = DocumentService(db).confirm(current_user, document_id)
+    return ConfirmResponse(document_id=document_id, status=document.status)

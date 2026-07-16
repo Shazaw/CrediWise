@@ -186,10 +186,12 @@ class BandEnum(StrEnum):
 
 
 class DocStatusEnum(StrEnum):
-    """PLAN §8.2's state diagram plus Appendix A, with two gap-filled states
-    (PLAN §24.11) that the diagram requires but Appendix A's list omits:
-    `VALIDATION_FAILED` (oversize/corrupt/zero-byte) and `DUPLICATE_REUSED`
-    (same user+hash re-upload).
+    """PLAN §8.2's state diagram plus Appendix A, with three gap-filled
+    states (PLAN §24.11) that the diagram requires but Appendix A's list
+    omits: `VALIDATION_FAILED` (oversize/corrupt/zero-byte), `DUPLICATE_REUSED`
+    (same user+hash re-upload) — both Sprint 2 — and `REVIEW_PENDING`
+    (Sprint 3: `VERIFYING -> REVIEW_PENDING -> NORMALIZING` per the diagram,
+    also missing from Appendix A).
     """
 
     UPLOADED = "UPLOADED"
@@ -200,6 +202,7 @@ class DocStatusEnum(StrEnum):
     EXTRACTING = "EXTRACTING"
     UNSUPPORTED_FORMAT = "UNSUPPORTED_FORMAT"
     VERIFYING = "VERIFYING"
+    REVIEW_PENDING = "REVIEW_PENDING"
     NORMALIZING = "NORMALIZING"
     ANALYZING = "ANALYZING"
     HUMAN_REVIEW = "HUMAN_REVIEW"
