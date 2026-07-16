@@ -7,24 +7,10 @@ final class UploadFileValidatorTests: XCTestCase {
     private let testURL = URL(fileURLWithPath: "/tmp/synthetic-statement")
 
     func testAcceptsSupportedTypesAtMaximumSize() throws {
-        let validator = UploadFileValidator()
-        let cases: [(String, UTType, String)] = [
-            ("statement.pdf", .pdf, "application/pdf"),
-            ("transactions.csv", .commaSeparatedText, "text/csv"),
-            ("wallet.png", .png, "image/png"),
-            ("wallet.jpeg", .jpeg, "image/jpeg")
-        ]
-
-        for (fileName, contentType, expectedMimeType) in cases {
-            let file = try validator.validate(
-                fileName: fileName,
-                byteCount: UploadFileValidator.defaultMaximumByteCount,
-                contentType: contentType,
-                url: testURL
-            )
-
-            XCTAssertEqual(file.mimeType, expectedMimeType)
-        }
+        try assertAccepted(fileName: "statement.pdf", contentType: .pdf, mimeType: "application/pdf")
+        try assertAccepted(fileName: "transactions.csv", contentType: .commaSeparatedText, mimeType: "text/csv")
+        try assertAccepted(fileName: "wallet.png", contentType: .png, mimeType: "image/png")
+        try assertAccepted(fileName: "wallet.jpeg", contentType: .jpeg, mimeType: "image/jpeg")
     }
 
     func testRejectsZeroByteFile() {
@@ -90,5 +76,20 @@ final class UploadFileValidatorTests: XCTestCase {
         XCTAssertEqual(file.fileName, fileURL.lastPathComponent)
         XCTAssertEqual(file.mimeType, "application/pdf")
         XCTAssertEqual(file.byteCount, 26)
+    }
+
+    private func assertAccepted(
+        fileName: String,
+        contentType: UTType,
+        mimeType: String
+    ) throws {
+        let file = try UploadFileValidator().validate(
+            fileName: fileName,
+            byteCount: UploadFileValidator.defaultMaximumByteCount,
+            contentType: contentType,
+            url: testURL
+        )
+
+        XCTAssertEqual(file.mimeType, mimeType)
     }
 }
