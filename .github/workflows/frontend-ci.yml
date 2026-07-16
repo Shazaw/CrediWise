@@ -1,0 +1,55 @@
+name: frontend-ci
+
+on:
+  pull_request:
+    paths:
+      - "ios/**"
+      - ".github/workflows/frontend-ci.yml"
+  push:
+    branches: [main, "integration/**"]
+    paths:
+      - "ios/**"
+      - ".github/workflows/frontend-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-test:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Validate positioning copy
+        run: ios/scripts/lint-positioning-copy.sh
+
+      - name: Lint Swift
+        run: >-
+          swiftlint lint --strict --config ios/.swiftlint.yml
+          ios/CrediWise ios/CrediWiseTests ios/CrediWiseUITests
+
+      - name: Build and test
+        run: |
+          xcodebuild \
+            -project ios/CrediWise.xcodeproj \
+            -scheme CrediWise \
+            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest' \
+            -resultBundlePath /tmp/CrediWiseTests.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            build test
+
+      - name: Upload Xcode result bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: CrediWiseTests-${{ github.run_id }}
+          path: /tmp/CrediWiseTests.xcresult
+          if-no-files-found: ignore

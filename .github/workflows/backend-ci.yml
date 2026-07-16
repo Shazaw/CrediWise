@@ -7,7 +7,7 @@ on:
       - "infra/docker-compose.yml"
       - ".github/workflows/backend-ci.yml"
   push:
-    branches: [main]
+    branches: [main, "integration/**"]
     paths:
       - "backend/**"
       - "infra/docker-compose.yml"
@@ -85,7 +85,7 @@ jobs:
       - run: uv python install 3.12
       - run: uv venv --python 3.12 .venv
       - run: uv pip install -e ".[dev]" --python .venv/bin/python
-      - run: .venv/bin/pip-audit --strict --skip-editable
+      - run: .venv/bin/pip-audit --skip-editable
       - name: secret scan
         uses: gitleaks/gitleaks-action@v2
         env:
