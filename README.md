@@ -42,8 +42,9 @@ CrediWise is a monorepo with two primary workstreams:
 
 - `backend/`: Python 3.12, FastAPI, SQLAlchemy, Alembic, Celery, PostgreSQL,
   Redis, and S3-compatible object storage.
-- `ios/`: native SwiftUI for iOS 16+, using MVVM, a lightweight coordinator,
-  Swift Concurrency, and Swift Charts.
+- `ios/`: the frontend workstream, implemented as a native SwiftUI app for
+  iOS 16+ using MVVM, a lightweight coordinator, Swift Concurrency, and Swift
+  Charts.
 
 The backend follows this dependency direction:
 
@@ -90,9 +91,16 @@ deterministic engines.
 |-- ios/CrediWise/
 |   |-- App/                    # App entry point, coordinator, dependency container
 |   |-- Core/                   # Networking, auth, persistence, design system, utilities
-|   |-- Features/               # Feature-scoped views and view models
+|   |-- Features/
+|   |   `-- <Feature>/
+|   |       |-- Views/          # SwiftUI rendering and user intent
+|   |       |-- ViewModels/     # Presentation state and service calls
+|   |       `-- Coordinators/   # Feature-scoped navigation
 |   |-- Models/                 # Codable API DTOs and domain models
-|   `-- Resources/              # Localizations and asset catalogs
+|   `-- Resources/              # id/en localizations and asset catalogs
+|-- ios/CrediWiseTests/         # Core and feature unit tests
+|-- ios/CrediWiseSnapshotTests/ # Headline-screen visual regression tests
+|-- ios/CrediWiseUITests/       # End-to-end frontend flows
 |-- CLAUDE.md                   # Terminal-agent operating manual
 |-- PLAN.md                     # Product and technical source of truth
 `-- README.md
@@ -115,6 +123,22 @@ layout. These markers are removed as implementation files are added.
   committed.
 - Backend and iOS work remain isolated unless a task explicitly authorizes
   cross-stack changes.
+
+## Parallel Development Cycles
+
+Backend and frontend are designed to be developed by two different people at
+the same time. Both contributors start each cycle from the same base commit and
+an agreed API contract. The backend contributor owns `backend/**`; the frontend
+contributor owns `ios/**` and develops against contract-matching mocks.
+
+At the end of a cycle, the backend branch is integrated first so its OpenAPI
+snapshot becomes authoritative. The frontend branch is then integrated and run
+against the real API. Contract, integration, and golden-path tests must pass
+before that integration branch is merged to `main` and used as the base for the
+next parallel cycle.
+
+The complete branch, ownership, handoff, and integration procedure is in
+[`docs/development/parallel-workflow.md`](docs/development/parallel-workflow.md).
 
 ## Planned Development Order
 
