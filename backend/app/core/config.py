@@ -57,6 +57,14 @@ class Settings(BaseSettings):
     security_access_token_ttl_minutes: int = 15
     security_refresh_token_ttl_days: int = 30
 
+    # Upload file-security limits (PLAN §7.2, FR-3 AC2/AC5). `max_upload_mb`
+    # is the PLAN-named `MAX_UPLOAD_MB` knob; the page/pixel caps are Sprint 2
+    # implementation choices for the decompression-bomb/page-count limits
+    # FR-3 AC5 requires but does not size (PLAN §24.11 gap-fill).
+    max_upload_mb: int = 15
+    max_pdf_pages: int = 60
+    max_image_pixels: int = 25_000_000
+
     @property
     def sqlalchemy_database_uri(self) -> str:
         return (
