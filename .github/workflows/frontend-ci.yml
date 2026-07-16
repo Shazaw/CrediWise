@@ -36,6 +36,19 @@ jobs:
           swiftlint lint --strict --config ios/.swiftlint.yml
           ios/CrediWise ios/CrediWiseTests ios/CrediWiseUITests
 
+      - name: Select available iPhone simulator
+        run: |
+          simulator_id="$(
+            xcrun simctl list devices available |
+              awk -F '[()]' '/iPhone/ { print $2; exit }'
+          )"
+          if [[ ! "$simulator_id" =~ ^[0-9A-Fa-f-]{36}$ ]]; then
+            xcrun simctl list devices available
+            echo "::error title=iOS simulator::No available iPhone simulator found"
+            exit 1
+          fi
+          echo "IOS_SIMULATOR_DESTINATION=platform=iOS Simulator,id=$simulator_id" >> "$GITHUB_ENV"
+
       - name: Build for testing
         run: |
           set +e
@@ -43,7 +56,7 @@ jobs:
           xcodebuild \
             -project ios/CrediWise.xcodeproj \
             -scheme CrediWise \
-            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest' \
+            -destination "$IOS_SIMULATOR_DESTINATION" \
             CODE_SIGNING_ALLOWED=NO \
             build-for-testing 2>&1 | tee /tmp/CrediWiseBuild.log
           status=${PIPESTATUS[0]}
@@ -61,7 +74,7 @@ jobs:
           xcodebuild \
             -project ios/CrediWise.xcodeproj \
             -scheme CrediWise \
-            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest' \
+            -destination "$IOS_SIMULATOR_DESTINATION" \
             -resultBundlePath /tmp/CrediWiseTests.xcresult \
             CODE_SIGNING_ALLOWED=NO \
             test-without-building 2>&1 | tee /tmp/CrediWiseTests.log
