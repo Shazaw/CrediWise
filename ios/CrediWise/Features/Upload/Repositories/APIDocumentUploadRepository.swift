@@ -32,7 +32,7 @@ actor APIDocumentUploadRepository: DocumentUploadRepository {
     func upload(
         file: SelectedUploadFile,
         pdfPassword: String? = nil,
-        onProgress: @Sendable (Double) async -> Void
+        onProgress: @escaping @Sendable (Double) async -> Void
     ) async throws -> DocumentUploadReceipt {
         let boundary = "CrediWise-\(UUID().uuidString)"
         let body: Data
