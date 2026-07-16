@@ -55,7 +55,8 @@ final class UploadViewModel: ObservableObject {
             url: URL(fileURLWithPath: "/tmp/crediwise-synthetic-statement.pdf"),
             fileName: "synthetic-bca-statement.pdf",
             byteCount: 245_760,
-            mimeType: "application/pdf"
+            mimeType: "application/pdf",
+            sourceType: .originalPDF
         )
         currentFile = file
         state = .selected(file)
@@ -66,8 +67,17 @@ final class UploadViewModel: ObservableObject {
         state = .failed(nil, errorKey: "upload.error.unreadable")
     }
 
-    func upload() async {
-        guard !isBusy, let file = currentFile else {
+    func selectImageSourceType(_ sourceType: DocumentSourceType) {
+        guard let file = currentFile, file.mimeType.hasPrefix("image/") else {
+            return
+        }
+        let updatedFile = file.with(sourceType: sourceType)
+        currentFile = updatedFile
+        state = .selected(updatedFile)
+    }
+
+    func upload(pdfPassword: String? = nil) async {
+        guard !isBusy, let file = currentFile, file.sourceType != nil else {
             return
         }
 
@@ -82,7 +92,10 @@ final class UploadViewModel: ObservableObject {
         }
 
         do {
-            let receipt = try await repository.upload(file: file) { [weak self] progress in
+            let receipt = try await repository.upload(
+                file: file,
+                pdfPassword: pdfPassword
+            ) { [weak self] progress in
                 await self?.updateProgress(for: file, progress: progress)
             }
             currentReceipt = receipt
@@ -98,7 +111,14 @@ final class UploadViewModel: ObservableObject {
         } catch is CancellationError {
             state = .selected(file)
         } catch let error as DocumentUploadRepositoryError {
-            state = .failed(file, errorKey: errorKey(for: error))
+            switch error {
+            case .pdfPasswordRequired:
+                state = .passwordRequired(file, invalid: false)
+            case .invalidPDFPassword:
+                state = .passwordRequired(file, invalid: true)
+            default:
+                state = .failed(file, errorKey: errorKey(for: error))
+            }
         } catch {
             state = .failed(file, errorKey: "upload.error.unavailable")
         }
@@ -215,6 +235,8 @@ final class UploadViewModel: ObservableObject {
             return "upload.error.validation_failed"
         case .unsupportedFormat:
             return "upload.error.unsupported_format"
+        case .pdfPasswordRequired, .invalidPDFPassword:
+            return "upload.error.validation_failed"
         case .rateLimited:
             return "upload.error.rate_limited"
         case .serviceUnavailable:

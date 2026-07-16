@@ -57,7 +57,8 @@ session tokens in Keychain. The current bundle identifier is
 signing or TestFlight distribution. An app icon must also be supplied before
 archiving.
 
-The concrete document-upload adapter remains fail-closed until the backend
-publishes `POST /api/v1/documents` and `GET /api/v1/documents/{id}/status` in
-`docs/api/openapi-v1.json`. UI tests launch with deterministic synthetic upload
-data; normal builds never treat the mock as financial source truth.
+Normal builds use the authenticated `POST /api/v1/documents` and
+`GET /api/v1/documents/{id}/status` contract in `docs/api/openapi-v1.json`.
+Protected-PDF passwords exist only for the active retry call, and image uploads
+require the user to declare screenshot or camera-photo lineage. UI tests launch
+with deterministic synthetic upload data and never treat mocks as source truth.

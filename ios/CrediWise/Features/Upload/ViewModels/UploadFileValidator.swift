@@ -59,7 +59,8 @@ struct UploadFileValidator: Sendable {
             url: url,
             fileName: fileName,
             byteCount: byteCount,
-            mimeType: mimeType
+            mimeType: mimeType,
+            sourceType: sourceType(for: mimeType)
         )
     }
 
@@ -83,5 +84,16 @@ struct UploadFileValidator: Sendable {
             return true
         }
         return contentType.conforms(to: expected)
+    }
+
+    private func sourceType(for mimeType: String) -> DocumentSourceType? {
+        switch mimeType {
+        case "application/pdf":
+            return .originalPDF
+        case "text/csv":
+            return .exportedCSV
+        default:
+            return nil
+        }
     }
 }

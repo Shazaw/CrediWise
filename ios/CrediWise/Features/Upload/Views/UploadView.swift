@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 struct UploadView: View {
     @StateObject private var viewModel: UploadViewModel
     @State private var isFileImporterPresented = false
+    @State private var pdfPassword = ""
     @State private var operationTask: Task<Void, Never>?
     @AccessibilityFocusState private var isResultFocused: Bool
 
@@ -106,11 +107,23 @@ struct UploadView: View {
             }
         case let .selected(file):
             UploadFileCard(file: file, progress: nil)
+            if file.requiresImageSourceSelection {
+                UploadSourcePickerCard(
+                    sourceType: file.sourceType,
+                    onSelect: viewModel.selectImageSourceType
+                )
+            }
             CTAButton(title: "upload.action.upload") {
                 startOperation { await viewModel.upload() }
             }
+            .disabled(file.sourceType == nil)
             .accessibilityIdentifier("upload.submit")
             chooseDifferentFileButton
+        case let .passwordRequired(file, invalid):
+            UploadFileCard(file: file, progress: nil)
+            UploadPasswordCard(password: $pdfPassword, invalid: invalid) { password in
+                startOperation { await viewModel.upload(pdfPassword: password) }
+            }
         case let .uploading(file, progress):
             UploadFileCard(file: file, progress: progress)
         case let .processing(receipt, status):
@@ -234,6 +247,7 @@ struct UploadView: View {
 
     private var chooseDifferentFileButton: some View {
         Button("upload.action.choose_different") {
+            pdfPassword = ""
             isFileImporterPresented = true
         }
         .font(.subheadline.weight(.semibold))
@@ -243,6 +257,7 @@ struct UploadView: View {
 
     private var uploadAnotherButton: some View {
         PrimaryButton(title: "upload.action.another") {
+            pdfPassword = ""
             viewModel.reset()
         }
         .accessibilityIdentifier("upload.another")

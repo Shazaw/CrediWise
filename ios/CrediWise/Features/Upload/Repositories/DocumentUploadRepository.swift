@@ -1,6 +1,7 @@
 protocol DocumentUploadRepository: Sendable {
     func upload(
         file: SelectedUploadFile,
+        pdfPassword: String?,
         onProgress: @Sendable (Double) async -> Void
     ) async throws -> DocumentUploadReceipt
 

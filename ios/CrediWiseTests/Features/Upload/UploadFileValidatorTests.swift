@@ -7,10 +7,30 @@ final class UploadFileValidatorTests: XCTestCase {
     private let testURL = URL(fileURLWithPath: "/tmp/synthetic-statement")
 
     func testAcceptsSupportedTypesAtMaximumSize() throws {
-        try assertAccepted(fileName: "statement.pdf", contentType: .pdf, mimeType: "application/pdf")
-        try assertAccepted(fileName: "transactions.csv", contentType: .commaSeparatedText, mimeType: "text/csv")
-        try assertAccepted(fileName: "wallet.png", contentType: .png, mimeType: "image/png")
-        try assertAccepted(fileName: "wallet.jpeg", contentType: .jpeg, mimeType: "image/jpeg")
+        try assertAccepted(
+            fileName: "statement.pdf",
+            contentType: .pdf,
+            mimeType: "application/pdf",
+            sourceType: .originalPDF
+        )
+        try assertAccepted(
+            fileName: "transactions.csv",
+            contentType: .commaSeparatedText,
+            mimeType: "text/csv",
+            sourceType: .exportedCSV
+        )
+        try assertAccepted(
+            fileName: "wallet.png",
+            contentType: .png,
+            mimeType: "image/png",
+            sourceType: nil
+        )
+        try assertAccepted(
+            fileName: "wallet.jpeg",
+            contentType: .jpeg,
+            mimeType: "image/jpeg",
+            sourceType: nil
+        )
     }
 
     func testRejectsZeroByteFile() {
@@ -76,12 +96,14 @@ final class UploadFileValidatorTests: XCTestCase {
         XCTAssertEqual(file.fileName, fileURL.lastPathComponent)
         XCTAssertEqual(file.mimeType, "application/pdf")
         XCTAssertEqual(file.byteCount, 26)
+        XCTAssertEqual(file.sourceType, .originalPDF)
     }
 
     private func assertAccepted(
         fileName: String,
         contentType: UTType,
-        mimeType: String
+        mimeType: String,
+        sourceType: DocumentSourceType?
     ) throws {
         let file = try UploadFileValidator().validate(
             fileName: fileName,
@@ -91,5 +113,6 @@ final class UploadFileValidatorTests: XCTestCase {
         )
 
         XCTAssertEqual(file.mimeType, mimeType)
+        XCTAssertEqual(file.sourceType, sourceType)
     }
 }

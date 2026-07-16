@@ -94,6 +94,51 @@ final class UploadViewModelTests: XCTestCase {
         XCTAssertEqual(errorKey, "upload.error.unavailable")
     }
 
+    func testProtectedPDFRequestsTransientPassword() async {
+        let viewModel = makeViewModel(
+            repository: MockDocumentUploadRepository(uploadError: .pdfPasswordRequired)
+        )
+        viewModel.selectSyntheticFile()
+
+        await viewModel.upload()
+
+        guard case let .passwordRequired(file, invalid) = viewModel.state else {
+            return XCTFail("Expected password-required state, got \(viewModel.state)")
+        }
+        XCTAssertEqual(file.fileName, "synthetic-bca-statement.pdf")
+        XCTAssertFalse(invalid)
+    }
+
+    func testInvalidPDFPasswordReturnsToPasswordPrompt() async {
+        let viewModel = makeViewModel(
+            repository: MockDocumentUploadRepository(uploadError: .invalidPDFPassword)
+        )
+        viewModel.selectSyntheticFile()
+
+        await viewModel.upload(pdfPassword: "wrong-value")
+
+        guard case let .passwordRequired(_, invalid) = viewModel.state else {
+            return XCTFail("Expected invalid-password state, got \(viewModel.state)")
+        }
+        XCTAssertTrue(invalid)
+    }
+
+    func testImageSourceSelectionPreservesDeclaredLineage() throws {
+        let viewModel = makeViewModel(repository: MockDocumentUploadRepository())
+        let imageURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("synthetic-upload-\(UUID().uuidString).png")
+        try Data([0x89, 0x50, 0x4E, 0x47]).write(to: imageURL)
+        defer { try? FileManager.default.removeItem(at: imageURL) }
+        viewModel.selectFile(at: imageURL)
+
+        viewModel.selectImageSourceType(.photo)
+
+        guard case let .selected(file) = viewModel.state else {
+            return XCTFail("Expected selected image, got \(viewModel.state)")
+        }
+        XCTAssertEqual(file.sourceType, .photo)
+    }
+
     func testRetryAfterTimeoutChecksStatusWithoutUploadingAgain() async {
         let repository = MockDocumentUploadRepository(statuses: [.extracting, .complete])
         let viewModel = UploadViewModel(

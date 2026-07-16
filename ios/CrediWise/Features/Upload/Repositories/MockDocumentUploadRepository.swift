@@ -18,6 +18,7 @@ actor MockDocumentUploadRepository: DocumentUploadRepository {
 
     func upload(
         file: SelectedUploadFile,
+        pdfPassword: String? = nil,
         onProgress: @Sendable (Double) async -> Void
     ) async throws -> DocumentUploadReceipt {
         uploadCalls += 1

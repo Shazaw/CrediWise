@@ -1821,7 +1821,7 @@ Follow the sprint plan (§25). Within a feature, build **inside-out**: model/mig
 - [x] T2.3 File-security stage (MIME/magic-bytes/size/hash/dedup/script-scan/password)
 - [x] T2.4 `POST /documents` (202) + `GET /documents/{id}/status`
 - [x] T2.5 Celery `documents` queue + state-machine orchestrator (§8.2)
-- [ ] T2.6 iOS: upload picker, progress, ProcessingChecklist, error states
+- [x] T2.6 iOS: upload picker, progress, ProcessingChecklist, error states
 - [x] T2.7 Tests: security stage, dedup, status transitions
 
 ### 26.4 Sprint 3 — Trust Layer & Data Confidence

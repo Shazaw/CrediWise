@@ -8,31 +8,52 @@ struct AppContainer {
         let authenticationRepository: any AuthenticationRepository
         let documentUploadRepository: any DocumentUploadRepository
         let uploadPollingPolicy: DocumentUploadPollingPolicy
+        let isDocumentUploadAvailable: Bool
 
         if isUITesting {
             tokenStore = VolatileTokenStore()
+        } else {
+            tokenStore = KeychainTokenStore(
+                service: Bundle.main.bundleIdentifier ?? "com.crediwise.app"
+            )
+        }
+        let sessionManager = SessionManager(tokenStore: tokenStore)
+
+        if isUITesting {
             authenticationRepository = MockAuthenticationRepository()
             documentUploadRepository = MockDocumentUploadRepository(
                 statuses: [.securityCheck, .complete]
             )
             uploadPollingPolicy = DocumentUploadPollingPolicy()
+            isDocumentUploadAvailable = true
         } else {
-            tokenStore = KeychainTokenStore(
-                service: Bundle.main.bundleIdentifier ?? "com.crediwise.app"
-            )
             if let baseURL = apiBaseURL() {
-                authenticationRepository = APIAuthenticationRepository(
+                let apiAuthenticationRepository = APIAuthenticationRepository(
                     baseURL: baseURL,
                     tokenStore: tokenStore
                 )
+                authenticationRepository = apiAuthenticationRepository
+                let authInterceptor = AuthInterceptor(
+                    tokenStore: tokenStore,
+                    refreshHandler: { refreshToken in
+                        try await apiAuthenticationRepository.refresh(refreshToken: refreshToken)
+                    },
+                    unauthorizedHandler: {
+                        await sessionManager.signOut()
+                    }
+                )
+                documentUploadRepository = APIDocumentUploadRepository(
+                    baseURL: baseURL,
+                    authInterceptor: authInterceptor
+                )
+                isDocumentUploadAvailable = true
             } else {
                 authenticationRepository = UnavailableAuthenticationRepository()
+                documentUploadRepository = UnavailableDocumentUploadRepository()
+                isDocumentUploadAvailable = false
             }
-            // The concrete document adapter is added after Cycle 3 backend publishes OpenAPI.
-            documentUploadRepository = UnavailableDocumentUploadRepository()
             uploadPollingPolicy = DocumentUploadPollingPolicy()
         }
-        let sessionManager = SessionManager(tokenStore: tokenStore)
 
         return AppCoordinator(
             sessionManager: sessionManager,
@@ -40,7 +61,7 @@ struct AppContainer {
             documentUploadRepository: documentUploadRepository,
             uploadPollingPolicy: uploadPollingPolicy,
             allowsSyntheticUpload: isUITesting,
-            isDocumentUploadAvailable: isUITesting
+            isDocumentUploadAvailable: isDocumentUploadAvailable
         )
     }
 
