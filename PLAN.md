@@ -1809,7 +1809,7 @@ Follow the sprint plan (§25). Within a feature, build **inside-out**: model/mig
 - [x] T1.5 Redis rate limiting (auth/upload/general tiers)
 - [x] T1.6 `audit_logs` (append-only) + audit event subscriber
 - [x] T1.7 `model_versions` + seed initial ACTIVE version + `config_hash`
-- [ ] T1.8 iOS: SessionManager, Keychain TokenStore, AuthInterceptor, auth screens
+- [x] T1.8 iOS: SessionManager, Keychain TokenStore, AuthInterceptor, auth screens
 - [x] T1.9 Tests: auth integration, RBAC unit
 
 ### 26.3 Sprint 2 — Upload & Storage

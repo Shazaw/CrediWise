@@ -14,7 +14,14 @@ struct AppContainer {
             tokenStore = KeychainTokenStore(
                 service: Bundle.main.bundleIdentifier ?? "com.crediwise.app"
             )
-            authenticationRepository = UnavailableAuthenticationRepository()
+            if let baseURL = apiBaseURL() {
+                authenticationRepository = APIAuthenticationRepository(
+                    baseURL: baseURL,
+                    tokenStore: tokenStore
+                )
+            } else {
+                authenticationRepository = UnavailableAuthenticationRepository()
+            }
         }
         let sessionManager = SessionManager(tokenStore: tokenStore)
 
@@ -22,5 +29,17 @@ struct AppContainer {
             sessionManager: sessionManager,
             authenticationRepository: authenticationRepository
         )
+    }
+
+    private func apiBaseURL() -> URL? {
+        if let override = ProcessInfo.processInfo.environment["CREDIWISE_API_BASE_URL"] {
+            return URL(string: override)
+        }
+
+        #if DEBUG
+        return URL(string: "http://127.0.0.1:8000")
+        #else
+        return nil
+        #endif
     }
 }

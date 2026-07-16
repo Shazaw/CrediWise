@@ -36,6 +36,10 @@ ios/scripts/lint-positioning-copy.sh
 
 Select any locally installed iOS simulator if `iPhone 15` is unavailable.
 
+Debug builds connect to `http://127.0.0.1:8000` by default. Set the
+`CREDIWISE_API_BASE_URL` scheme environment variable to an HTTPS API URL or to
+the development machine's LAN address when testing on a physical device.
+
 ## Current Foundation
 
 - `AppCoordinator` owns typed root navigation.
@@ -45,7 +49,8 @@ Select any locally installed iOS simulator if `iPhone 15` is unavailable.
 - Every app build rejects prohibited positioning claims in localization files.
 - XCTest covers coordinator navigation and the Welcome UI flow.
 
-Authentication screens are intentionally placeholders until the authentication
-cycle. The current bundle identifier is `com.crediwise.app`; replace it with the
-registered identifier before code signing or TestFlight distribution. An app
-icon must also be supplied before archiving.
+Authentication uses the versioned `/api/v1/auth` backend contract and stores
+session tokens in Keychain. The current bundle identifier is
+`com.crediwise.app`; replace it with the registered identifier before code
+signing or TestFlight distribution. An app icon must also be supplied before
+archiving.
