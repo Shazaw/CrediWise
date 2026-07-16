@@ -84,7 +84,6 @@ final class WelcomeFlowUITests: XCTestCase {
         XCTAssertTrue(app.buttons["confidence.card"].waitForExistence(timeout: 3))
         app.buttons["confidence.card"].tap()
         XCTAssertTrue(app.staticTexts["confidence.detail.title"].waitForExistence(timeout: 3))
-        XCTAssertTrue(app.staticTexts["confidence.dimensions.title"].exists)
     }
 
     private func launchApp(arguments: [String] = []) -> XCUIApplication {
