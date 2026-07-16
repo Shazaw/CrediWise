@@ -39,7 +39,7 @@ final class APIDocumentUploadRepositoryTests: XCTestCase {
             captured.request.value(forHTTPHeaderField: "Authorization"),
             "Bearer access-value"
         )
-        let body = String(decoding: captured.body, as: UTF8.self)
+        let body = try XCTUnwrap(String(data: captured.body, encoding: .utf8))
         XCTAssertTrue(body.contains("name=\"source_type\"\r\n\r\nEXPORTED_CSV"))
         XCTAssertTrue(body.contains("filename=\"synthetic-statement.csv\""))
         XCTAssertTrue(body.contains("date,amount"))
@@ -113,7 +113,7 @@ final class APIDocumentUploadRepositoryTests: XCTestCase {
 
         let capturedUpload = await uploadSession.lastUpload()
         let captured = try XCTUnwrap(capturedUpload)
-        let body = String(decoding: captured.body, as: UTF8.self)
+        let body = try XCTUnwrap(String(data: captured.body, encoding: .utf8))
         XCTAssertTrue(body.contains("name=\"pdf_password\"\r\n\r\none-time-value"))
     }
 
