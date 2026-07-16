@@ -1,2 +1,2 @@
-# Krediwice
-Repository for Garuda Hacks 7.0 - Krediwice
+# Krediwise
+Repository for Garuda Hacks 7.0 - Krediwise
