@@ -13,7 +13,7 @@ struct AppContainer {
             tokenStore = VolatileTokenStore()
             authenticationRepository = MockAuthenticationRepository()
             documentUploadRepository = MockDocumentUploadRepository(
-                statuses: [.complete]
+                statuses: [.securityCheck, .complete]
             )
             uploadPollingPolicy = DocumentUploadPollingPolicy()
         } else {
