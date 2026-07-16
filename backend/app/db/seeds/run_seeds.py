@@ -2,8 +2,8 @@
 
 Usage: ``python -m app.db.seeds.run_seeds``
 
-Empty in Sprint 0 — ``SEED_MODULES`` gains entries (e.g. lenders,
-model_versions) as the features that own that data are implemented.
+``SEED_MODULES`` gains entries (e.g. lenders) as the features that own that
+data are implemented.
 """
 
 import logging
@@ -12,11 +12,12 @@ from collections.abc import Callable
 from sqlalchemy.orm import Session
 
 from app.core.logging import configure_logging
+from app.db.seeds import model_versions
 from app.db.session import SessionLocal
 
 logger = logging.getLogger(__name__)
 
-SEED_MODULES: list[Callable[[Session], None]] = []
+SEED_MODULES: list[Callable[[Session], None]] = [model_versions.run]
 
 
 def run_all() -> None:

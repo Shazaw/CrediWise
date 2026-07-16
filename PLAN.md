@@ -3,7 +3,7 @@
 > **Single Source of Truth.** This is the *only* document a coding agent is expected to read before implementing any feature in this repository. It is a hybrid **Product Requirements Document (PRD) + Technical Design Document (TDD)**. If a decision is not written here, it is either (a) not yet decided — raise it and update this file via the process in [§24 Coding Agent Instructions](#24-coding-agent-instructions), or (b) governed by the closest analogous decision already documented. **Do not invent architecture silently.**
 
 - **Product:** CrediWise — *Two-Way Credit Safety Engine, Trust Layer & Open Finance Roadmap*
-- **Document version:** `1.1.1`
+- **Document version:** `1.1.2`
 - **Status:** Approved for Sprint 0
 - **Last updated:** 2026-07-16
 - **Approval note:** Native iOS, the full backend/worker infrastructure, and terminal-agent-driven parallel implementation are confirmed team decisions following mentor review.
@@ -925,6 +925,10 @@ Index: `UNIQUE(email) WHERE deleted_at IS NULL`.
 **`user_identities`** — KYC records (simulated MVP).
 `user_id FK`, `document_type doc_type_enum`, `document_number_hash TEXT` (encrypted/hashed), `verified_name TEXT`, `verification_status verify_status_enum`, `verification_provider TEXT`, `verified_at TIMESTAMPTZ`.
 
+**`refresh_tokens`** — server-side hashed, revocable sessions (§18.1; added in Sprint 1/T1.2, not originally listed here — §24.11).
+`user_id FK`, `token_hash CHAR(64)` (SHA-256 of the opaque refresh token; the raw token is never stored), `expires_at TIMESTAMPTZ`, `revoked_at TIMESTAMPTZ NULL`, `replaced_by_token_id FK→refresh_tokens NULL` (rotation chain — `/auth/refresh` issues a new token and revokes the old one).
+Index: `(user_id)`, `UNIQUE(token_hash) WHERE deleted_at IS NULL`.
+
 **`financial_accounts`** — a user's bank/e-wallet/QRIS/marketplace account.
 `user_id FK`, `account_type account_type_enum` (`BANK, EWALLET, QRIS, MARKETPLACE`), `provider_name TEXT`, `masked_account_number TEXT`, `ownership_status ownership_enum DEFAULT 'DECLARED'`, `connection_type conn_type_enum` (`UPLOAD, API`), `connection_status conn_status_enum`.
 Index: `(user_id, account_type)`.
@@ -1798,15 +1802,15 @@ Follow the sprint plan (§25). Within a feature, build **inside-out**: model/mig
 - [ ] T0.9 Commit ADR-001…012 to `docs/adr/`
 
 ### 26.2 Sprint 1 — Auth & Core Schema
-- [ ] T1.1 `users/user_profiles/user_identities` models + migration
-- [ ] T1.2 argon2id hashing + RS256 JWT (access/refresh) + refresh revocation
-- [ ] T1.3 `/auth/register|login|refresh|logout`, `/me`, `/me/profile`
-- [ ] T1.4 RBAC dependency `require(role, ownership, consent)` (deny-by-default)
-- [ ] T1.5 Redis rate limiting (auth/upload/general tiers)
-- [ ] T1.6 `audit_logs` (append-only) + audit event subscriber
-- [ ] T1.7 `model_versions` + seed initial ACTIVE version + `config_hash`
-- [ ] T1.8 iOS: SessionManager, Keychain TokenStore, AuthInterceptor, auth screens
-- [ ] T1.9 Tests: auth integration, RBAC unit
+- [x] T1.1 `users/user_profiles/user_identities` models + migration
+- [x] T1.2 argon2id hashing + RS256 JWT (access/refresh) + refresh revocation
+- [x] T1.3 `/auth/register|login|refresh|logout`, `/me`, `/me/profile`
+- [x] T1.4 RBAC dependency `require(role, ownership, consent)` (deny-by-default)
+- [x] T1.5 Redis rate limiting (auth/upload/general tiers)
+- [x] T1.6 `audit_logs` (append-only) + audit event subscriber
+- [x] T1.7 `model_versions` + seed initial ACTIVE version + `config_hash`
+- [x] T1.8 iOS: SessionManager, Keychain TokenStore, AuthInterceptor, auth screens
+- [x] T1.9 Tests: auth integration, RBAC unit
 
 ### 26.3 Sprint 2 — Upload & Storage
 - [ ] T2.1 `financial_accounts` + `source_documents` models + migration

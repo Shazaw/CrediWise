@@ -21,11 +21,34 @@
 		A0000000000000000000000C /* DisclaimerFooter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000C /* DisclaimerFooter.swift */; };
 		A0000000000000000000000D /* PositioningStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000D /* PositioningStrings.swift */; };
 		A0000000000000000000000E /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000E /* WelcomeView.swift */; };
-		A0000000000000000000000F /* AuthPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000F /* AuthPlaceholderView.swift */; };
+		A0000000000000000000000F /* AuthenticationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000F /* AuthenticationView.swift */; };
 		A00000000000000000000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000010 /* Assets.xcassets */; };
 		A00000000000000000000011 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000001 /* Localizable.strings */; };
 		A00000000000000000000012 /* AppCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000012 /* AppCoordinatorTests.swift */; };
 		A00000000000000000000013 /* WelcomeFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000013 /* WelcomeFlowUITests.swift */; };
+		A00000000000000000000014 /* AuthenticatedHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000016 /* AuthenticatedHomeView.swift */; };
+		A00000000000000000000015 /* SessionTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000017 /* SessionTokens.swift */; };
+		A00000000000000000000016 /* TokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000018 /* TokenStore.swift */; };
+		A00000000000000000000017 /* TokenStoreError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000019 /* TokenStoreError.swift */; };
+		A00000000000000000000018 /* KeychainTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001A /* KeychainTokenStore.swift */; };
+		A00000000000000000000019 /* VolatileTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001B /* VolatileTokenStore.swift */; };
+		A0000000000000000000001A /* SessionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001C /* SessionState.swift */; };
+		A0000000000000000000001B /* SessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001D /* SessionManager.swift */; };
+		A0000000000000000000001C /* AuthInterceptorError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001E /* AuthInterceptorError.swift */; };
+		A0000000000000000000001D /* AuthInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001F /* AuthInterceptor.swift */; };
+		A0000000000000000000001E /* AuthenticationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000020 /* AuthenticationRepository.swift */; };
+		A0000000000000000000001F /* AuthenticationRepositoryError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000021 /* AuthenticationRepositoryError.swift */; };
+		A00000000000000000000020 /* MockAuthenticationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000022 /* MockAuthenticationRepository.swift */; };
+		A00000000000000000000021 /* AuthenticationMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000023 /* AuthenticationMode.swift */; };
+		A00000000000000000000022 /* AuthenticationOutcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000024 /* AuthenticationOutcome.swift */; };
+		A00000000000000000000023 /* AuthenticationViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000025 /* AuthenticationViewState.swift */; };
+		A00000000000000000000024 /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000026 /* AuthenticationViewModel.swift */; };
+		A00000000000000000000025 /* SessionManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000027 /* SessionManagerTests.swift */; };
+		A00000000000000000000026 /* AuthInterceptorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000028 /* AuthInterceptorTests.swift */; };
+		A00000000000000000000027 /* AuthenticationViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000029 /* AuthenticationViewModelTests.swift */; };
+		A00000000000000000000028 /* UnavailableAuthenticationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002A /* UnavailableAuthenticationRepository.swift */; };
+		A00000000000000000000029 /* APIAuthenticationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002B /* APIAuthenticationRepository.swift */; };
+		A0000000000000000000002A /* APIAuthenticationRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002C /* APIAuthenticationRepositoryTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,12 +83,35 @@
 		B0000000000000000000000C /* DisclaimerFooter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisclaimerFooter.swift; sourceTree = "<group>"; };
 		B0000000000000000000000D /* PositioningStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositioningStrings.swift; sourceTree = "<group>"; };
 		B0000000000000000000000E /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
-		B0000000000000000000000F /* AuthPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthPlaceholderView.swift; sourceTree = "<group>"; };
+		B0000000000000000000000F /* AuthenticationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationView.swift; sourceTree = "<group>"; };
 		B00000000000000000000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B00000000000000000000012 /* AppCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinatorTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000013 /* WelcomeFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeFlowUITests.swift; sourceTree = "<group>"; };
 		B00000000000000000000014 /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Localizable.strings; sourceTree = "<group>"; };
 		B00000000000000000000015 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B00000000000000000000016 /* AuthenticatedHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticatedHomeView.swift; sourceTree = "<group>"; };
+		B00000000000000000000017 /* SessionTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionTokens.swift; sourceTree = "<group>"; };
+		B00000000000000000000018 /* TokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenStore.swift; sourceTree = "<group>"; };
+		B00000000000000000000019 /* TokenStoreError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenStoreError.swift; sourceTree = "<group>"; };
+		B0000000000000000000001A /* KeychainTokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTokenStore.swift; sourceTree = "<group>"; };
+		B0000000000000000000001B /* VolatileTokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolatileTokenStore.swift; sourceTree = "<group>"; };
+		B0000000000000000000001C /* SessionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionState.swift; sourceTree = "<group>"; };
+		B0000000000000000000001D /* SessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManager.swift; sourceTree = "<group>"; };
+		B0000000000000000000001E /* AuthInterceptorError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthInterceptorError.swift; sourceTree = "<group>"; };
+		B0000000000000000000001F /* AuthInterceptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthInterceptor.swift; sourceTree = "<group>"; };
+		B00000000000000000000020 /* AuthenticationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationRepository.swift; sourceTree = "<group>"; };
+		B00000000000000000000021 /* AuthenticationRepositoryError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationRepositoryError.swift; sourceTree = "<group>"; };
+		B00000000000000000000022 /* MockAuthenticationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAuthenticationRepository.swift; sourceTree = "<group>"; };
+		B00000000000000000000023 /* AuthenticationMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationMode.swift; sourceTree = "<group>"; };
+		B00000000000000000000024 /* AuthenticationOutcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationOutcome.swift; sourceTree = "<group>"; };
+		B00000000000000000000025 /* AuthenticationViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationViewState.swift; sourceTree = "<group>"; };
+		B00000000000000000000026 /* AuthenticationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationViewModel.swift; sourceTree = "<group>"; };
+		B00000000000000000000027 /* SessionManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManagerTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000028 /* AuthInterceptorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthInterceptorTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000029 /* AuthenticationViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationViewModelTests.swift; sourceTree = "<group>"; };
+		B0000000000000000000002A /* UnavailableAuthenticationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnavailableAuthenticationRepository.swift; sourceTree = "<group>"; };
+		B0000000000000000000002B /* APIAuthenticationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIAuthenticationRepository.swift; sourceTree = "<group>"; };
+		B0000000000000000000002C /* APIAuthenticationRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIAuthenticationRepositoryTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000100 /* CrediWise.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrediWise.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B00000000000000000000101 /* CrediWiseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrediWiseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B00000000000000000000102 /* CrediWiseUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrediWiseUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -114,7 +160,9 @@
 		D00000000000000000000004 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				D00000000000000000000013 /* Auth */,
 				D00000000000000000000005 /* DesignSystem */,
+				D00000000000000000000014 /* Networking */,
 				D00000000000000000000009 /* Utils */,
 			);
 			path = Core;
@@ -164,14 +212,19 @@
 		};
 		D0000000000000000000000B /* Onboarding */ = {
 			isa = PBXGroup;
-			children = (D0000000000000000000000C /* Views */);
+			children = (
+				D00000000000000000000015 /* Repositories */,
+				D00000000000000000000016 /* ViewModels */,
+				D0000000000000000000000C /* Views */,
+			);
 			path = Onboarding;
 			sourceTree = "<group>";
 		};
 		D0000000000000000000000C /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				B0000000000000000000000F /* AuthPlaceholderView.swift */,
+				B00000000000000000000016 /* AuthenticatedHomeView.swift */,
+				B0000000000000000000000F /* AuthenticationView.swift */,
 				B0000000000000000000000E /* WelcomeView.swift */,
 			);
 			path = Views;
@@ -188,13 +241,21 @@
 		};
 		D0000000000000000000000E /* CrediWiseTests */ = {
 			isa = PBXGroup;
-			children = (D0000000000000000000000F /* Features */);
+			children = (
+				D00000000000000000000017 /* Auth */,
+				D00000000000000000000018 /* Networking */,
+				D0000000000000000000000F /* Features */,
+			);
 			path = CrediWiseTests;
 			sourceTree = "<group>";
 		};
 		D0000000000000000000000F /* Features */ = {
 			isa = PBXGroup;
-			children = (B00000000000000000000012 /* AppCoordinatorTests.swift */);
+			children = (
+				B0000000000000000000002C /* APIAuthenticationRepositoryTests.swift */,
+				B00000000000000000000012 /* AppCoordinatorTests.swift */,
+				B00000000000000000000029 /* AuthenticationViewModelTests.swift */,
+			);
 			path = Features/Onboarding;
 			sourceTree = "<group>";
 		};
@@ -218,6 +279,64 @@
 				B00000000000000000000102 /* CrediWiseUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000013 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				B0000000000000000000001A /* KeychainTokenStore.swift */,
+				B0000000000000000000001D /* SessionManager.swift */,
+				B0000000000000000000001C /* SessionState.swift */,
+				B00000000000000000000017 /* SessionTokens.swift */,
+				B00000000000000000000018 /* TokenStore.swift */,
+				B00000000000000000000019 /* TokenStoreError.swift */,
+				B0000000000000000000001B /* VolatileTokenStore.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000014 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				B0000000000000000000001F /* AuthInterceptor.swift */,
+				B0000000000000000000001E /* AuthInterceptorError.swift */,
+			);
+			path = Networking;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000015 /* Repositories */ = {
+			isa = PBXGroup;
+			children = (
+				B0000000000000000000002B /* APIAuthenticationRepository.swift */,
+				B00000000000000000000020 /* AuthenticationRepository.swift */,
+				B00000000000000000000021 /* AuthenticationRepositoryError.swift */,
+				B00000000000000000000022 /* MockAuthenticationRepository.swift */,
+				B0000000000000000000002A /* UnavailableAuthenticationRepository.swift */,
+			);
+			path = Repositories;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000016 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000023 /* AuthenticationMode.swift */,
+				B00000000000000000000024 /* AuthenticationOutcome.swift */,
+				B00000000000000000000025 /* AuthenticationViewState.swift */,
+				B00000000000000000000026 /* AuthenticationViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000017 /* Auth */ = {
+			isa = PBXGroup;
+			children = (B00000000000000000000027 /* SessionManagerTests.swift */);
+			path = Core/Auth;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000018 /* Networking */ = {
+			isa = PBXGroup;
+			children = (B00000000000000000000028 /* AuthInterceptorTests.swift */);
+			path = Core/Networking;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -345,7 +464,17 @@
 				A00000000000000000000003 /* AppCoordinator.swift in Sources */,
 				A00000000000000000000004 /* AppRoute.swift in Sources */,
 				A00000000000000000000005 /* AppRootView.swift in Sources */,
-				A0000000000000000000000F /* AuthPlaceholderView.swift in Sources */,
+				A00000000000000000000014 /* AuthenticatedHomeView.swift in Sources */,
+				A0000000000000000000001D /* AuthInterceptor.swift in Sources */,
+				A0000000000000000000001C /* AuthInterceptorError.swift in Sources */,
+				A0000000000000000000000F /* AuthenticationView.swift in Sources */,
+				A00000000000000000000029 /* APIAuthenticationRepository.swift in Sources */,
+				A00000000000000000000021 /* AuthenticationMode.swift in Sources */,
+				A00000000000000000000022 /* AuthenticationOutcome.swift in Sources */,
+				A0000000000000000000001E /* AuthenticationRepository.swift in Sources */,
+				A0000000000000000000001F /* AuthenticationRepositoryError.swift in Sources */,
+				A00000000000000000000024 /* AuthenticationViewModel.swift in Sources */,
+				A00000000000000000000023 /* AuthenticationViewState.swift in Sources */,
 				A0000000000000000000000A /* CTAButton.swift in Sources */,
 				A00000000000000000000006 /* CrediWiseColors.swift in Sources */,
 				A00000000000000000000001 /* CrediWiseApp.swift in Sources */,
@@ -353,13 +482,22 @@
 				A0000000000000000000000D /* PositioningStrings.swift in Sources */,
 				A0000000000000000000000B /* PrimaryButton.swift in Sources */,
 				A00000000000000000000008 /* RadiusTokens.swift in Sources */,
+				A0000000000000000000001B /* SessionManager.swift in Sources */,
+				A0000000000000000000001A /* SessionState.swift in Sources */,
+				A00000000000000000000015 /* SessionTokens.swift in Sources */,
 				A00000000000000000000007 /* SpacingTokens.swift in Sources */,
+				A00000000000000000000018 /* KeychainTokenStore.swift in Sources */,
+				A00000000000000000000020 /* MockAuthenticationRepository.swift in Sources */,
+				A00000000000000000000016 /* TokenStore.swift in Sources */,
+				A00000000000000000000017 /* TokenStoreError.swift in Sources */,
 				A00000000000000000000009 /* TypographyTokens.swift in Sources */,
+				A00000000000000000000028 /* UnavailableAuthenticationRepository.swift in Sources */,
+				A00000000000000000000019 /* VolatileTokenStore.swift in Sources */,
 				A0000000000000000000000E /* WelcomeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F00000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000012 /* AppCoordinatorTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+		F00000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A0000000000000000000002A /* APIAuthenticationRepositoryTests.swift in Sources */, A00000000000000000000012 /* AppCoordinatorTests.swift in Sources */, A00000000000000000000027 /* AuthenticationViewModelTests.swift in Sources */, A00000000000000000000026 /* AuthInterceptorTests.swift in Sources */, A00000000000000000000025 /* SessionManagerTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
 		F00000000000000000000007 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000013 /* WelcomeFlowUITests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
@@ -383,7 +521,7 @@
 /* Begin XCBuildConfiguration section */
 		H00000000000000000000001 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; DEBUG_INFORMATION_FORMAT = dwarf; ENABLE_TESTABILITY = YES; GCC_C_LANGUAGE_STANDARD = gnu17; IPHONEOS_DEPLOYMENT_TARGET = 16.0; ONLY_ACTIVE_ARCH = YES; SDKROOT = iphoneos; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; }; name = Debug; };
 		H00000000000000000000002 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; ENABLE_NS_ASSERTIONS = NO; GCC_C_LANGUAGE_STANDARD = gnu17; IPHONEOS_DEPLOYMENT_TARGET = 16.0; SDKROOT = iphoneos; SWIFT_COMPILATION_MODE = wholemodule; }; name = Release; };
-		H00000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = CrediWise; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait; IPHONEOS_DEPLOYMENT_TARGET = 16.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Debug; };
+		H00000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = CrediWise; INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsLocalNetworking = YES; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait; IPHONEOS_DEPLOYMENT_TARGET = 16.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Debug; };
 		H00000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = CrediWise; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait; IPHONEOS_DEPLOYMENT_TARGET = 16.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
 		H00000000000000000000005 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 16.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app.tests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CrediWise.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CrediWise"; }; name = Debug; };
 		H00000000000000000000006 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 16.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app.tests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CrediWise.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CrediWise"; }; name = Release; };

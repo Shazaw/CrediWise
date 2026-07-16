@@ -68,6 +68,8 @@ jobs:
       - run: uv python install 3.12
       - run: uv venv --python 3.12 .venv
       - run: uv pip install -e ".[dev]" --python .venv/bin/python
+      - name: Generate ephemeral CI JWT keys
+        run: .venv/bin/python scripts/generate_dev_jwt_keys.py >> "$GITHUB_ENV"
       - run: .venv/bin/pytest
       - name: migrations up / down / up (PLAN §11.4)
         run: |

@@ -34,4 +34,22 @@ final class AppCoordinatorTests: XCTestCase {
 
         XCTAssertTrue(coordinator.path.isEmpty)
     }
+
+    func testCompletingRegistrationRoutesToSignIn() {
+        let coordinator = AppCoordinator()
+        coordinator.showRegistration()
+
+        coordinator.completeRegistration()
+
+        XCTAssertEqual(coordinator.path, [.signIn])
+    }
+
+    func testSwitchesAuthenticationModeWithoutStackingRoutes() {
+        let coordinator = AppCoordinator()
+        coordinator.showRegistration()
+
+        coordinator.switchAuthenticationMode(from: .registration)
+
+        XCTAssertEqual(coordinator.path, [.signIn])
+    }
 }

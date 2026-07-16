@@ -17,6 +17,9 @@ dependencies = [
   "celery>=5.4.0,<6",
   "redis>=5.1.1,<6",
   "boto3>=1.35.0,<2",
+  "passlib[argon2]>=1.7.4,<2",
+  "pyjwt[crypto]>=2.9.0,<3",
+  "email-validator>=2.2.0,<3",
 ]
 
 [project.optional-dependencies]
@@ -55,6 +58,11 @@ ignore = ["E501"]
 [tool.ruff.lint.isort]
 known-first-party = ["app"]
 
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's DI pattern requires `Depends(...)` as an argument default
+# (PLAN §10.2); this is the documented exception, not a suppressed bug.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Header", "fastapi.Query", "fastapi.Path"]
+
 [tool.mypy]
 python_version = "3.12"
 warn_return_any = true
@@ -81,7 +89,7 @@ module = "tests.*"
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
-module = ["celery.*", "kombu.*"]
+module = ["celery.*", "kombu.*", "passlib.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

@@ -6,7 +6,7 @@ on:
       - "ios/**"
       - ".github/workflows/frontend-ci.yml"
   push:
-    branches: [main, "integration/**"]
+    branches: [main, "integration/**", "frontend/**"]
     paths:
       - "ios/**"
       - ".github/workflows/frontend-ci.yml"
@@ -47,7 +47,13 @@ jobs:
             echo "::error title=iOS simulator::No available iPhone simulator found"
             exit 1
           fi
+          echo "IOS_SIMULATOR_ID=$simulator_id" >> "$GITHUB_ENV"
           echo "IOS_SIMULATOR_DESTINATION=platform=iOS Simulator,id=$simulator_id" >> "$GITHUB_ENV"
+
+      - name: Boot selected iPhone simulator
+        run: |
+          xcrun simctl boot "$IOS_SIMULATOR_ID" || true
+          xcrun simctl bootstatus "$IOS_SIMULATOR_ID" -b
 
       - name: Build for testing
         run: |
@@ -71,25 +77,46 @@ jobs:
         run: |
           set +e
           set -o pipefail
-          xcodebuild \
-            -project ios/CrediWise.xcodeproj \
-            -scheme CrediWise \
-            -destination "$IOS_SIMULATOR_DESTINATION" \
-            -resultBundlePath /tmp/CrediWiseTests.xcresult \
-            CODE_SIGNING_ALLOWED=NO \
-            test-without-building 2>&1 | tee /tmp/CrediWiseTests.log
-          status=${PIPESTATUS[0]}
-          if [ "$status" -ne 0 ]; then
-            while IFS= read -r line; do
-              echo "::error title=Xcode tests::$line"
-            done < <(grep -E 'error:|failed|Failing tests:|Test Case.*failed|Unable to find' /tmp/CrediWiseTests.log | tail -20)
+
+          run_tests() {
+            local result_path="$1"
+            local log_path="$2"
+            xcodebuild \
+              -project ios/CrediWise.xcodeproj \
+              -scheme CrediWise \
+              -destination "$IOS_SIMULATOR_DESTINATION" \
+              -resultBundlePath "$result_path" \
+              CODE_SIGNING_ALLOWED=NO \
+              test-without-building 2>&1 | tee "$log_path"
+            return "${PIPESTATUS[0]}"
+          }
+
+          test_log=/tmp/CrediWiseTests.log
+          if run_tests /tmp/CrediWiseTests.xcresult "$test_log"; then
+            exit 0
           fi
-          exit "$status"
+
+          if grep -Eq 'XCTDaemonErrorDomain Code=19|kAXErrorCannotComplete' "$test_log"; then
+            echo "::warning title=iOS simulator::Retrying XCTest after accessibility daemon initialization failure"
+            xcrun simctl shutdown "$IOS_SIMULATOR_ID" || true
+            xcrun simctl erase "$IOS_SIMULATOR_ID"
+            xcrun simctl boot "$IOS_SIMULATOR_ID"
+            xcrun simctl bootstatus "$IOS_SIMULATOR_ID" -b
+            test_log=/tmp/CrediWiseTestsRetry.log
+            if run_tests /tmp/CrediWiseTestsRetry.xcresult "$test_log"; then
+              exit 0
+            fi
+          fi
+
+          while IFS= read -r line; do
+            echo "::error title=Xcode tests::$line"
+          done < <(grep -E 'error:|failed|Failing tests:|Test Case.*failed|Unable to find' "$test_log" | tail -20)
+          exit 1
 
       - name: Upload Xcode result bundle
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: CrediWiseTests-${{ github.run_id }}
-          path: /tmp/CrediWiseTests.xcresult
+          path: /tmp/CrediWiseTests*.xcresult
           if-no-files-found: ignore
