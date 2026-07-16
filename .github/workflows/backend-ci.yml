@@ -1,0 +1,110 @@
+name: backend-ci
+
+on:
+  pull_request:
+    paths:
+      - "backend/**"
+      - "infra/docker-compose.yml"
+      - ".github/workflows/backend-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "infra/docker-compose.yml"
+      - ".github/workflows/backend-ci.yml"
+
+defaults:
+  run:
+    working-directory: backend
+
+env:
+  # Deterministic, non-secret values — this job never touches real
+  # infrastructure or real financial data (CLAUDE.md §15.1).
+  DB_HOST: localhost
+  DB_PORT: "5432"
+  DB_NAME: crediwise_ci
+  DB_USER: crediwise
+  DB_PASSWORD: crediwise_ci_only
+  REDIS_HOST: localhost
+  REDIS_PORT: "6379"
+  STORAGE_ENDPOINT_URL: http://localhost:9000
+  STORAGE_BUCKET: crediwise-ci
+  STORAGE_ACCESS_KEY: crediwise
+  STORAGE_SECRET_KEY: crediwise_ci_only
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+      - run: uv python install 3.12
+      - run: uv venv --python 3.12 .venv
+      - run: uv pip install -e ".[dev]" --python .venv/bin/python
+      - run: .venv/bin/ruff check app tests
+      - run: .venv/bin/black --check app tests
+      - run: .venv/bin/mypy app tests
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: crediwise
+          POSTGRES_PASSWORD: crediwise_ci_only
+          POSTGRES_DB: crediwise_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U crediwise -d crediwise_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+      - run: uv python install 3.12
+      - run: uv venv --python 3.12 .venv
+      - run: uv pip install -e ".[dev]" --python .venv/bin/python
+      - run: .venv/bin/pytest
+      - name: migrations up / down / up (PLAN §11.4)
+        run: |
+          .venv/bin/alembic upgrade head
+          .venv/bin/alembic downgrade -1
+          .venv/bin/alembic upgrade head
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+      - run: uv python install 3.12
+      - run: uv venv --python 3.12 .venv
+      - run: uv pip install -e ".[dev]" --python .venv/bin/python
+      - run: .venv/bin/pip-audit --strict --skip-editable
+      - name: secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: build api image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          target: api
+          push: false
+      - name: build worker image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          target: worker
+          push: false
