@@ -100,6 +100,40 @@
             ],
             "title": "Note"
           },
+          "raw_extracted_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw Extracted Value"
+          },
+          "system_normalized_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Normalized Value"
+          },
           "transaction_id": {
             "anyOf": [
               {
@@ -111,6 +145,23 @@
               }
             ],
             "title": "Transaction Id"
+          },
+          "user_proposed_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Proposed Value"
           }
         },
         "required": [
@@ -192,6 +243,30 @@
           "source_type": {
             "$ref": "#/components/schemas/SourceTypeEnum"
           },
+          "statement_end_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statement End Date"
+          },
+          "statement_start_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statement Start Date"
+          },
           "status": {
             "$ref": "#/components/schemas/DocStatusEnum"
           },
@@ -215,7 +290,9 @@
           "mime_type",
           "source_type",
           "page_count",
-          "uploaded_at"
+          "uploaded_at",
+          "statement_start_date",
+          "statement_end_date"
         ],
         "title": "DocumentStatusResponse",
         "type": "object"
@@ -250,6 +327,17 @@
       },
       "DocumentVerificationResponse": {
         "properties": {
+          "ai_signal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Signal"
+          },
           "band": {
             "$ref": "#/components/schemas/BandEnum"
           },
@@ -276,6 +364,11 @@
           "metadata_score": {
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Metadata Score",
+            "type": "string"
+          },
+          "model_version_id": {
+            "format": "uuid",
+            "title": "Model Version Id",
             "type": "string"
           },
           "ocr_score": {
@@ -335,6 +428,8 @@
           "ownership_score",
           "reason_codes",
           "recommendation",
+          "model_version_id",
+          "ai_signal",
           "verified_at"
         ],
         "title": "DocumentVerificationResponse",
@@ -683,6 +778,10 @@
             "title": "Extraction Confidence",
             "type": "string"
           },
+          "is_duplicate": {
+            "title": "Is Duplicate",
+            "type": "boolean"
+          },
           "is_internal_transfer": {
             "title": "Is Internal Transfer",
             "type": "boolean"
@@ -690,6 +789,10 @@
           "is_recurring": {
             "title": "Is Recurring",
             "type": "boolean"
+          },
+          "normalized_description": {
+            "title": "Normalized Description",
+            "type": "string"
           },
           "raw_description": {
             "title": "Raw Description",
@@ -729,10 +832,12 @@
           "direction",
           "balance_after",
           "raw_description",
+          "normalized_description",
           "category",
           "transaction_context",
           "is_internal_transfer",
           "is_recurring",
+          "is_duplicate",
           "extraction_confidence"
         ],
         "title": "TransactionResponse",

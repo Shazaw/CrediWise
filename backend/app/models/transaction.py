@@ -67,6 +67,7 @@ class Transaction(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     counterparty: Mapped[str | None] = mapped_column(Text(), nullable=True)
     is_internal_transfer: Mapped[bool] = mapped_column(Boolean(), nullable=False, default=False)
     is_recurring: Mapped[bool] = mapped_column(Boolean(), nullable=False, default=False)
+    is_duplicate: Mapped[bool] = mapped_column(Boolean(), nullable=False, default=False)
     category_confidence: Mapped[Decimal | None] = mapped_column(Numeric(6, 4), nullable=True)
     extraction_confidence: Mapped[Decimal] = mapped_column(Numeric(6, 4), nullable=False)
     row_hash: Mapped[str] = mapped_column(CHAR(64), nullable=False)

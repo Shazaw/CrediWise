@@ -22,6 +22,13 @@ class TransactionRepository:
         self._db.flush()
         return transactions
 
+    def get_by_id(self, transaction_id: uuid.UUID) -> Transaction | None:
+        stmt = select(Transaction).where(
+            Transaction.id == transaction_id,
+            Transaction.deleted_at.is_(None),
+        )
+        return self._db.execute(stmt).scalar_one_or_none()
+
     def list_for_document(
         self,
         source_document_id: uuid.UUID,

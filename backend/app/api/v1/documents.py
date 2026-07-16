@@ -52,6 +52,8 @@ def _to_status_response(document: SourceDocument) -> DocumentStatusResponse:
         source_type=document.source_type,
         page_count=document.page_count,
         uploaded_at=document.uploaded_at,
+        statement_start_date=document.statement_start_date,
+        statement_end_date=document.statement_end_date,
     )
 
 
@@ -141,6 +143,8 @@ def _to_verification_response(
         ownership_score=result.ownership_score,
         reason_codes=reason_codes,
         recommendation=flags.get("recommendation"),
+        model_version_id=result.verification_model_version_id,
+        ai_signal=flags.get("ai_signal"),
         verified_at=result.verified_at,
     )
 
@@ -154,10 +158,12 @@ def _to_transaction_response(transaction: Transaction) -> TransactionResponse:
         direction=transaction.direction,
         balance_after=transaction.balance_after,
         raw_description=transaction.raw_description,
+        normalized_description=transaction.normalized_merchant or transaction.raw_description,
         category=transaction.category,
         transaction_context=transaction.transaction_context,
         is_internal_transfer=transaction.is_internal_transfer,
         is_recurring=transaction.is_recurring,
+        is_duplicate=transaction.is_duplicate,
         extraction_confidence=transaction.extraction_confidence,
     )
 
@@ -210,7 +216,12 @@ def review_document(
 ) -> ReviewResponse:
     corrections = [
         CorrectionInput(
-            transaction_id=c.transaction_id, correction_type=c.correction_type.value, note=c.note
+            transaction_id=c.transaction_id,
+            correction_type=c.correction_type.value,
+            note=c.note,
+            raw_extracted_value=c.raw_extracted_value,
+            system_normalized_value=c.system_normalized_value,
+            user_proposed_value=c.user_proposed_value,
         )
         for c in body.corrections
     ]

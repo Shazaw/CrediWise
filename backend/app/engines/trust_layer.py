@@ -16,7 +16,12 @@ from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
 
 from app.engines.config import model_config as cfg
-from app.engines.extraction.schema import ExtractedRow, PdfForensics, RowDirection
+from app.engines.extraction.schema import (
+    ExtractedRow,
+    PdfForensics,
+    RowDirection,
+    duplicate_row_flags,
+)
 from app.models.enums import BandEnum, SourceTypeEnum
 
 _RECOMMENDATION_COPY = (
@@ -377,15 +382,7 @@ def _score_visual(
 
 
 def _count_duplicate_rows(rows: list[ExtractedRow]) -> int:
-    seen: set[tuple[date, int, str, RowDirection]] = set()
-    duplicates = 0
-    for row in rows:
-        key = (row.transaction_date, row.amount, row.raw_description, row.direction)
-        if key in seen:
-            duplicates += 1
-        else:
-            seen.add(key)
-    return duplicates
+    return sum(duplicate_row_flags(rows))
 
 
 def _score_completeness(

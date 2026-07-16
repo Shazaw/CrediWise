@@ -63,3 +63,14 @@ class ExtractionResult:
     detected_account_holder_name: str | None = None
     pdf_forensics: PdfForensics | None = None
     reason_code: str | None = None
+
+
+def duplicate_row_flags(rows: list[ExtractedRow]) -> list[bool]:
+    """Mark each repeated transaction identity after its first occurrence."""
+    seen: set[tuple[date, int, str, RowDirection]] = set()
+    flags: list[bool] = []
+    for row in rows:
+        key = (row.transaction_date, row.amount, row.raw_description, row.direction)
+        flags.append(key in seen)
+        seen.add(key)
+    return flags

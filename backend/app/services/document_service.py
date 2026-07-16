@@ -59,6 +59,9 @@ class CorrectionInput:
     transaction_id: uuid.UUID | None
     correction_type: str
     note: str | None
+    raw_extracted_value: str | int | bool | None
+    system_normalized_value: str | int | bool | None
+    user_proposed_value: str | int | bool | None
 
 
 _UNSAFE_FILENAME_CHARS = re.compile(r"[\x00-\x1f/\\]")
@@ -187,13 +190,26 @@ class DocumentService:
                 details={"status": document.status.value},
             )
 
+        transactions = TransactionRepository(self._db)
+        for correction in corrections:
+            if correction.transaction_id is None:
+                continue
+            transaction = transactions.get_by_id(correction.transaction_id)
+            if transaction is None or transaction.source_document_id != document.id:
+                raise NotFoundError("Transaction not found")
+
         rows = [
             Correction(
                 id=uuid.uuid4(),
                 user_id=user.id,
                 transaction_id=correction.transaction_id,
                 correction_type=correction.correction_type,
-                payload_json={"note": correction.note} if correction.note else {},
+                payload_json={
+                    "raw_extracted_value": correction.raw_extracted_value,
+                    "system_normalized_value": correction.system_normalized_value,
+                    "user_proposed_value": correction.user_proposed_value,
+                    **({"note": correction.note} if correction.note else {}),
+                },
             )
             for correction in corrections
         ]

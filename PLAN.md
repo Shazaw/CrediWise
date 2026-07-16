@@ -3,7 +3,7 @@
 > **Single Source of Truth.** This is the *only* document a coding agent is expected to read before implementing any feature in this repository. It is a hybrid **Product Requirements Document (PRD) + Technical Design Document (TDD)**. If a decision is not written here, it is either (a) not yet decided — raise it and update this file via the process in [§24 Coding Agent Instructions](#24-coding-agent-instructions), or (b) governed by the closest analogous decision already documented. **Do not invent architecture silently.**
 
 - **Product:** CrediWise — *Two-Way Credit Safety Engine, Trust Layer & Open Finance Roadmap*
-- **Document version:** `1.3.0`
+- **Document version:** `1.3.1`
 - **Status:** Approved for Sprint 0
 - **Last updated:** 2026-07-17
 - **Approval note:** Native iOS, the full backend/worker infrastructure, and terminal-agent-driven parallel implementation are confirmed team decisions following mentor review.
@@ -948,9 +948,9 @@ Index: `UNIQUE(user_id, file_hash) WHERE deleted_at IS NULL` (dedup); `(user_id,
 `flags_json` holds `{"reason_codes": [{"code", "description"}, ...], "recommendation": str | null, "ai_signal": "DISABLED" | "UNAVAILABLE" | "INCLUDED"}` (Sprint 3 gap-fill, §24.11 — PLAN names `flags_json` as a JSONB payload but not its exact shape).
 
 **`transactions`** — normalized transaction rows. Implemented Sprint 3/T3.1-T3.2.
-`user_id FK`, `financial_account_id FK`, `source_document_id FK NULL`, `processing_run_id FK`, `transaction_date DATE`, `transaction_time TIME NULL`, `amount BIGINT`, `direction dir_enum` (`CREDIT, DEBIT`), `currency CHAR(3) DEFAULT 'IDR'`, `balance_after BIGINT NULL`, `raw_description TEXT`, `normalized_merchant TEXT`, `category category_enum`, `subcategory TEXT`, `transaction_context transaction_context_enum` (`PERSONAL, BUSINESS, MIXED, UNKNOWN`), `counterparty TEXT`, `is_internal_transfer BOOL DEFAULT false`, `is_recurring BOOL DEFAULT false`, `category_confidence NUMERIC(6,4)`, `extraction_confidence NUMERIC(6,4)`, `row_hash CHAR(64)` (for dedup).
+`user_id FK`, `financial_account_id FK`, `source_document_id FK NULL`, `processing_run_id FK`, `transaction_date DATE`, `transaction_time TIME NULL`, `amount BIGINT`, `direction dir_enum` (`CREDIT, DEBIT`), `currency CHAR(3) DEFAULT 'IDR'`, `balance_after BIGINT NULL`, `raw_description TEXT`, `normalized_merchant TEXT`, `category category_enum`, `subcategory TEXT`, `transaction_context transaction_context_enum` (`PERSONAL, BUSINESS, MIXED, UNKNOWN`), `counterparty TEXT`, `is_internal_transfer BOOL DEFAULT false`, `is_recurring BOOL DEFAULT false`, `is_duplicate BOOL DEFAULT false`, `category_confidence NUMERIC(6,4)`, `extraction_confidence NUMERIC(6,4)`, `row_hash CHAR(64)` (for dedup).
 Index: `(user_id, transaction_date)`, `(financial_account_id, transaction_date)`, `(processing_run_id)`, `UNIQUE(processing_run_id, row_hash) WHERE deleted_at IS NULL`. Transactions are source facts and are linked to assessments through `assessment_transactions`; they never belong to only one assessment.
-`financial_account_id` is kept `NOT NULL` per this section (ADR-014): the extraction service auto-provisions a `financial_accounts` row from the document's `source_type` when none exists rather than relaxing this constraint. `category`/`transaction_context` default `UNKNOWN` and `is_internal_transfer`/`is_recurring` default `false` at extraction time (Sprint 3) — real categorization is `NormalizationEngine`'s job (FR-6, Sprint 4); refining these derived fields in place does not violate raw-evidence immutability (§6.4) since raw evidence lives in the source document + `document_processing_runs`, not here. A `CHECK (amount > 0)` constraint means a statement's zero-amount opening-balance/anchor row is never persisted as a `transactions` row (it is still used, unfiltered, for Trust-Layer balance reconstruction — see `app/services/verification_service.py`).
+`financial_account_id` is kept `NOT NULL` per this section (ADR-014): the extraction service auto-provisions a `financial_accounts` row from the document's `source_type` when none exists rather than relaxing this constraint. `category`/`transaction_context` default `UNKNOWN` and `is_internal_transfer`/`is_recurring` default `false` at extraction time (Sprint 3) — real categorization is `NormalizationEngine`'s job (FR-6, Sprint 4); refining these derived fields in place does not violate raw-evidence immutability (§6.4) since raw evidence lives in the source document + `document_processing_runs`, not here. `is_duplicate` is stamped deterministically at extraction using the same date/amount/raw-description/direction identity as the Trust Layer. A `CHECK (amount > 0)` constraint means a statement's zero-amount opening-balance/anchor row is never persisted as a `transactions` row (it is still used, unfiltered, for Trust-Layer balance reconstruction — see `app/services/verification_service.py`).
 
 **`document_processing_runs`** — append-only parser/OCR execution. Implemented Sprint 3/T3.1-T3.2.
 `source_document_id FK`, `parser_name TEXT`, `parser_version TEXT`, `format_name TEXT`, `format_detection_confidence NUMERIC(6,4)`, `status processing_status_enum`, `input_hash CHAR(64)`, `output_hash CHAR(64)`, `started_at`, `completed_at`, `supersedes_run_id FK NULL`.
@@ -1089,6 +1089,13 @@ Constraint: only one `ACTIVE` per `model_name` (partial unique index).
 | GET | `/audit/user-access` | user | USER | who accessed my data | 200 |
 | GET | `/lender/assessments/{id}` | user | LENDER | consent-scoped package | 200 |
 | GET | `/health` / `/ready` | public | — | liveness/readiness | 200 |
+
+**Cycle 4 additive document contract:** status responses expose statement start/end dates;
+transaction rows expose raw and normalized descriptions plus the current duplicate signal;
+verification responses expose the exact model-version reference and separately attributable
+local-AI signal; review corrections carry bounded scalar `raw_extracted_value`,
+`system_normalized_value`, and `user_proposed_value` fields. These fields let clients render
+and submit FR-5/FR-14 evidence without reproducing Trust Layer or normalization rules.
 
 ### 12.3 Representative Payloads
 

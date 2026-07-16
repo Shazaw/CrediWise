@@ -21,7 +21,7 @@ from datetime import UTC, datetime
 from sqlalchemy.orm import Session
 
 from app.engines.extraction import ExtractionResult, ExtractionStatus, extract
-from app.engines.extraction.schema import ExtractedRow
+from app.engines.extraction.schema import ExtractedRow, duplicate_row_flags
 from app.integrations.ocr import get_ocr_port
 from app.integrations.storage import get_storage_port
 from app.models.document_processing_run import DocumentProcessingRun
@@ -196,8 +196,9 @@ def _persist_transactions(
             raw_description=row.raw_description,
             extraction_confidence=row.extraction_confidence,
             row_hash=_row_hash(row),
+            is_duplicate=is_duplicate,
         )
-        for row in result.rows
+        for row, is_duplicate in zip(result.rows, duplicate_row_flags(result.rows), strict=True)
         if row.amount > 0
     ]
     if rows:

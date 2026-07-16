@@ -138,12 +138,16 @@ def test_clean_bca_pdf_upload_progresses_to_review_pending(authed_client: TestCl
     )
     assert verification.status_code == 200
     assert verification.json()["band"] == "HIGH"
+    assert verification.json()["model_version_id"]
+    assert verification.json()["ai_signal"] == "DISABLED"
 
     transactions = authed_client.get(
         f"/api/v1/documents/{body['document_id']}/transactions", headers=headers
     )
     assert transactions.status_code == 200
     assert len(transactions.json()["items"]) == 4  # excludes the Rp0 opening-balance row
+    assert transactions.json()["items"][0]["normalized_description"]
+    assert transactions.json()["items"][0]["is_duplicate"] is False
 
 
 def test_single_month_pdf_without_profile_name_scores_medium(authed_client: TestClient) -> None:

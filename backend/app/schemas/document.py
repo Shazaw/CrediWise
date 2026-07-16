@@ -34,6 +34,8 @@ class DocumentStatusResponse(BaseModel):
     source_type: SourceTypeEnum
     page_count: int | None
     uploaded_at: datetime | None
+    statement_start_date: date | None
+    statement_end_date: date | None
 
 
 class ReasonCodeResponse(BaseModel):
@@ -54,6 +56,8 @@ class DocumentVerificationResponse(BaseModel):
     ownership_score: Decimal
     reason_codes: list[ReasonCodeResponse]
     recommendation: str | None
+    model_version_id: uuid.UUID
+    ai_signal: str | None
     verified_at: datetime
 
 
@@ -65,10 +69,12 @@ class TransactionResponse(BaseModel):
     direction: DirEnum
     balance_after: int | None
     raw_description: str
+    normalized_description: str
     category: CategoryEnum
     transaction_context: TransactionContextEnum
     is_internal_transfer: bool
     is_recurring: bool
+    is_duplicate: bool
     extraction_confidence: Decimal
 
 
@@ -96,6 +102,9 @@ class CorrectionRequest(BaseModel):
     transaction_id: uuid.UUID | None
     correction_type: CorrectionTypeEnum
     note: str | None = None
+    raw_extracted_value: str | int | bool | None = None
+    system_normalized_value: str | int | bool | None = None
+    user_proposed_value: str | int | bool | None = None
 
 
 class ReviewRequest(BaseModel):
