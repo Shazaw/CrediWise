@@ -1,0 +1,35 @@
+# --- Python / backend -------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+coverage.xml
+.coverage
+.coverage.*
+htmlcov/
+
+# --- Secrets & local env -----------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Docker / local infra ----------------------------------------------------
+infra/.data/
+
+# --- iOS / Xcode --------------------------------------------------------------
+ios/**/DerivedData/
+ios/**/*.xcuserstate
+ios/**/xcuserdata/
+ios/**/.build/
+ios/**/.swiftpm/
+
+# --- OS / editor ---------------------------------------------------------------
+.DS_Store
+.idea/
+.vscode/
+*.swp

@@ -1,0 +1,402 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A00000000000000000000001 /* CrediWiseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000001 /* CrediWiseApp.swift */; };
+		A00000000000000000000002 /* AppContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000002 /* AppContainer.swift */; };
+		A00000000000000000000003 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000003 /* AppCoordinator.swift */; };
+		A00000000000000000000004 /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000004 /* AppRoute.swift */; };
+		A00000000000000000000005 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000005 /* AppRootView.swift */; };
+		A00000000000000000000006 /* CrediWiseColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000006 /* CrediWiseColors.swift */; };
+		A00000000000000000000007 /* SpacingTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000007 /* SpacingTokens.swift */; };
+		A00000000000000000000008 /* RadiusTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000008 /* RadiusTokens.swift */; };
+		A00000000000000000000009 /* TypographyTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000009 /* TypographyTokens.swift */; };
+		A0000000000000000000000A /* CTAButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000A /* CTAButton.swift */; };
+		A0000000000000000000000B /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000B /* PrimaryButton.swift */; };
+		A0000000000000000000000C /* DisclaimerFooter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000C /* DisclaimerFooter.swift */; };
+		A0000000000000000000000D /* PositioningStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000D /* PositioningStrings.swift */; };
+		A0000000000000000000000E /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000E /* WelcomeView.swift */; };
+		A0000000000000000000000F /* AuthPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000F /* AuthPlaceholderView.swift */; };
+		A00000000000000000000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000010 /* Assets.xcassets */; };
+		A00000000000000000000011 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000001 /* Localizable.strings */; };
+		A00000000000000000000012 /* AppCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000012 /* AppCoordinatorTests.swift */; };
+		A00000000000000000000013 /* WelcomeFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000013 /* WelcomeFlowUITests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		C00000000000000000000010 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = J00000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E00000000000000000000001;
+			remoteInfo = CrediWise;
+		};
+		C00000000000000000000011 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = J00000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E00000000000000000000001;
+			remoteInfo = CrediWise;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		B00000000000000000000001 /* CrediWiseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrediWiseApp.swift; sourceTree = "<group>"; };
+		B00000000000000000000002 /* AppContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContainer.swift; sourceTree = "<group>"; };
+		B00000000000000000000003 /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
+		B00000000000000000000004 /* AppRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRoute.swift; sourceTree = "<group>"; };
+		B00000000000000000000005 /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
+		B00000000000000000000006 /* CrediWiseColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrediWiseColors.swift; sourceTree = "<group>"; };
+		B00000000000000000000007 /* SpacingTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacingTokens.swift; sourceTree = "<group>"; };
+		B00000000000000000000008 /* RadiusTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadiusTokens.swift; sourceTree = "<group>"; };
+		B00000000000000000000009 /* TypographyTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypographyTokens.swift; sourceTree = "<group>"; };
+		B0000000000000000000000A /* CTAButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTAButton.swift; sourceTree = "<group>"; };
+		B0000000000000000000000B /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
+		B0000000000000000000000C /* DisclaimerFooter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisclaimerFooter.swift; sourceTree = "<group>"; };
+		B0000000000000000000000D /* PositioningStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositioningStrings.swift; sourceTree = "<group>"; };
+		B0000000000000000000000E /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		B0000000000000000000000F /* AuthPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthPlaceholderView.swift; sourceTree = "<group>"; };
+		B00000000000000000000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B00000000000000000000012 /* AppCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinatorTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000013 /* WelcomeFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeFlowUITests.swift; sourceTree = "<group>"; };
+		B00000000000000000000014 /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B00000000000000000000015 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B00000000000000000000100 /* CrediWise.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrediWise.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B00000000000000000000101 /* CrediWiseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrediWiseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B00000000000000000000102 /* CrediWiseUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrediWiseUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F00000000000000000000002 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		F00000000000000000000005 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		F00000000000000000000008 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D00000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				D00000000000000000000002 /* CrediWise */,
+				D0000000000000000000000E /* CrediWiseTests */,
+				D00000000000000000000010 /* CrediWiseUITests */,
+				D00000000000000000000012 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D00000000000000000000002 /* CrediWise */ = {
+			isa = PBXGroup;
+			children = (
+				D00000000000000000000003 /* App */,
+				D00000000000000000000004 /* Core */,
+				D0000000000000000000000A /* Features */,
+				D0000000000000000000000D /* Resources */,
+			);
+			path = CrediWise;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000003 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000002 /* AppContainer.swift */,
+				B00000000000000000000003 /* AppCoordinator.swift */,
+				B00000000000000000000004 /* AppRoute.swift */,
+				B00000000000000000000005 /* AppRootView.swift */,
+				B00000000000000000000001 /* CrediWiseApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000004 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				D00000000000000000000005 /* DesignSystem */,
+				D00000000000000000000009 /* Utils */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000005 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				D00000000000000000000006 /* Tokens */,
+				D00000000000000000000007 /* Components */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000006 /* Tokens */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000006 /* CrediWiseColors.swift */,
+				B00000000000000000000008 /* RadiusTokens.swift */,
+				B00000000000000000000007 /* SpacingTokens.swift */,
+				B00000000000000000000009 /* TypographyTokens.swift */,
+			);
+			path = Tokens;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000007 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				B0000000000000000000000A /* CTAButton.swift */,
+				B0000000000000000000000C /* DisclaimerFooter.swift */,
+				B0000000000000000000000B /* PrimaryButton.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000009 /* Utils */ = {
+			isa = PBXGroup;
+			children = (B0000000000000000000000D /* PositioningStrings.swift */);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		D0000000000000000000000A /* Features */ = {
+			isa = PBXGroup;
+			children = (D0000000000000000000000B /* Onboarding */);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		D0000000000000000000000B /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (D0000000000000000000000C /* Views */);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		D0000000000000000000000C /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B0000000000000000000000F /* AuthPlaceholderView.swift */,
+				B0000000000000000000000E /* WelcomeView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		D0000000000000000000000D /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000010 /* Assets.xcassets */,
+				C00000000000000000000001 /* Localizable.strings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		D0000000000000000000000E /* CrediWiseTests */ = {
+			isa = PBXGroup;
+			children = (D0000000000000000000000F /* Features */);
+			path = CrediWiseTests;
+			sourceTree = "<group>";
+		};
+		D0000000000000000000000F /* Features */ = {
+			isa = PBXGroup;
+			children = (B00000000000000000000012 /* AppCoordinatorTests.swift */);
+			path = Features/Onboarding;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000010 /* CrediWiseUITests */ = {
+			isa = PBXGroup;
+			children = (D00000000000000000000011 /* Flows */);
+			path = CrediWiseUITests;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000011 /* Flows */ = {
+			isa = PBXGroup;
+			children = (B00000000000000000000013 /* WelcomeFlowUITests.swift */);
+			path = Flows;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000012 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000100 /* CrediWise.app */,
+				B00000000000000000000101 /* CrediWiseTests.xctest */,
+				B00000000000000000000102 /* CrediWiseUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E00000000000000000000001 /* CrediWise */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = I00000000000000000000002 /* Build configuration list for PBXNativeTarget "CrediWise" */;
+			buildPhases = (
+				F0000000000000000000000A /* Positioning Copy Lint */,
+				F00000000000000000000001 /* Sources */,
+				F00000000000000000000002 /* Frameworks */,
+				F00000000000000000000003 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = ();
+			name = CrediWise;
+			productName = CrediWise;
+			productReference = B00000000000000000000100 /* CrediWise.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E00000000000000000000002 /* CrediWiseTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = I00000000000000000000003 /* Build configuration list for PBXNativeTarget "CrediWiseTests" */;
+			buildPhases = (
+				F00000000000000000000004 /* Sources */,
+				F00000000000000000000005 /* Frameworks */,
+				F00000000000000000000006 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = (G00000000000000000000001 /* PBXTargetDependency */);
+			name = CrediWiseTests;
+			productName = CrediWiseTests;
+			productReference = B00000000000000000000101 /* CrediWiseTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		E00000000000000000000003 /* CrediWiseUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = I00000000000000000000004 /* Build configuration list for PBXNativeTarget "CrediWiseUITests" */;
+			buildPhases = (
+				F00000000000000000000007 /* Sources */,
+				F00000000000000000000008 /* Frameworks */,
+				F00000000000000000000009 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = (G00000000000000000000002 /* PBXTargetDependency */);
+			name = CrediWiseUITests;
+			productName = CrediWiseUITests;
+			productReference = B00000000000000000000102 /* CrediWiseUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		J00000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					E00000000000000000000001 = {CreatedOnToolsVersion = 15.0; };
+					E00000000000000000000002 = {CreatedOnToolsVersion = 15.0; TestTargetID = E00000000000000000000001; };
+					E00000000000000000000003 = {CreatedOnToolsVersion = 15.0; TestTargetID = E00000000000000000000001; };
+				};
+			};
+			buildConfigurationList = I00000000000000000000001 /* Build configuration list for PBXProject "CrediWise" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (id, en, Base);
+			mainGroup = D00000000000000000000001;
+			productRefGroup = D00000000000000000000012 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E00000000000000000000001 /* CrediWise */,
+				E00000000000000000000002 /* CrediWiseTests */,
+				E00000000000000000000003 /* CrediWiseUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F00000000000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000000000000000000010 /* Assets.xcassets in Resources */,
+				A00000000000000000000011 /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F00000000000000000000006 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		F00000000000000000000009 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		F0000000000000000000000A /* Positioning Copy Lint */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = ();
+			inputFileListPaths = ();
+			inputPaths = (
+				"$(SRCROOT)/scripts/lint-positioning-copy.sh",
+				"$(SRCROOT)/CrediWise/Resources/en.lproj/Localizable.strings",
+				"$(SRCROOT)/CrediWise/Resources/id.lproj/Localizable.strings",
+			);
+			name = "Positioning Copy Lint";
+			outputFileListPaths = ();
+			outputPaths = ();
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/scripts/lint-positioning-copy.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F00000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000000000000000000002 /* AppContainer.swift in Sources */,
+				A00000000000000000000003 /* AppCoordinator.swift in Sources */,
+				A00000000000000000000004 /* AppRoute.swift in Sources */,
+				A00000000000000000000005 /* AppRootView.swift in Sources */,
+				A0000000000000000000000F /* AuthPlaceholderView.swift in Sources */,
+				A0000000000000000000000A /* CTAButton.swift in Sources */,
+				A00000000000000000000006 /* CrediWiseColors.swift in Sources */,
+				A00000000000000000000001 /* CrediWiseApp.swift in Sources */,
+				A0000000000000000000000C /* DisclaimerFooter.swift in Sources */,
+				A0000000000000000000000D /* PositioningStrings.swift in Sources */,
+				A0000000000000000000000B /* PrimaryButton.swift in Sources */,
+				A00000000000000000000008 /* RadiusTokens.swift in Sources */,
+				A00000000000000000000007 /* SpacingTokens.swift in Sources */,
+				A00000000000000000000009 /* TypographyTokens.swift in Sources */,
+				A0000000000000000000000E /* WelcomeView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F00000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000012 /* AppCoordinatorTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+		F00000000000000000000007 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000013 /* WelcomeFlowUITests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		G00000000000000000000001 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = E00000000000000000000001 /* CrediWise */; targetProxy = C00000000000000000000010 /* PBXContainerItemProxy */; };
+		G00000000000000000000002 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = E00000000000000000000001 /* CrediWise */; targetProxy = C00000000000000000000011 /* PBXContainerItemProxy */; };
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		C00000000000000000000001 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B00000000000000000000014 /* id */,
+				B00000000000000000000015 /* en */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		H00000000000000000000001 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; DEBUG_INFORMATION_FORMAT = dwarf; ENABLE_TESTABILITY = YES; GCC_C_LANGUAGE_STANDARD = gnu17; IPHONEOS_DEPLOYMENT_TARGET = 16.0; ONLY_ACTIVE_ARCH = YES; SDKROOT = iphoneos; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; }; name = Debug; };
+		H00000000000000000000002 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; ENABLE_NS_ASSERTIONS = NO; GCC_C_LANGUAGE_STANDARD = gnu17; IPHONEOS_DEPLOYMENT_TARGET = 16.0; SDKROOT = iphoneos; SWIFT_COMPILATION_MODE = wholemodule; }; name = Release; };
+		H00000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = CrediWise; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait; IPHONEOS_DEPLOYMENT_TARGET = 16.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Debug; };
+		H00000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = CrediWise; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait; IPHONEOS_DEPLOYMENT_TARGET = 16.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
+		H00000000000000000000005 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 16.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app.tests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CrediWise.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CrediWise"; }; name = Debug; };
+		H00000000000000000000006 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 16.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app.tests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CrediWise.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CrediWise"; }; name = Release; };
+		H00000000000000000000007 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 16.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app.uitests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; TEST_TARGET_NAME = CrediWise; }; name = Debug; };
+		H00000000000000000000008 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 16.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app.uitests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; TEST_TARGET_NAME = CrediWise; }; name = Release; };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		I00000000000000000000001 /* Build configuration list for PBXProject "CrediWise" */ = {isa = XCConfigurationList; buildConfigurations = (H00000000000000000000001 /* Debug */, H00000000000000000000002 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		I00000000000000000000002 /* Build configuration list for PBXNativeTarget "CrediWise" */ = {isa = XCConfigurationList; buildConfigurations = (H00000000000000000000003 /* Debug */, H00000000000000000000004 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		I00000000000000000000003 /* Build configuration list for PBXNativeTarget "CrediWiseTests" */ = {isa = XCConfigurationList; buildConfigurations = (H00000000000000000000005 /* Debug */, H00000000000000000000006 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		I00000000000000000000004 /* Build configuration list for PBXNativeTarget "CrediWiseUITests" */ = {isa = XCConfigurationList; buildConfigurations = (H00000000000000000000007 /* Debug */, H00000000000000000000008 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+	};
+	rootObject = J00000000000000000000001 /* Project object */;
+}
