@@ -36,15 +36,42 @@ jobs:
           swiftlint lint --strict --config ios/.swiftlint.yml
           ios/CrediWise ios/CrediWiseTests ios/CrediWiseUITests
 
-      - name: Build and test
+      - name: Build for testing
         run: |
+          set +e
+          set -o pipefail
+          xcodebuild \
+            -project ios/CrediWise.xcodeproj \
+            -scheme CrediWise \
+            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest' \
+            CODE_SIGNING_ALLOWED=NO \
+            build-for-testing 2>&1 | tee /tmp/CrediWiseBuild.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            while IFS= read -r line; do
+              echo "::error title=Xcode build::$line"
+            done < <(grep -E 'error:|Testing failed:|Unable to find|Failed to' /tmp/CrediWiseBuild.log | tail -20)
+          fi
+          exit "$status"
+
+      - name: Run tests
+        run: |
+          set +e
+          set -o pipefail
           xcodebuild \
             -project ios/CrediWise.xcodeproj \
             -scheme CrediWise \
             -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest' \
             -resultBundlePath /tmp/CrediWiseTests.xcresult \
             CODE_SIGNING_ALLOWED=NO \
-            build test
+            test-without-building 2>&1 | tee /tmp/CrediWiseTests.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            while IFS= read -r line; do
+              echo "::error title=Xcode tests::$line"
+            done < <(grep -E 'error:|failed|Failing tests:|Test Case.*failed|Unable to find' /tmp/CrediWiseTests.log | tail -20)
+          fi
+          exit "$status"
 
       - name: Upload Xcode result bundle
         if: always()
