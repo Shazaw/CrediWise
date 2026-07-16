@@ -2,8 +2,52 @@ import SwiftUI
 
 struct AppRootView: View {
     @ObservedObject var coordinator: AppCoordinator
+    @ObservedObject private var sessionManager: SessionManager
+
+    init(coordinator: AppCoordinator) {
+        self.coordinator = coordinator
+        _sessionManager = ObservedObject(wrappedValue: coordinator.sessionManager)
+    }
 
     var body: some View {
+        Group {
+            switch sessionManager.state {
+            case .restoring:
+                ProgressView("session.restoring")
+                    .tint(CrediWiseColors.primary)
+            case .restorationFailed:
+                restorationError
+            case .signedOut:
+                unauthenticatedFlow
+            case .signedIn:
+                AuthenticatedHomeView(onSignOut: coordinator.signOut)
+            }
+        }
+        .tint(CrediWiseColors.primary)
+        .task {
+            await sessionManager.restore()
+        }
+    }
+
+    private var restorationError: some View {
+        VStack(spacing: SpacingTokens.large) {
+            Image(systemName: "key.slash.fill")
+                .font(.system(size: 42, weight: .bold))
+                .foregroundStyle(CrediWiseColors.primary)
+                .accessibilityHidden(true)
+
+            Text("session.restoration_error")
+                .font(TypographyTokens.body)
+                .multilineTextAlignment(.center)
+
+            PrimaryButton(title: "common.retry") {
+                Task { await sessionManager.retryRestoration() }
+            }
+        }
+        .padding(SpacingTokens.xLarge)
+    }
+
+    private var unauthenticatedFlow: some View {
         NavigationStack(path: $coordinator.path) {
             WelcomeView(
                 onCreateAccount: coordinator.showRegistration,
@@ -13,21 +57,24 @@ struct AppRootView: View {
                 destination(for: route)
             }
         }
-        .tint(CrediWiseColors.primary)
     }
 
     @ViewBuilder
     private func destination(for route: AppRoute) -> some View {
         switch route {
         case .registration:
-            AuthPlaceholderView(
-                titleKey: "auth.registration.placeholder.title",
-                messageKey: "auth.registration.placeholder.message"
+            AuthenticationView(
+                viewModel: coordinator.makeAuthenticationViewModel(mode: .registration),
+                onRegistered: coordinator.completeRegistration,
+                onSignedIn: coordinator.completeSignIn,
+                onSwitchMode: { coordinator.switchAuthenticationMode(from: .registration) }
             )
         case .signIn:
-            AuthPlaceholderView(
-                titleKey: "auth.sign_in.placeholder.title",
-                messageKey: "auth.sign_in.placeholder.message"
+            AuthenticationView(
+                viewModel: coordinator.makeAuthenticationViewModel(mode: .signIn),
+                onRegistered: coordinator.completeRegistration,
+                onSignedIn: coordinator.completeSignIn,
+                onSwitchMode: { coordinator.switchAuthenticationMode(from: .signIn) }
             )
         }
     }
