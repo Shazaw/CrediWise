@@ -45,7 +45,7 @@ final class WelcomeFlowUITests: XCTestCase {
 
         app.buttons["auth.submit"].tap()
 
-        XCTAssertTrue(app.otherElements["session.authenticated"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["session.authenticated.title"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.buttons["session.sign_out"].exists)
     }
 

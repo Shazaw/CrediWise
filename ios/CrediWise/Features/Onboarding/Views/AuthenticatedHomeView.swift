@@ -18,6 +18,7 @@ struct AuthenticatedHomeView: View {
                         Text("session.authenticated.title")
                             .font(TypographyTokens.hero)
                             .foregroundStyle(CrediWiseColors.textPrimary)
+                            .accessibilityIdentifier("session.authenticated.title")
 
                         Text("session.authenticated.message")
                             .font(TypographyTokens.body)
