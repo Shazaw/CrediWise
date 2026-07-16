@@ -38,6 +38,5 @@ struct AuthPlaceholderView: View {
         .padding(SpacingTokens.xLarge)
         .background(CrediWiseColors.surfaceAlt.ignoresSafeArea())
         .navigationBarBackButtonHidden(true)
-        .accessibilityIdentifier("auth.placeholder")
     }
 }
