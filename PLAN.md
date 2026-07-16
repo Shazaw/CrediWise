@@ -3,7 +3,7 @@
 > **Single Source of Truth.** This is the *only* document a coding agent is expected to read before implementing any feature in this repository. It is a hybrid **Product Requirements Document (PRD) + Technical Design Document (TDD)**. If a decision is not written here, it is either (a) not yet decided — raise it and update this file via the process in [§24 Coding Agent Instructions](#24-coding-agent-instructions), or (b) governed by the closest analogous decision already documented. **Do not invent architecture silently.**
 
 - **Product:** CrediWise — *Two-Way Credit Safety Engine, Trust Layer & Open Finance Roadmap*
-- **Document version:** `1.2.0`
+- **Document version:** `1.3.0`
 - **Status:** Approved for Sprint 0
 - **Last updated:** 2026-07-17
 - **Approval note:** Native iOS, the full backend/worker infrastructure, and terminal-agent-driven parallel implementation are confirmed team decisions following mentor review.
@@ -941,16 +941,18 @@ Constraint: `CHECK (requested_amount > 0 AND requested_amount <= 1000000000)`, `
 **`source_documents`** — an uploaded file.
 `user_id FK`, `financial_account_id FK NULL`, `file_name TEXT`, `file_hash CHAR(64) NOT NULL`, `mime_type TEXT`, `source_type source_type_enum` (provenance tier), `storage_path TEXT`, `statement_start_date DATE`, `statement_end_date DATE`, `status doc_status_enum NOT NULL DEFAULT 'UPLOADED'`, `page_count INT`, `uploaded_at TIMESTAMPTZ`.
 Index: `UNIQUE(user_id, file_hash) WHERE deleted_at IS NULL` (dedup); `(user_id, status)`.
-`doc_status_enum`'s Appendix A list is missing two states §8.2's diagram requires — `VALIDATION_FAILED` (oversize/corrupt/zero-byte) and `DUPLICATE_REUSED` (same user+hash re-upload) — added in Sprint 2/T2.1 and appended to Appendix A per §24.11. `storage_path` is left `NULL` for `REJECTED_SECURITY`/`VALIDATION_FAILED` documents (ADR-013): only bytes that pass the file-security stage are ever written to object storage.
+`doc_status_enum`'s Appendix A list is missing two states §8.2's diagram requires — `VALIDATION_FAILED` (oversize/corrupt/zero-byte) and `DUPLICATE_REUSED` (same user+hash re-upload) — added in Sprint 2/T2.1 and appended to Appendix A per §24.11. `storage_path` is left `NULL` for `REJECTED_SECURITY`/`VALIDATION_FAILED` documents (ADR-013): only bytes that pass the file-security stage are ever written to object storage. A third gap-filled state, `REVIEW_PENDING` (`VERIFYING -> REVIEW_PENDING -> NORMALIZING` per §8.2), was added in Sprint 3/T3.3 (migration `0005`, since `doc_status_enum` itself was created by Sprint 2's migration and §24.6 forbids editing an already-shared migration).
 
-**`document_verification_results`** — append-only Trust-Layer output per processing run.
+**`document_verification_results`** — append-only Trust-Layer output per processing run. Implemented Sprint 3/T3.2; `verification_model_version_id` stamps `model_versions.crediwise-core` (§19.2).
 `source_document_id FK`, `processing_run_id FK`, `verification_model_version_id FK`, `supersedes_result_id FK NULL`, `metadata_score`, `consistency_score`, `visual_score`, `ocr_score`, `completeness_score`, `ownership_score`, `provenance_score`, `data_confidence_score NUMERIC(6,2)`, `confidence_band band_enum`, `flags_json JSONB`, `verified_at TIMESTAMPTZ`.
+`flags_json` holds `{"reason_codes": [{"code", "description"}, ...], "recommendation": str | null, "ai_signal": "DISABLED" | "UNAVAILABLE" | "INCLUDED"}` (Sprint 3 gap-fill, §24.11 — PLAN names `flags_json` as a JSONB payload but not its exact shape).
 
-**`transactions`** — normalized transaction rows.
+**`transactions`** — normalized transaction rows. Implemented Sprint 3/T3.1-T3.2.
 `user_id FK`, `financial_account_id FK`, `source_document_id FK NULL`, `processing_run_id FK`, `transaction_date DATE`, `transaction_time TIME NULL`, `amount BIGINT`, `direction dir_enum` (`CREDIT, DEBIT`), `currency CHAR(3) DEFAULT 'IDR'`, `balance_after BIGINT NULL`, `raw_description TEXT`, `normalized_merchant TEXT`, `category category_enum`, `subcategory TEXT`, `transaction_context transaction_context_enum` (`PERSONAL, BUSINESS, MIXED, UNKNOWN`), `counterparty TEXT`, `is_internal_transfer BOOL DEFAULT false`, `is_recurring BOOL DEFAULT false`, `category_confidence NUMERIC(6,4)`, `extraction_confidence NUMERIC(6,4)`, `row_hash CHAR(64)` (for dedup).
 Index: `(user_id, transaction_date)`, `(financial_account_id, transaction_date)`, `(processing_run_id)`, `UNIQUE(processing_run_id, row_hash) WHERE deleted_at IS NULL`. Transactions are source facts and are linked to assessments through `assessment_transactions`; they never belong to only one assessment.
+`financial_account_id` is kept `NOT NULL` per this section (ADR-014): the extraction service auto-provisions a `financial_accounts` row from the document's `source_type` when none exists rather than relaxing this constraint. `category`/`transaction_context` default `UNKNOWN` and `is_internal_transfer`/`is_recurring` default `false` at extraction time (Sprint 3) — real categorization is `NormalizationEngine`'s job (FR-6, Sprint 4); refining these derived fields in place does not violate raw-evidence immutability (§6.4) since raw evidence lives in the source document + `document_processing_runs`, not here. A `CHECK (amount > 0)` constraint means a statement's zero-amount opening-balance/anchor row is never persisted as a `transactions` row (it is still used, unfiltered, for Trust-Layer balance reconstruction — see `app/services/verification_service.py`).
 
-**`document_processing_runs`** — append-only parser/OCR execution.
+**`document_processing_runs`** — append-only parser/OCR execution. Implemented Sprint 3/T3.1-T3.2.
 `source_document_id FK`, `parser_name TEXT`, `parser_version TEXT`, `format_name TEXT`, `format_detection_confidence NUMERIC(6,4)`, `status processing_status_enum`, `input_hash CHAR(64)`, `output_hash CHAR(64)`, `started_at`, `completed_at`, `supersedes_run_id FK NULL`.
 
 **`assessment_documents`** — exact many-to-many document lineage.
@@ -977,8 +979,9 @@ Index: `(user_id, transaction_date)`, `(financial_account_id, transaction_date)`
 **`cash_flow_events`** — expected temporal liquidity events used by simulations.
 `assessment_id FK`, `event_date DATE NULL`, `expected_day_of_month INT NULL`, `amount BIGINT`, `direction dir_enum`, `event_type cash_event_enum`, `recurring_series_id FK NULL`, `confidence NUMERIC(6,4)`.
 
-**`pipeline_stage_runs`** — resumability and observability.
+**`pipeline_stage_runs`** — resumability and observability. Implemented Sprint 3/T3.2, scoped to `source_document_id`.
 `source_document_id FK NULL`, `assessment_id FK NULL`, `stage pipeline_stage_enum`, `status stage_status_enum`, `attempt_number INT`, `input_hash CHAR(64)`, `output_hash CHAR(64)`, `worker_version TEXT`, `started_at`, `completed_at`, `error_code TEXT NULL`, `sanitized_error_message TEXT NULL`.
+Sprint 3's migration (`0004`) omits the `assessment_id` column — `assessments` doesn't exist until Sprint 4 and Postgres cannot FK to a nonexistent table; Sprint 4's migration adds it (§11.4 expand pattern). `pipeline_stage_enum`'s Sprint 3 member set is `EXTRACTION, VERIFICATION` only (gap-fill, §24.11); later sprints extend it as their stages ship.
 
 **`assessments`** — the central aggregate.
 `user_id FK`, `financing_need_id FK`, `model_version_id FK→model_versions`, `data_confidence_score NUMERIC(6,2)`, `indicative_risk_band risk_band_enum`, `model_confidence band_enum`, `shock_resilience_score NUMERIC(6,2)`, `safe_loan_amount BIGINT`, `maximum_safe_instalment BIGINT`, `recommended_tenor_months INT`, `recommended_due_date_start INT`, `recommended_due_date_end INT`, `recommended_frequency freq_enum`, `status assessment_status_enum NOT NULL DEFAULT 'PENDING'`.
@@ -1642,6 +1645,7 @@ Every PR body includes: **What/Why**, **PLAN sections & FR/NFR touched**, **How 
 | **ADR-011** | **Guided stepper** (not tab bar) for MVP | Optimises the linear demo golden path; home/tabs post-MVP. |
 | **ADR-012** | **Model config as versioned code + config_hash** | Governance/reproducibility; every threshold change is a traceable version. |
 | **ADR-013** | **File-security stage runs synchronously in `POST /documents`**, not in the `documents` worker | Passwords must never cross the Celery/Redis boundary (§24.10); dedup must gate the HTTP response before any row/storage write (FR-3 AC3). |
+| **ADR-014** | **Extraction auto-provisions `financial_accounts`** when a `source_document` has none | `transactions.financial_account_id` is `NOT NULL` per §11.3, but no create-account route ships in MVP (T2.1); server-side inference from `source_type` keeps the golden path (§1.6) a single upload step. |
 
 ---
 
@@ -1825,14 +1829,14 @@ Follow the sprint plan (§25). Within a feature, build **inside-out**: model/mig
 - [x] T2.7 Tests: security stage, dedup, status transitions
 
 ### 26.4 Sprint 3 — Trust Layer & Data Confidence
-- [ ] T3.1 Extraction: pdfplumber/PyMuPDF (digital) + Tesseract (image) → normalized rows (§15.2)
-- [ ] T3.2 `document_processing_runs`, versioned `transactions`, append-only `document_verification_results`, and `pipeline_stage_runs` + migration
-- [ ] T3.3 `TrustLayerEngine`: metadata, balance reconstruction, cross-doc, provenance, completeness, ownership, deterministic PDF forensics + local Kimi anomaly adapter
-- [ ] T3.4 Data Confidence aggregation (§5.2) + bands + reason codes + recommendation
-- [ ] T3.5 Golden fixtures (clean/tampered/screenshot/multi-month) + expected outputs
-- [ ] T3.6 `GET /documents/{id}/verification` + `/transactions`; `POST /review` + `/confirm`
-- [ ] T3.7 iOS: extraction review/correction/confirmation + Data Confidence subdimension card/drill-down
-- [ ] T3.8 Tests: engine golden tests (≥90% coverage on engine)
+- [x] T3.1 Extraction: pdfplumber (digital) + Tesseract (image, behind `OcrPort`) → normalized rows (§15.2). Metadata forensics use `pypdf`, not PyMuPDF — documented substitution, see `app/engines/extraction/pdf_parser.py`'s module docstring and §24.11.
+- [x] T3.2 `document_processing_runs`, versioned `transactions`, append-only `document_verification_results`, and `pipeline_stage_runs` + migration
+- [x] T3.3 `TrustLayerEngine`: metadata, balance reconstruction, provenance, completeness, ownership, deterministic PDF forensics + local Kimi anomaly adapter (wired, disabled by default per §15.6). **Gap:** cross-document/multi-statement consistency (§15.3 item 5 — closing↔opening continuity, overlap/dedup, missing periods across *multiple* uploaded documents) is not implemented; the engine scores one document's rows per run. Tracked as a Sprint 4+ follow-up, not silently claimed done.
+- [x] T3.4 Data Confidence aggregation (§5.2) + bands + reason codes + recommendation
+- [x] T3.5 Golden fixtures (clean/tampered/screenshot/single-month vs. 6-month) + expected outputs — synthesized in-process per CLAUDE.md §15.1, no checked-in binaries. No true multi-*document* fixture, consistent with the T3.3 cross-doc gap above.
+- [x] T3.6 `GET /documents/{id}/verification` + `/transactions`; `POST /review` + `/confirm`
+- [ ] T3.7 iOS: extraction review/correction/confirmation + Data Confidence subdimension card/drill-down (FRONTEND workstream — out of scope for this BACKEND session, CLAUDE.md §2.2/§2.3)
+- [x] T3.8 Tests: engine golden tests (`trust_layer.py` 96%, `extraction/*` 92-100% — all ≥90% coverage gate)
 
 ### 26.5 Sprint 4 — Twin, Risk & Safe Borrowing
 - [ ] T4.1 `NormalizationEngine`: categorize, personal/business context, multi-source internal-transfer, recurring, merchant
@@ -1898,7 +1902,7 @@ Where an older sentence conflicts with these additions, the more specific v1.1.0
 ## Appendix A — Enum Reference (initial values)
 
 - `role_enum`: USER, LENDER, REVIEWER, ADMIN
-- `doc_status_enum`: UPLOADED, SECURITY_CHECK, REJECTED_SECURITY, VALIDATION_FAILED, DUPLICATE_REUSED, EXTRACTING, UNSUPPORTED_FORMAT, VERIFYING, NORMALIZING, ANALYZING, HUMAN_REVIEW, COMPLETE (`VALIDATION_FAILED`/`DUPLICATE_REUSED` added Sprint 2/T2.1 — §8.2's diagram requires them; see §11.3 `source_documents`)
+- `doc_status_enum`: UPLOADED, SECURITY_CHECK, REJECTED_SECURITY, VALIDATION_FAILED, DUPLICATE_REUSED, EXTRACTING, UNSUPPORTED_FORMAT, VERIFYING, REVIEW_PENDING, NORMALIZING, ANALYZING, HUMAN_REVIEW, COMPLETE (`VALIDATION_FAILED`/`DUPLICATE_REUSED` added Sprint 2/T2.1; `REVIEW_PENDING` added Sprint 3/T3.3 (migration `0005`) — §8.2's diagram requires them; see §11.3 `source_documents`)
 - `account_type_enum`: BANK, EWALLET, QRIS, MARKETPLACE
 - `ownership_enum`: DECLARED, VERIFIED (added Sprint 2/T2.1 — gap-fill, see §11.3 `financial_accounts`)
 - `conn_type_enum`: UPLOAD, API
@@ -1922,6 +1926,10 @@ Where an older sentence conflicts with these additions, the more specific v1.1.0
 - `reg_status_enum`: REGULATED, UNLISTED
 - `consent_status_enum`: ACTIVE, EXPIRED, REVOKED
 - `source_type_enum`: BANK_API, SIGNED_STATEMENT, ORIGINAL_PDF, EXPORTED_CSV, SCREENSHOT, PHOTO
+- `processing_status_enum`: RUNNING, COMPLETE, FAILED (added Sprint 3/T3.2 — gap-fill, see §11.3 `document_processing_runs`)
+- `pipeline_stage_enum`: EXTRACTION, VERIFICATION (added Sprint 3/T3.2 — gap-fill, scoped to Sprint 3's stages; later sprints extend this set, see §11.3 `pipeline_stage_runs`)
+- `stage_status_enum`: RUNNING, SUCCEEDED, FAILED (added Sprint 3/T3.2 — gap-fill, see §11.3 `pipeline_stage_runs`)
+- `dir_enum`: CREDIT, DEBIT (added Sprint 3/T3.2 — gap-fill, see §11.3 `transactions`)
 
 ## Appendix B — Positioning Copy (approved)
 
@@ -1932,4 +1940,4 @@ Where an older sentence conflicts with these additions, the more specific v1.1.0
 
 ---
 
-*End of PLAN.md v1.1.1 — keep this document current (§24.11). If you changed architecture and didn't update this file, your PR is incomplete.*
+*End of PLAN.md v1.3.0 — keep this document current (§24.11). If you changed architecture and didn't update this file, your PR is incomplete.*

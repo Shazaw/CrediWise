@@ -24,21 +24,42 @@ EXTRACTING") and the seam Sprint 3's real OCR/extraction worker extends.
 import hashlib
 import re
 import uuid
+from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
-from app.core.errors import NotFoundError
+from app.core.errors import NotFoundError, ValidationError
 from app.engines.file_security import FileSecurityConfig, SecurityOutcome, validate
 from app.integrations.storage import get_storage_port, raw_document_key
+from app.models.correction import Correction
+from app.models.document_verification_result import DocumentVerificationResult
 from app.models.enums import ActorTypeEnum, DocStatusEnum, SourceTypeEnum
 from app.models.source_document import SourceDocument
+from app.models.transaction import Transaction
 from app.models.user import User
 from app.pipeline.dispatch import dispatch_document_processing
+from app.repositories.correction_repository import CorrectionRepository
+from app.repositories.document_verification_result_repository import (
+    DocumentVerificationResultRepository,
+)
 from app.repositories.financial_account_repository import FinancialAccountRepository
 from app.repositories.source_document_repository import SourceDocumentRepository
+from app.repositories.transaction_repository import TransactionRepository
 from app.services import audit_service
+
+
+@dataclass(frozen=True)
+class CorrectionInput:
+    """Service-layer input for `DocumentService.review` — the controller
+    unpacks the `ReviewRequest` Pydantic DTO into these before calling the
+    service (PLAN §10.1: services depend on plain data, not `schemas/`)."""
+
+    transaction_id: uuid.UUID | None
+    correction_type: str
+    note: str | None
+
 
 _UNSAFE_FILENAME_CHARS = re.compile(r"[\x00-\x1f/\\]")
 _MAX_FILENAME_LENGTH = 255
@@ -135,6 +156,82 @@ class DocumentService:
         document = self._documents.get_by_id(document_id)
         if document is None or document.user_id != user.id:
             raise NotFoundError("Document not found")
+        return document
+
+    def get_verification(self, user: User, document_id: uuid.UUID) -> DocumentVerificationResult:
+        """FR-5; PLAN §12.2 `GET /documents/{id}/verification`."""
+        document = self.get_status(user, document_id)
+        result = DocumentVerificationResultRepository(self._db).get_latest_for_document(document.id)
+        if result is None:
+            raise NotFoundError("Verification result not found")
+        return result
+
+    def list_transactions(
+        self, user: User, document_id: uuid.UUID, *, limit: int, cursor: uuid.UUID | None
+    ) -> list[Transaction]:
+        """FR-4; PLAN §12.2 `GET /documents/{id}/transactions`, cursor-paginated
+        per §12.1."""
+        document = self.get_status(user, document_id)
+        return TransactionRepository(self._db).list_for_document(
+            document.id, limit=limit, cursor=cursor
+        )
+
+    def review(self, user: User, document_id: uuid.UUID, corrections: list[CorrectionInput]) -> int:
+        """FR-14 AC1/AC3: records flags/corrections without overwriting raw
+        evidence (`transactions`/`document_processing_runs` rows are never
+        mutated here). PLAN §12.2 `POST /documents/{id}/review`."""
+        document = self.get_status(user, document_id)
+        if document.status != DocStatusEnum.REVIEW_PENDING:
+            raise ValidationError(
+                "Document is not awaiting review",
+                details={"status": document.status.value},
+            )
+
+        rows = [
+            Correction(
+                id=uuid.uuid4(),
+                user_id=user.id,
+                transaction_id=correction.transaction_id,
+                correction_type=correction.correction_type,
+                payload_json={"note": correction.note} if correction.note else {},
+            )
+            for correction in corrections
+        ]
+        if rows:
+            CorrectionRepository(self._db).add_all(rows)
+        audit_service.record(
+            self._db,
+            actor_type=ActorTypeEnum.USER,
+            actor_id=user.id,
+            action="document.review_submitted",
+            entity_type="source_document",
+            entity_id=document.id,
+            metadata={"correction_count": len(rows)},
+        )
+        self._db.commit()
+        return len(rows)
+
+    def confirm(self, user: User, document_id: uuid.UUID) -> SourceDocument:
+        """FR-14 AC2: user confirms the review state before scoring. PLAN
+        §8.2 `REVIEW_PENDING -> NORMALIZING`; PLAN §12.2 `POST /documents/{id}/confirm`."""
+        document = self.get_status(user, document_id)
+        if document.status != DocStatusEnum.REVIEW_PENDING:
+            raise ValidationError(
+                "Document is not awaiting review confirmation",
+                details={"status": document.status.value},
+            )
+
+        document.status = DocStatusEnum.NORMALIZING
+        self._db.flush()
+        audit_service.record(
+            self._db,
+            actor_type=ActorTypeEnum.USER,
+            actor_id=user.id,
+            action="document.review_confirmed",
+            entity_type="source_document",
+            entity_id=document.id,
+        )
+        self._db.commit()
         return document
 
 
