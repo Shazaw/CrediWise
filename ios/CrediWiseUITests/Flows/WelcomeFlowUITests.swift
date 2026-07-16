@@ -61,9 +61,35 @@ final class WelcomeFlowUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["positioning.disclaimer"].exists)
     }
 
-    private func launchApp() -> XCUIApplication {
+    func testSyntheticStatementCanBeReviewedAndExplained() {
+        let app = launchApp(arguments: ["--review-flow"])
+        signIn(app)
+        app.buttons["session.start_upload"].tap()
+        XCTAssertTrue(app.buttons["upload.synthetic_fixture"].waitForExistence(timeout: 2))
+        app.buttons["upload.synthetic_fixture"].tap()
+        app.buttons["upload.submit"].tap()
+
+        XCTAssertTrue(app.buttons["upload.review"].waitForExistence(timeout: 5))
+        app.buttons["upload.review"].tap()
+        XCTAssertTrue(app.otherElements["review.screen"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["review.correction_count"].exists)
+
+        app.swipeUp()
+        XCTAssertTrue(app.switches["review.ownership"].waitForExistence(timeout: 2))
+        app.switches["review.ownership"].tap()
+        app.buttons["review.confirm"].tap()
+        XCTAssertTrue(app.buttons["review.show_confidence"].waitForExistence(timeout: 3))
+        app.buttons["review.show_confidence"].tap()
+
+        XCTAssertTrue(app.buttons["confidence.card"].waitForExistence(timeout: 3))
+        app.buttons["confidence.card"].tap()
+        XCTAssertTrue(app.otherElements["confidence.detail.screen"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.otherElements["confidence.dimensions"].exists)
+    }
+
+    private func launchApp(arguments: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-testing"]
+        app.launchArguments = ["--ui-testing"] + arguments
         app.launch()
         return app
     }

@@ -11,15 +11,18 @@ struct UploadView: View {
 
     let allowsSyntheticSelection: Bool
     let isServiceAvailable: Bool
+    let onReviewReady: (String) -> Void
 
     init(
         viewModel: UploadViewModel,
         allowsSyntheticSelection: Bool = false,
-        isServiceAvailable: Bool = true
+        isServiceAvailable: Bool = true,
+        onReviewReady: @escaping (String) -> Void = { _ in }
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
         self.allowsSyntheticSelection = allowsSyntheticSelection
         self.isServiceAvailable = isServiceAvailable
+        self.onReviewReady = onReviewReady
     }
 
     var body: some View {
@@ -129,7 +132,12 @@ struct UploadView: View {
         case let .processing(receipt, status):
             statusBanner(receipt: receipt, status: status)
             ProcessingChecklist(status: status)
-            if status == .humanReview {
+            if status == .reviewPending {
+                CTAButton(title: "upload.action.review") {
+                    onReviewReady(receipt.documentID)
+                }
+                .accessibilityIdentifier("upload.review")
+            } else if status == .humanReview {
                 PrimaryButton(title: "upload.action.check_status") {
                     startOperation { await viewModel.retry() }
                 }

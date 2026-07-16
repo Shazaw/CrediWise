@@ -9,6 +9,7 @@ final class AppCoordinator: ObservableObject {
 
     private let authenticationRepository: any AuthenticationRepository
     private let documentUploadRepository: any DocumentUploadRepository
+    private let documentVerificationRepository: any DocumentVerificationRepository
     private let uploadPollingPolicy: DocumentUploadPollingPolicy
     private let allowsSyntheticUpload: Bool
     private let isDocumentUploadAvailable: Bool
@@ -17,6 +18,7 @@ final class AppCoordinator: ObservableObject {
         sessionManager: SessionManager,
         authenticationRepository: any AuthenticationRepository,
         documentUploadRepository: any DocumentUploadRepository,
+        documentVerificationRepository: any DocumentVerificationRepository,
         uploadPollingPolicy: DocumentUploadPollingPolicy = DocumentUploadPollingPolicy(),
         allowsSyntheticUpload: Bool = false,
         isDocumentUploadAvailable: Bool = true
@@ -24,6 +26,7 @@ final class AppCoordinator: ObservableObject {
         self.sessionManager = sessionManager
         self.authenticationRepository = authenticationRepository
         self.documentUploadRepository = documentUploadRepository
+        self.documentVerificationRepository = documentVerificationRepository
         self.uploadPollingPolicy = uploadPollingPolicy
         self.allowsSyntheticUpload = allowsSyntheticUpload
         self.isDocumentUploadAvailable = isDocumentUploadAvailable
@@ -33,7 +36,8 @@ final class AppCoordinator: ObservableObject {
         self.init(
             sessionManager: SessionManager(tokenStore: VolatileTokenStore()),
             authenticationRepository: MockAuthenticationRepository(),
-            documentUploadRepository: MockDocumentUploadRepository()
+            documentUploadRepository: MockDocumentUploadRepository(),
+            documentVerificationRepository: MockDocumentVerificationRepository()
         )
     }
 
@@ -47,6 +51,14 @@ final class AppCoordinator: ObservableObject {
 
     func showUpload() {
         path.append(.upload)
+    }
+
+    func showExtractionReview(documentID: String) {
+        path.append(.extractionReview(documentID: documentID))
+    }
+
+    func showDataConfidence(documentID: String) {
+        path.append(.dataConfidence(documentID: documentID))
     }
 
     func returnToWelcome() {
@@ -77,6 +89,20 @@ final class AppCoordinator: ObservableObject {
         UploadViewModel(
             repository: documentUploadRepository,
             pollingPolicy: uploadPollingPolicy
+        )
+    }
+
+    func makeExtractionReviewViewModel(documentID: String) -> ExtractionReviewViewModel {
+        ExtractionReviewViewModel(
+            documentID: documentID,
+            repository: documentVerificationRepository
+        )
+    }
+
+    func makeDataConfidenceViewModel(documentID: String) -> DataConfidenceViewModel {
+        DataConfidenceViewModel(
+            documentID: documentID,
+            repository: documentVerificationRepository
         )
     }
 
