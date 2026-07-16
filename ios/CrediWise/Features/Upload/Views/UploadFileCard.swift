@@ -18,6 +18,7 @@ struct UploadFileCard: View {
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(CrediWiseColors.textPrimary)
                         .lineLimit(2)
+                        .accessibilityIdentifier("upload.file.name")
 
                     Text(verbatim: "\(formattedSize) | \(file.mimeType)")
                         .font(TypographyTokens.caption)

@@ -50,16 +50,15 @@ final class WelcomeFlowUITests: XCTestCase {
 
         app.buttons["session.start_upload"].tap()
 
-        XCTAssertTrue(app.otherElements["upload.screen"].waitForExistence(timeout: 2))
-        XCTAssertTrue(app.buttons["upload.choose_file"].exists)
+        XCTAssertTrue(app.buttons["upload.choose_file"].waitForExistence(timeout: 2))
         app.buttons["upload.synthetic_fixture"].tap()
-        XCTAssertTrue(app.otherElements["upload.file"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["upload.file.name"].waitForExistence(timeout: 2))
 
         app.buttons["upload.submit"].tap()
 
         XCTAssertTrue(app.staticTexts["upload.processing.status"].waitForExistence(timeout: 2))
-        XCTAssertTrue(app.otherElements["upload.completion"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.otherElements["upload.processing.checklist"].exists)
+        XCTAssertTrue(app.staticTexts["upload.result.title"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.otherElements["upload.processing.stage.0"].exists)
         XCTAssertTrue(app.staticTexts["positioning.disclaimer"].exists)
     }
 
