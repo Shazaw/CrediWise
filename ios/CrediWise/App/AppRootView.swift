@@ -20,7 +20,7 @@ struct AppRootView: View {
             case .signedOut:
                 unauthenticatedFlow
             case .signedIn:
-                AuthenticatedHomeView(onSignOut: coordinator.signOut)
+                authenticatedFlow
             }
         }
         .tint(CrediWiseColors.primary)
@@ -59,6 +59,18 @@ struct AppRootView: View {
         }
     }
 
+    private var authenticatedFlow: some View {
+        NavigationStack(path: $coordinator.path) {
+            AuthenticatedHomeView(
+                onStartUpload: coordinator.showUpload,
+                onSignOut: coordinator.signOut
+            )
+            .navigationDestination(for: AppRoute.self) { route in
+                destination(for: route)
+            }
+        }
+    }
+
     @ViewBuilder
     private func destination(for route: AppRoute) -> some View {
         switch route {
@@ -75,6 +87,12 @@ struct AppRootView: View {
                 onRegistered: coordinator.completeRegistration,
                 onSignedIn: coordinator.completeSignIn,
                 onSwitchMode: { coordinator.switchAuthenticationMode(from: .signIn) }
+            )
+        case .upload:
+            UploadView(
+                viewModel: coordinator.makeUploadViewModel(),
+                allowsSyntheticSelection: coordinator.shouldOfferSyntheticUpload,
+                isServiceAvailable: coordinator.shouldEnableDocumentUpload
             )
         }
     }

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct AuthenticatedHomeView: View {
+    let onStartUpload: () -> Void
     let onSignOut: @MainActor () async -> Void
 
     var body: some View {
@@ -25,9 +26,17 @@ struct AuthenticatedHomeView: View {
                             .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))
                     }
 
-                    PrimaryButton(title: "session.sign_out") {
+                    CTAButton(title: "session.start_upload") {
+                        onStartUpload()
+                    }
+                    .accessibilityIdentifier("session.start_upload")
+
+                    Button("session.sign_out") {
                         Task { await onSignOut() }
                     }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(CrediWiseColors.primary)
+                    .frame(maxWidth: .infinity)
                     .accessibilityIdentifier("session.sign_out")
 
                     DisclaimerFooter()
