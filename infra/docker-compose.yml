@@ -1,0 +1,97 @@
+# Local development stack (PLAN §8.4, §20.1 `local` environment).
+# `docker compose up` from this directory (or `make up` from the repo root)
+# brings up the API, a pipeline worker, Postgres, Redis, and MinIO.
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: crediwise
+      POSTGRES_PASSWORD: crediwise_local_dev_only
+      POSTGRES_DB: crediwise
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crediwise -d crediwise"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: crediwise
+      MINIO_ROOT_PASSWORD: crediwise_local_dev_only
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ../backend
+      target: api
+    environment: &backend_env
+      APP_NAME: crediwise-backend
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_CORRELATION_HEADER: X-Correlation-Id
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: crediwise
+      DB_USER: crediwise
+      DB_PASSWORD: crediwise_local_dev_only
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_DB: "0"
+      STORAGE_ENDPOINT_URL: http://minio:9000
+      STORAGE_REGION: us-east-1
+      STORAGE_BUCKET: crediwise-local
+      STORAGE_ACCESS_KEY: crediwise
+      STORAGE_SECRET_KEY: crediwise_local_dev_only
+      STORAGE_USE_SSL: "false"
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ../backend
+      target: worker
+    environment: *backend_env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  minio_data:
