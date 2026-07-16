@@ -3,9 +3,9 @@
 > **Single Source of Truth.** This is the *only* document a coding agent is expected to read before implementing any feature in this repository. It is a hybrid **Product Requirements Document (PRD) + Technical Design Document (TDD)**. If a decision is not written here, it is either (a) not yet decided — raise it and update this file via the process in [§24 Coding Agent Instructions](#24-coding-agent-instructions), or (b) governed by the closest analogous decision already documented. **Do not invent architecture silently.**
 
 - **Product:** CrediWise — *Two-Way Credit Safety Engine, Trust Layer & Open Finance Roadmap*
-- **Document version:** `1.1.2`
+- **Document version:** `1.2.0`
 - **Status:** Approved for Sprint 0
-- **Last updated:** 2026-07-16
+- **Last updated:** 2026-07-17
 - **Approval note:** Native iOS, the full backend/worker infrastructure, and terminal-agent-driven parallel implementation are confirmed team decisions following mentor review.
 - **Owner:** Founding engineering team
 - **Change control:** See [§23 Decision Log](#23-decision-log) and [§24.11 Updating PLAN.md](#2411-how-to-update-planmd)
@@ -932,6 +932,7 @@ Index: `(user_id)`, `UNIQUE(token_hash) WHERE deleted_at IS NULL`.
 **`financial_accounts`** — a user's bank/e-wallet/QRIS/marketplace account.
 `user_id FK`, `account_type account_type_enum` (`BANK, EWALLET, QRIS, MARKETPLACE`), `provider_name TEXT`, `masked_account_number TEXT`, `ownership_status ownership_enum DEFAULT 'DECLARED'`, `connection_type conn_type_enum` (`UPLOAD, API`), `connection_status conn_status_enum`.
 Index: `(user_id, account_type)`.
+`ownership_enum` (`DECLARED, VERIFIED`) and `conn_status_enum` (`ACTIVE, INACTIVE, ERROR`) member sets are not enumerated in Appendix A; added in Sprint 2/T2.1, documented here and in Appendix A per §24.11 (same gap-filling pattern as `refresh_tokens`, §24.11/§11.3 above). No route creates `financial_accounts` rows in Sprint 2 — `source_documents.financial_account_id` is nullable; a dedicated create/list flow is a later-sprint concern.
 
 **`financing_needs`** — a stated borrowing need.
 `user_id FK`, `requested_amount BIGINT`, `purpose purpose_enum`, `preferred_tenor_months INT`, `urgency urgency_enum`, `notes TEXT`.
@@ -940,6 +941,7 @@ Constraint: `CHECK (requested_amount > 0 AND requested_amount <= 1000000000)`, `
 **`source_documents`** — an uploaded file.
 `user_id FK`, `financial_account_id FK NULL`, `file_name TEXT`, `file_hash CHAR(64) NOT NULL`, `mime_type TEXT`, `source_type source_type_enum` (provenance tier), `storage_path TEXT`, `statement_start_date DATE`, `statement_end_date DATE`, `status doc_status_enum NOT NULL DEFAULT 'UPLOADED'`, `page_count INT`, `uploaded_at TIMESTAMPTZ`.
 Index: `UNIQUE(user_id, file_hash) WHERE deleted_at IS NULL` (dedup); `(user_id, status)`.
+`doc_status_enum`'s Appendix A list is missing two states §8.2's diagram requires — `VALIDATION_FAILED` (oversize/corrupt/zero-byte) and `DUPLICATE_REUSED` (same user+hash re-upload) — added in Sprint 2/T2.1 and appended to Appendix A per §24.11. `storage_path` is left `NULL` for `REJECTED_SECURITY`/`VALIDATION_FAILED` documents (ADR-013): only bytes that pass the file-security stage are ever written to object storage.
 
 **`document_verification_results`** — append-only Trust-Layer output per processing run.
 `source_document_id FK`, `processing_run_id FK`, `verification_model_version_id FK`, `supersedes_result_id FK NULL`, `metadata_score`, `consistency_score`, `visual_score`, `ocr_score`, `completeness_score`, `ownership_score`, `provenance_score`, `data_confidence_score NUMERIC(6,2)`, `confidence_band band_enum`, `flags_json JSONB`, `verified_at TIMESTAMPTZ`.
@@ -1639,6 +1641,7 @@ Every PR body includes: **What/Why**, **PLAN sections & FR/NFR touched**, **How 
 | **ADR-010** | **Money as BIGINT whole IDR** | IDR has no practically used subunit; avoids float error; simplest correct representation. |
 | **ADR-011** | **Guided stepper** (not tab bar) for MVP | Optimises the linear demo golden path; home/tabs post-MVP. |
 | **ADR-012** | **Model config as versioned code + config_hash** | Governance/reproducibility; every threshold change is a traceable version. |
+| **ADR-013** | **File-security stage runs synchronously in `POST /documents`**, not in the `documents` worker | Passwords must never cross the Celery/Redis boundary (§24.10); dedup must gate the HTTP response before any row/storage write (FR-3 AC3). |
 
 ---
 
@@ -1813,13 +1816,13 @@ Follow the sprint plan (§25). Within a feature, build **inside-out**: model/mig
 - [x] T1.9 Tests: auth integration, RBAC unit
 
 ### 26.3 Sprint 2 — Upload & Storage
-- [ ] T2.1 `financial_accounts` + `source_documents` models + migration
-- [ ] T2.2 `StoragePort` + MinIO adapter + presigned upload/download
-- [ ] T2.3 File-security stage (MIME/magic-bytes/size/hash/dedup/script-scan/password)
-- [ ] T2.4 `POST /documents` (202) + `GET /documents/{id}/status`
-- [ ] T2.5 Celery `documents` queue + state-machine orchestrator (§8.2)
+- [x] T2.1 `financial_accounts` + `source_documents` models + migration
+- [x] T2.2 `StoragePort` + MinIO adapter + presigned upload/download
+- [x] T2.3 File-security stage (MIME/magic-bytes/size/hash/dedup/script-scan/password)
+- [x] T2.4 `POST /documents` (202) + `GET /documents/{id}/status`
+- [x] T2.5 Celery `documents` queue + state-machine orchestrator (§8.2)
 - [ ] T2.6 iOS: upload picker, progress, ProcessingChecklist, error states
-- [ ] T2.7 Tests: security stage, dedup, status transitions
+- [x] T2.7 Tests: security stage, dedup, status transitions
 
 ### 26.4 Sprint 3 — Trust Layer & Data Confidence
 - [ ] T3.1 Extraction: pdfplumber/PyMuPDF (digital) + Tesseract (image) → normalized rows (§15.2)
@@ -1895,7 +1898,11 @@ Where an older sentence conflicts with these additions, the more specific v1.1.0
 ## Appendix A — Enum Reference (initial values)
 
 - `role_enum`: USER, LENDER, REVIEWER, ADMIN
-- `doc_status_enum`: UPLOADED, SECURITY_CHECK, REJECTED_SECURITY, EXTRACTING, UNSUPPORTED_FORMAT, VERIFYING, NORMALIZING, ANALYZING, HUMAN_REVIEW, COMPLETE
+- `doc_status_enum`: UPLOADED, SECURITY_CHECK, REJECTED_SECURITY, VALIDATION_FAILED, DUPLICATE_REUSED, EXTRACTING, UNSUPPORTED_FORMAT, VERIFYING, NORMALIZING, ANALYZING, HUMAN_REVIEW, COMPLETE (`VALIDATION_FAILED`/`DUPLICATE_REUSED` added Sprint 2/T2.1 — §8.2's diagram requires them; see §11.3 `source_documents`)
+- `account_type_enum`: BANK, EWALLET, QRIS, MARKETPLACE
+- `ownership_enum`: DECLARED, VERIFIED (added Sprint 2/T2.1 — gap-fill, see §11.3 `financial_accounts`)
+- `conn_type_enum`: UPLOAD, API
+- `conn_status_enum`: ACTIVE, INACTIVE, ERROR (added Sprint 2/T2.1 — gap-fill, see §11.3 `financial_accounts`)
 - `assessment_status_enum`: PENDING, ANALYZING, COMPLETE, FAILED, HUMAN_REVIEW
 - `band_enum`: HIGH, MEDIUM, LOW
 - `risk_band_enum`: A, B, C, D, INSUFFICIENT_DATA
