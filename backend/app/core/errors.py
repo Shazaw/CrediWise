@@ -32,6 +32,28 @@ class ValidationError(CrediWiseError):
     http_status = 422
 
 
+class UnsupportedMediaTypeError(CrediWiseError):
+    """FR-3 AC1: an upload whose declared Content-Type is outside
+    `application/pdf, text/csv, image/png, image/jpeg` is rejected outright —
+    no `source_documents` row is created (PLAN §7.2 EC)."""
+
+    code = "UNSUPPORTED_MEDIA_TYPE"
+    http_status = 415
+
+
+class PdfPasswordRequiredError(ValidationError):
+    """FR-3 AC4/EC: an encrypted PDF uploaded without a password is a
+    same-request retry prompt, not a stored pipeline state."""
+
+    code = "PDF_PASSWORD_REQUIRED"
+
+
+class InvalidPdfPasswordError(ValidationError):
+    """FR-3 AC4: the supplied password did not decrypt the PDF."""
+
+    code = "INVALID_PDF_PASSWORD"
+
+
 class AuthError(CrediWiseError):
     code = "AUTH_ERROR"
     http_status = 401

@@ -16,14 +16,18 @@ from collections.abc import Iterator
 
 import pytest
 from fastapi.testclient import TestClient
+from moto import mock_aws
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
 import app.models  # noqa: F401 - populates Base.metadata
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.db.base import Base
 from app.db.session import get_db
+from app.integrations.storage import set_storage_port
+from app.integrations.storage.s3_adapter import S3StorageAdapter
+from app.pipeline import dispatch
 
 
 @pytest.fixture(scope="session")
@@ -67,3 +71,34 @@ def authed_client(db_session: Session) -> Iterator[TestClient]:
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(autouse=True)
+def _inline_document_processing(db_session: Session) -> Iterator[None]:
+    """Runs `process_document`'s logic inline against the test's own
+    `db_session` instead of a real Celery broker + a second, separately
+    connected `SessionLocal` (see `app/pipeline/dispatch.py`)."""
+    from app.pipeline.document_tasks import run_security_and_enqueue_extraction
+
+    dispatch.set_dispatch_override(
+        lambda document_id: run_security_and_enqueue_extraction(db_session, document_id)
+    )
+    yield
+    dispatch.set_dispatch_override(None)
+
+
+@pytest.fixture(autouse=True)
+def _mock_storage() -> Iterator[None]:
+    """`moto` intercepts AWS-shaped endpoints (see `tests/unit/test_storage_adapter.py`
+    for why the endpoint here differs from the app's real MinIO `STORAGE_ENDPOINT_URL`)."""
+    settings = Settings(
+        storage_endpoint_url="https://s3.amazonaws.com",
+        storage_region="us-east-1",
+        storage_bucket="crediwise-test-bucket",
+        storage_access_key="testing",
+        storage_secret_key="testing",
+    )
+    with mock_aws():
+        set_storage_port(S3StorageAdapter(settings))
+        yield
+    set_storage_port(None)

@@ -1,0 +1,15 @@
+enum DocumentProcessingStatus: String, Equatable, Sendable {
+    case uploaded = "UPLOADED"
+    case securityCheck = "SECURITY_CHECK"
+    case rejectedSecurity = "REJECTED_SECURITY"
+    case validationFailed = "VALIDATION_FAILED"
+    case duplicateReused = "DUPLICATE_REUSED"
+    case extracting = "EXTRACTING"
+    case unsupportedFormat = "UNSUPPORTED_FORMAT"
+    case verifying = "VERIFYING"
+    case reviewPending = "REVIEW_PENDING"
+    case normalizing = "NORMALIZING"
+    case analyzing = "ANALYZING"
+    case humanReview = "HUMAN_REVIEW"
+    case complete = "COMPLETE"
+}

@@ -4,30 +4,65 @@ struct AppContainer {
     @MainActor
     func makeAppCoordinator() -> AppCoordinator {
         let isUITesting = ProcessInfo.processInfo.arguments.contains("--ui-testing")
-        let tokenStore: any TokenStore
-        let authenticationRepository: any AuthenticationRepository
-
-        if isUITesting {
-            tokenStore = VolatileTokenStore()
-            authenticationRepository = MockAuthenticationRepository()
-        } else {
-            tokenStore = KeychainTokenStore(
+        let tokenStore: any TokenStore = isUITesting
+            ? VolatileTokenStore()
+            : KeychainTokenStore(
                 service: Bundle.main.bundleIdentifier ?? "com.crediwise.app"
             )
-            if let baseURL = apiBaseURL() {
-                authenticationRepository = APIAuthenticationRepository(
-                    baseURL: baseURL,
-                    tokenStore: tokenStore
-                )
-            } else {
-                authenticationRepository = UnavailableAuthenticationRepository()
-            }
-        }
         let sessionManager = SessionManager(tokenStore: tokenStore)
+        let dependencies = isUITesting
+            ? AppDependencies(
+                authenticationRepository: MockAuthenticationRepository(),
+                documentUploadRepository: MockDocumentUploadRepository(
+                    statuses: [.securityCheck, .complete]
+                ),
+                isDocumentUploadAvailable: true
+            )
+            : makeProductionDependencies(tokenStore: tokenStore, sessionManager: sessionManager)
 
         return AppCoordinator(
             sessionManager: sessionManager,
-            authenticationRepository: authenticationRepository
+            authenticationRepository: dependencies.authenticationRepository,
+            documentUploadRepository: dependencies.documentUploadRepository,
+            uploadPollingPolicy: DocumentUploadPollingPolicy(),
+            allowsSyntheticUpload: isUITesting,
+            isDocumentUploadAvailable: dependencies.isDocumentUploadAvailable
+        )
+    }
+
+    @MainActor
+    private func makeProductionDependencies(
+        tokenStore: any TokenStore,
+        sessionManager: SessionManager
+    ) -> AppDependencies {
+        guard let baseURL = apiBaseURL() else {
+            return AppDependencies(
+                authenticationRepository: UnavailableAuthenticationRepository(),
+                documentUploadRepository: UnavailableDocumentUploadRepository(),
+                isDocumentUploadAvailable: false
+            )
+        }
+
+        let authenticationRepository = APIAuthenticationRepository(
+            baseURL: baseURL,
+            tokenStore: tokenStore
+        )
+        let authInterceptor = AuthInterceptor(
+            tokenStore: tokenStore,
+            refreshHandler: { refreshToken in
+                try await authenticationRepository.refresh(refreshToken: refreshToken)
+            },
+            unauthorizedHandler: {
+                await sessionManager.signOut()
+            }
+        )
+        return AppDependencies(
+            authenticationRepository: authenticationRepository,
+            documentUploadRepository: APIDocumentUploadRepository(
+                baseURL: baseURL,
+                authInterceptor: authInterceptor
+            ),
+            isDocumentUploadAvailable: true
         )
     }
 
@@ -42,4 +77,10 @@ struct AppContainer {
         return nil
         #endif
     }
+}
+
+private struct AppDependencies {
+    let authenticationRepository: any AuthenticationRepository
+    let documentUploadRepository: any DocumentUploadRepository
+    let isDocumentUploadAvailable: Bool
 }

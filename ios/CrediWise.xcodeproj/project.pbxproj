@@ -49,6 +49,31 @@
 		A00000000000000000000028 /* UnavailableAuthenticationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002A /* UnavailableAuthenticationRepository.swift */; };
 		A00000000000000000000029 /* APIAuthenticationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002B /* APIAuthenticationRepository.swift */; };
 		A0000000000000000000002A /* APIAuthenticationRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002C /* APIAuthenticationRepositoryTests.swift */; };
+		A0000000000000000000002B /* SelectedUploadFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002D /* SelectedUploadFile.swift */; };
+		A0000000000000000000002C /* DocumentProcessingStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002E /* DocumentProcessingStatus.swift */; };
+		A0000000000000000000002D /* DocumentUploadReceipt.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002F /* DocumentUploadReceipt.swift */; };
+		A0000000000000000000002E /* DocumentStatusSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000030 /* DocumentStatusSnapshot.swift */; };
+		A0000000000000000000002F /* DocumentUploadRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000031 /* DocumentUploadRepository.swift */; };
+		A00000000000000000000030 /* DocumentUploadRepositoryError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000032 /* DocumentUploadRepositoryError.swift */; };
+		A00000000000000000000031 /* MockDocumentUploadRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000033 /* MockDocumentUploadRepository.swift */; };
+		A00000000000000000000032 /* UnavailableDocumentUploadRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000034 /* UnavailableDocumentUploadRepository.swift */; };
+		A00000000000000000000033 /* UploadFileValidationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000035 /* UploadFileValidationError.swift */; };
+		A00000000000000000000034 /* UploadFileValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000036 /* UploadFileValidator.swift */; };
+		A00000000000000000000035 /* DocumentUploadPollingPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000037 /* DocumentUploadPollingPolicy.swift */; };
+		A00000000000000000000036 /* UploadViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000038 /* UploadViewState.swift */; };
+		A00000000000000000000037 /* UploadViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000039 /* UploadViewModel.swift */; };
+		A00000000000000000000038 /* ProcessingChecklist.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000003A /* ProcessingChecklist.swift */; };
+		A00000000000000000000039 /* UploadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000003B /* UploadView.swift */; };
+		A0000000000000000000003A /* UploadFileValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000003C /* UploadFileValidatorTests.swift */; };
+		A0000000000000000000003B /* DocumentUploadPollingPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000003D /* DocumentUploadPollingPolicyTests.swift */; };
+		A0000000000000000000003C /* UploadViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000003E /* UploadViewModelTests.swift */; };
+		A0000000000000000000003D /* UploadFileCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000003F /* UploadFileCard.swift */; };
+		A0000000000000000000003E /* UploadResultCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000040 /* UploadResultCard.swift */; };
+		A0000000000000000000003F /* APIDocumentUploadRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000041 /* APIDocumentUploadRepository.swift */; };
+		A00000000000000000000040 /* APIDocumentUploadRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000042 /* APIDocumentUploadRepositoryTests.swift */; };
+		A00000000000000000000041 /* DocumentSourceType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000043 /* DocumentSourceType.swift */; };
+		A00000000000000000000042 /* UploadPasswordCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000044 /* UploadPasswordCard.swift */; };
+		A00000000000000000000043 /* UploadSourcePickerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000045 /* UploadSourcePickerCard.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -112,6 +137,31 @@
 		B0000000000000000000002A /* UnavailableAuthenticationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnavailableAuthenticationRepository.swift; sourceTree = "<group>"; };
 		B0000000000000000000002B /* APIAuthenticationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIAuthenticationRepository.swift; sourceTree = "<group>"; };
 		B0000000000000000000002C /* APIAuthenticationRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIAuthenticationRepositoryTests.swift; sourceTree = "<group>"; };
+		B0000000000000000000002D /* SelectedUploadFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedUploadFile.swift; sourceTree = "<group>"; };
+		B0000000000000000000002E /* DocumentProcessingStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentProcessingStatus.swift; sourceTree = "<group>"; };
+		B0000000000000000000002F /* DocumentUploadReceipt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentUploadReceipt.swift; sourceTree = "<group>"; };
+		B00000000000000000000030 /* DocumentStatusSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentStatusSnapshot.swift; sourceTree = "<group>"; };
+		B00000000000000000000031 /* DocumentUploadRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentUploadRepository.swift; sourceTree = "<group>"; };
+		B00000000000000000000032 /* DocumentUploadRepositoryError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentUploadRepositoryError.swift; sourceTree = "<group>"; };
+		B00000000000000000000033 /* MockDocumentUploadRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDocumentUploadRepository.swift; sourceTree = "<group>"; };
+		B00000000000000000000034 /* UnavailableDocumentUploadRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnavailableDocumentUploadRepository.swift; sourceTree = "<group>"; };
+		B00000000000000000000035 /* UploadFileValidationError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadFileValidationError.swift; sourceTree = "<group>"; };
+		B00000000000000000000036 /* UploadFileValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadFileValidator.swift; sourceTree = "<group>"; };
+		B00000000000000000000037 /* DocumentUploadPollingPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentUploadPollingPolicy.swift; sourceTree = "<group>"; };
+		B00000000000000000000038 /* UploadViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadViewState.swift; sourceTree = "<group>"; };
+		B00000000000000000000039 /* UploadViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadViewModel.swift; sourceTree = "<group>"; };
+		B0000000000000000000003A /* ProcessingChecklist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessingChecklist.swift; sourceTree = "<group>"; };
+		B0000000000000000000003B /* UploadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadView.swift; sourceTree = "<group>"; };
+		B0000000000000000000003C /* UploadFileValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadFileValidatorTests.swift; sourceTree = "<group>"; };
+		B0000000000000000000003D /* DocumentUploadPollingPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentUploadPollingPolicyTests.swift; sourceTree = "<group>"; };
+		B0000000000000000000003E /* UploadViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadViewModelTests.swift; sourceTree = "<group>"; };
+		B0000000000000000000003F /* UploadFileCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadFileCard.swift; sourceTree = "<group>"; };
+		B00000000000000000000040 /* UploadResultCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadResultCard.swift; sourceTree = "<group>"; };
+		B00000000000000000000041 /* APIDocumentUploadRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDocumentUploadRepository.swift; sourceTree = "<group>"; };
+		B00000000000000000000042 /* APIDocumentUploadRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDocumentUploadRepositoryTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000043 /* DocumentSourceType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentSourceType.swift; sourceTree = "<group>"; };
+		B00000000000000000000044 /* UploadPasswordCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadPasswordCard.swift; sourceTree = "<group>"; };
+		B00000000000000000000045 /* UploadSourcePickerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadSourcePickerCard.swift; sourceTree = "<group>"; };
 		B00000000000000000000100 /* CrediWise.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrediWise.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B00000000000000000000101 /* CrediWiseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrediWiseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B00000000000000000000102 /* CrediWiseUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrediWiseUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -206,7 +256,10 @@
 		};
 		D0000000000000000000000A /* Features */ = {
 			isa = PBXGroup;
-			children = (D0000000000000000000000B /* Onboarding */);
+			children = (
+				D0000000000000000000000B /* Onboarding */,
+				D00000000000000000000019 /* Upload */,
+			);
 			path = Features;
 			sourceTree = "<group>";
 		};
@@ -245,6 +298,7 @@
 				D00000000000000000000017 /* Auth */,
 				D00000000000000000000018 /* Networking */,
 				D0000000000000000000000F /* Features */,
+				D0000000000000000000001E /* Upload Tests */,
 			);
 			path = CrediWiseTests;
 			sourceTree = "<group>";
@@ -337,6 +391,77 @@
 			isa = PBXGroup;
 			children = (B00000000000000000000028 /* AuthInterceptorTests.swift */);
 			path = Core/Networking;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000019 /* Upload */ = {
+			isa = PBXGroup;
+			children = (
+				D0000000000000000000001A /* Models */,
+				D0000000000000000000001B /* Repositories */,
+				D0000000000000000000001C /* ViewModels */,
+				D0000000000000000000001D /* Views */,
+			);
+			path = Upload;
+			sourceTree = "<group>";
+		};
+		D0000000000000000000001A /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B0000000000000000000002E /* DocumentProcessingStatus.swift */,
+				B00000000000000000000043 /* DocumentSourceType.swift */,
+				B00000000000000000000030 /* DocumentStatusSnapshot.swift */,
+				B0000000000000000000002F /* DocumentUploadReceipt.swift */,
+				B0000000000000000000002D /* SelectedUploadFile.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		D0000000000000000000001B /* Repositories */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000041 /* APIDocumentUploadRepository.swift */,
+				B00000000000000000000031 /* DocumentUploadRepository.swift */,
+				B00000000000000000000032 /* DocumentUploadRepositoryError.swift */,
+				B00000000000000000000033 /* MockDocumentUploadRepository.swift */,
+				B00000000000000000000034 /* UnavailableDocumentUploadRepository.swift */,
+			);
+			path = Repositories;
+			sourceTree = "<group>";
+		};
+		D0000000000000000000001C /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000037 /* DocumentUploadPollingPolicy.swift */,
+				B00000000000000000000035 /* UploadFileValidationError.swift */,
+				B00000000000000000000036 /* UploadFileValidator.swift */,
+				B00000000000000000000038 /* UploadViewState.swift */,
+				B00000000000000000000039 /* UploadViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		D0000000000000000000001D /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B0000000000000000000003A /* ProcessingChecklist.swift */,
+				B0000000000000000000003F /* UploadFileCard.swift */,
+				B00000000000000000000044 /* UploadPasswordCard.swift */,
+				B00000000000000000000040 /* UploadResultCard.swift */,
+				B00000000000000000000045 /* UploadSourcePickerCard.swift */,
+				B0000000000000000000003B /* UploadView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		D0000000000000000000001E /* Upload Tests */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000042 /* APIDocumentUploadRepositoryTests.swift */,
+				B0000000000000000000003D /* DocumentUploadPollingPolicyTests.swift */,
+				B0000000000000000000003C /* UploadFileValidatorTests.swift */,
+				B0000000000000000000003E /* UploadViewModelTests.swift */,
+			);
+			path = Features/Upload;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -494,10 +619,31 @@
 				A00000000000000000000028 /* UnavailableAuthenticationRepository.swift in Sources */,
 				A00000000000000000000019 /* VolatileTokenStore.swift in Sources */,
 				A0000000000000000000000E /* WelcomeView.swift in Sources */,
+				A0000000000000000000002B /* SelectedUploadFile.swift in Sources */,
+				A0000000000000000000002C /* DocumentProcessingStatus.swift in Sources */,
+				A0000000000000000000002D /* DocumentUploadReceipt.swift in Sources */,
+				A0000000000000000000002E /* DocumentStatusSnapshot.swift in Sources */,
+				A0000000000000000000002F /* DocumentUploadRepository.swift in Sources */,
+				A00000000000000000000030 /* DocumentUploadRepositoryError.swift in Sources */,
+				A00000000000000000000031 /* MockDocumentUploadRepository.swift in Sources */,
+				A00000000000000000000032 /* UnavailableDocumentUploadRepository.swift in Sources */,
+				A00000000000000000000033 /* UploadFileValidationError.swift in Sources */,
+				A00000000000000000000034 /* UploadFileValidator.swift in Sources */,
+				A00000000000000000000035 /* DocumentUploadPollingPolicy.swift in Sources */,
+				A00000000000000000000036 /* UploadViewState.swift in Sources */,
+				A00000000000000000000037 /* UploadViewModel.swift in Sources */,
+				A00000000000000000000038 /* ProcessingChecklist.swift in Sources */,
+				A00000000000000000000039 /* UploadView.swift in Sources */,
+				A0000000000000000000003D /* UploadFileCard.swift in Sources */,
+				A0000000000000000000003E /* UploadResultCard.swift in Sources */,
+				A0000000000000000000003F /* APIDocumentUploadRepository.swift in Sources */,
+				A00000000000000000000041 /* DocumentSourceType.swift in Sources */,
+				A00000000000000000000042 /* UploadPasswordCard.swift in Sources */,
+				A00000000000000000000043 /* UploadSourcePickerCard.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F00000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A0000000000000000000002A /* APIAuthenticationRepositoryTests.swift in Sources */, A00000000000000000000012 /* AppCoordinatorTests.swift in Sources */, A00000000000000000000027 /* AuthenticationViewModelTests.swift in Sources */, A00000000000000000000026 /* AuthInterceptorTests.swift in Sources */, A00000000000000000000025 /* SessionManagerTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+		F00000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A0000000000000000000002A /* APIAuthenticationRepositoryTests.swift in Sources */, A00000000000000000000040 /* APIDocumentUploadRepositoryTests.swift in Sources */, A00000000000000000000012 /* AppCoordinatorTests.swift in Sources */, A00000000000000000000027 /* AuthenticationViewModelTests.swift in Sources */, A00000000000000000000026 /* AuthInterceptorTests.swift in Sources */, A00000000000000000000025 /* SessionManagerTests.swift in Sources */, A0000000000000000000003A /* UploadFileValidatorTests.swift in Sources */, A0000000000000000000003B /* DocumentUploadPollingPolicyTests.swift in Sources */, A0000000000000000000003C /* UploadViewModelTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
 		F00000000000000000000007 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000013 /* WelcomeFlowUITests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
