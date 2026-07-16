@@ -1,9 +1,9 @@
-# PLAN.md — Krediwise Engineering Blueprint
+# PLAN.md — CrediWise Engineering Blueprint
 
 > **Single Source of Truth.** This is the *only* document a coding agent is expected to read before implementing any feature in this repository. It is a hybrid **Product Requirements Document (PRD) + Technical Design Document (TDD)**. If a decision is not written here, it is either (a) not yet decided — raise it and update this file via the process in [§24 Coding Agent Instructions](#24-coding-agent-instructions), or (b) governed by the closest analogous decision already documented. **Do not invent architecture silently.**
 
-- **Product:** Krediwise — *Two-Way Credit Safety Engine, Trust Layer & Open Finance Roadmap*
-- **Document version:** `1.1.0`
+- **Product:** CrediWise — *Two-Way Credit Safety Engine, Trust Layer & Open Finance Roadmap*
+- **Document version:** `1.1.1`
 - **Status:** Approved for Sprint 0
 - **Last updated:** 2026-07-16
 - **Approval note:** Native iOS, the full backend/worker infrastructure, and terminal-agent-driven parallel implementation are confirmed team decisions following mentor review.
@@ -47,9 +47,9 @@
 
 ### 1.1 Vision
 
-Krediwise is an **alternative financial-assessment platform** for underserved, thin-file, informal-income, freelance, gig-worker, and microbusiness (UMKM) users in Indonesia whose real financial capacity is invisible to conventional credit bureaus. It converts verified transaction data (bank e-statements, e-wallet histories, QRIS settlements, marketplace exports, CSV exports, and eventually Open Finance connections) into an **explainable** assessment of financial behaviour, repayment capacity, shock resilience, and *safe* borrowing capacity.
+CrediWise is an **alternative financial-assessment platform** for underserved, thin-file, informal-income, freelance, gig-worker, and microbusiness (UMKM) users in Indonesia whose real financial capacity is invisible to conventional credit bureaus. It converts verified transaction data (bank e-statements, e-wallet histories, QRIS settlements, marketplace exports, CSV exports, and eventually Open Finance connections) into an **explainable** assessment of financial behaviour, repayment capacity, shock resilience, and *safe* borrowing capacity.
 
-Krediwise is built on a **two-way credit-safety principle**. Conventional scoring asks *“Can this borrower safely repay the lender?”* Krediwise asks that **and** *“Can this borrower safely accept this loan without becoming financially vulnerable?”*
+CrediWise is built on a **two-way credit-safety principle**. Conventional scoring asks *“Can this borrower safely repay the lender?”* CrediWise asks that **and** *“Can this borrower safely accept this loan without becoming financially vulnerable?”*
 
 > **Defining principle:** *We do not only determine whether a user is creditworthy. We determine whether the credit is worthy of the user.*
 
@@ -126,7 +126,7 @@ These are **reasonable engineering assumptions** made where the brief left gaps.
 
 ### 2.1 Core Positioning
 
-Krediwise converts verified transaction data into: a **Data Confidence Score**, an explainable financial profile, an **Indicative Credit-Risk Band**, a **Shock Resilience Score**, a **Safe Borrowing Capacity**, a recommended repayment structure, and a **Safe Offer Score** for every offer. Unlike ordinary alternative scoring, **Krediwise scores the loan, not only the borrower.**
+CrediWise converts verified transaction data into: a **Data Confidence Score**, an explainable financial profile, an **Indicative Credit-Risk Band**, a **Shock Resilience Score**, a **Safe Borrowing Capacity**, a recommended repayment structure, and a **Safe Offer Score** for every offer. Unlike ordinary alternative scoring, **CrediWise scores the loan, not only the borrower.**
 
 ### 2.2 The Four Dimensions
 
@@ -142,7 +142,7 @@ Krediwise converts verified transaction data into: a **Data Confidence Score**, 
 - **MUST** present outputs as *estimated financial-risk, affordability, and credit-readiness assessment*.
 - **MUST NOT** claim an official, bank-recognised credit score or instruct lenders to approve based on an “official rating.”
 - **MUST** keep **Data reliability separate from financial behaviour** — a low Data Confidence Score never means “dishonest user,” only “unverifiable data.”
-- **MUST** keep the **lender responsible for the final decision**; Krediwise provides decision *support*, not decisions.
+- **MUST** keep the **lender responsible for the final decision**; CrediWise provides decision *support*, not decisions.
 - These guardrails are enforced via (a) copy constants in the iOS `Strings` catalog, (b) a lint check that fails PRs containing banned phrases (`official credit score`, `guaranteed approval`) in user-facing strings, and (c) PR review checklist item (§22.7).
 
 ---
@@ -154,8 +154,8 @@ Krediwise converts verified transaction data into: a **Data Confidence Score**, 
 - **P1 — Ibu Sari (Microbusiness / UMKM, QRIS seller):** irregular but predictable income; wants a productive loan without over-borrowing. Primary MVP persona.
 - **P2 — Budi (Gig worker / freelancer):** multi-source income across bank + e-wallets; thin credit file. Primary MVP persona.
 - **P3 — Rina (Lender analyst, regulated BPR):** needs a verified, explainable, auditable decision package. Post-MVP.
-- **P4 — Krediwise Reviewer/Ops:** performs human review of low-confidence / borderline assessments. Post-MVP (stubbed in MVP).
-- **P5 — Krediwise Admin:** manages model versions, feature flags, seeded lenders, and audit review. Post-MVP.
+- **P4 — CrediWise Reviewer/Ops:** performs human review of low-confidence / borderline assessments. Post-MVP (stubbed in MVP).
+- **P5 — CrediWise Admin:** manages model versions, feature flags, seeded lenders, and audit review. Post-MVP.
 
 ### 3.2 Roles & Permission Matrix
 
@@ -559,7 +559,7 @@ Each feature: **Purpose · Business value · Primary user story · Key APIs · D
 
 ### 7.4 `[MVP]` Trust Layer & Data Confidence
 - **Purpose:** decide whether the data can be trusted; quantify it.
-- **Value:** the credibility gate that separates Krediwise from “parse-and-pray” tools.
+- **Value:** the credibility gate that separates CrediWise from “parse-and-pray” tools.
 - **APIs:** `GET /documents/{id}/verification`, surfaced in `GET /assessments/{id}/dashboard`.
 - **Models:** `document_verification_results`.
 - **Screens:** Data Confidence card + drill-down (reason chips, recommendations).
@@ -750,7 +750,7 @@ sequenceDiagram
 ### 8.4 Repository Layout (monorepo)
 
 ```text
-krediwise/
+crediwise/
 ├── PLAN.md                      # THIS FILE — single source of truth
 ├── docs/
 │   ├── adr/                     # Architecture Decision Records (ADR-XXX.md)
@@ -774,7 +774,7 @@ krediwise/
 │   ├── pyproject.toml
 │   └── Dockerfile
 ├── ios/
-│   └── Krediwise/               # SwiftUI app (see §13)
+│   └── CrediWise/               # SwiftUI app (see §13)
 ├── infra/
 │   ├── docker-compose.yml       # local: api, worker, postgres, redis, minio
 │   └── github-actions/          # CI workflows
@@ -839,7 +839,7 @@ FastAPI `Depends` for request-scoped deps: DB session, current user, repositorie
 
 ### 10.3 Error Handling
 
-- Central exception hierarchy in `core/errors.py`: `KrediwiseError` → `NotFoundError`, `ValidationError`, `AuthError`, `PermissionError`, `ConflictError`, `PipelineError`, `IntegrationError`.
+- Central exception hierarchy in `core/errors.py`: `CrediWiseError` → `NotFoundError`, `ValidationError`, `AuthError`, `PermissionError`, `ConflictError`, `PipelineError`, `IntegrationError`.
 - A FastAPI exception handler maps each to a **stable error envelope**:
   ```json
   { "error": { "code": "CONSENT_EXPIRED", "message": "...", "details": {}, "correlation_id": "..." } }
@@ -1142,8 +1142,8 @@ Constraint: only one `ACTIVE` per `model_name` (partial unique index).
 ### 13.2 Module / Folder Structure
 
 ```text
-ios/Krediwise/
-├── App/                     # KrediwiseApp.swift, AppCoordinator, DI container
+ios/CrediWise/
+├── App/                     # CrediWiseApp.swift, AppCoordinator, DI container
 ├── Core/
 │   ├── Networking/          # APIClient, Endpoint, AuthInterceptor, ErrorMapper
 │   ├── Auth/                # TokenStore (Keychain), SessionManager
@@ -1173,7 +1173,7 @@ ios/Krediwise/
 - `APIClient` wraps `URLSession`; `Endpoint` value type describes method/path/body/auth.
 - **AuthInterceptor:** attaches bearer token; on `401` transparently calls `/auth/refresh` once and retries; on refresh failure → sign out.
 - **Polling:** for `202` pipeline responses, ViewModels poll `GET .../status` with backoff (1s→2s→4s, cap 8s, timeout 90s) and render the state-machine stages as a progress checklist. (Post-MVP: replace polling with push.)
-- Decoding: `JSONDecoder` with snake_case→camelCase strategy; central `ErrorMapper` turns the error envelope into typed `KrediwiseError` for UI.
+- Decoding: `JSONDecoder` with snake_case→camelCase strategy; central `ErrorMapper` turns the error envelope into typed `CrediWiseError` for UI.
 
 ### 13.5 State, Caching & Offline
 
@@ -1316,7 +1316,7 @@ Each engine exposes: `def run(inputs, config: ModelConfig) -> Result`. Interface
 
 ### 15.6 Local Kimi-Assisted Document Fraud Detection
 
-Krediwise uses a locally/self-hosted Kimi-class multimodal model as an **assistive anomaly detector**, never as an autonomous fraud judge. The adapter accepts rendered page regions and deterministic forensic features; inference runs inside controlled infrastructure through an OpenAI-compatible local endpoint.
+CrediWise uses a locally/self-hosted Kimi-class multimodal model as an **assistive anomaly detector**, never as an autonomous fraud judge. The adapter accepts rendered page regions and deterministic forensic features; inference runs inside controlled infrastructure through an OpenAI-compatible local endpoint.
 
 **Allowed outputs:** bounded anomaly probabilities/tags, affected page/region references, concise evidence descriptions, model identifier/version, prompt/config hash, inference timestamp.
 
@@ -1347,7 +1347,7 @@ All AI and external side effects live in `backend/app/integrations/` behind inte
 
 ### 16.2 Open Finance Roadmap (design-only for MVP)
 
-The real flow (post-MVP): user selects provider → consent screen (read-only scope, no transfers) → redirect/OAuth at the institution (Krediwise **never** sees the bank password, NFR-6) → backend receives short-lived access token (encrypted at rest) → backend pulls transactions → canonical schema. In MVP the `MockOpenFinanceProvider` simulates the final step only, so the UI and pipeline are already Open-Finance-shaped. Aggregator abstraction is built in so a single aggregator can later replace many bank adapters.
+The real flow (post-MVP): user selects provider → consent screen (read-only scope, no transfers) → redirect/OAuth at the institution (CrediWise **never** sees the bank password, NFR-6) → backend receives short-lived access token (encrypted at rest) → backend pulls transactions → canonical schema. In MVP the `MockOpenFinanceProvider` simulates the final step only, so the UI and pipeline are already Open-Finance-shaped. Aggregator abstraction is built in so a single aggregator can later replace many bank adapters.
 
 ### 16.3 Local Kimi Fraud-Assistance Contract
 
@@ -1880,9 +1880,9 @@ Follow the sprint plan (§25). Within a feature, build **inside-out**: model/mig
 
 ---
 
-## 27. Finalization Notes for Version 1.1.0
+## 27. Finalization Notes for Version 1.1.1
 
-This version confirms the native iOS and full production-shaped infrastructure decisions and closes the major implementation ambiguities identified during review. It adds: local Kimi-assisted fraud detection boundaries; immutable assessment snapshots; versioned processing and verification runs; many-to-many assessment lineage; user extraction confirmation/corrections; personal/business classification; richer Digital Twin structures; temporal liquidity simulation; complete loan mathematics; refinancing-dependency risk; deterministic improvement recommendations; and explicit simulated-offer labelling.
+This version confirms the native iOS and full production-shaped infrastructure decisions and closes the major implementation ambiguities identified during review. It adds: local Kimi-assisted fraud detection boundaries; immutable assessment snapshots; versioned processing and verification runs; many-to-many assessment lineage; user extraction confirmation/corrections; personal/business classification; richer Digital Twin structures; temporal liquidity simulation; complete loan mathematics; refinancing-dependency risk; deterministic improvement recommendations; and explicit simulated-offer labelling. Version 1.1.1 also corrects the product name to CrediWise throughout the specification.
 
 Where an older sentence conflicts with these additions, the more specific v1.1.0 rule controls.
 
@@ -1921,4 +1921,4 @@ Where an older sentence conflicts with these additions, the more specific v1.1.0
 
 ---
 
-*End of PLAN.md v1.0.0 — keep this document current (§24.11). If you changed architecture and didn't update this file, your PR is incomplete.*
+*End of PLAN.md v1.1.1 — keep this document current (§24.11). If you changed architecture and didn't update this file, your PR is incomplete.*

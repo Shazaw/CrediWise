@@ -1,6 +1,6 @@
-# Krediwise
+# CrediWise
 
-Krediwise is a two-way credit safety engine for underserved, thin-file,
+CrediWise is a two-way credit safety engine for underserved, thin-file,
 informal-income, freelance, gig-worker, and microbusiness users in Indonesia.
 It turns verified financial records into an explainable view of financial
 behaviour, repayment capacity, shock resilience, and safe borrowing capacity.
@@ -10,7 +10,7 @@ behaviour, repayment capacity, shock resilience, and safe borrowing capacity.
 
 ## Project Status
 
-Krediwise is currently in **Sprint 0: repository and environment foundation**.
+CrediWise is currently in **Sprint 0: repository and environment foundation**.
 The architecture and product requirements are approved, but application
 development has not started. The directories in this repository establish
 module ownership and dependency boundaries for upcoming work.
@@ -18,7 +18,7 @@ module ownership and dependency boundaries for upcoming work.
 The complete product and technical specification is [`PLAN.md`](PLAN.md).
 Terminal coding agents must also follow [`CLAUDE.md`](CLAUDE.md).
 
-## What Krediwise Produces
+## What CrediWise Produces
 
 - **Data Confidence:** how reliably the submitted financial data can be verified.
 - **Cash-Flow Digital Twin:** an explainable financial profile that separates
@@ -32,13 +32,13 @@ Terminal coding agents must also follow [`CLAUDE.md`](CLAUDE.md).
 - **Safe Offer Score:** a safety-first comparison of simulated loan offers,
   ranked by user suitability rather than commission.
 
-Krediwise provides an estimated financial-risk, affordability, and
+CrediWise provides an estimated financial-risk, affordability, and
 credit-readiness assessment based on the data provided, not an official credit
 score. Lenders remain responsible for final credit decisions.
 
 ## Architecture
 
-Krediwise is a monorepo with two primary workstreams:
+CrediWise is a monorepo with two primary workstreams:
 
 - `backend/`: Python 3.12, FastAPI, SQLAlchemy, Alembic, Celery, PostgreSQL,
   Redis, and S3-compatible object storage.
@@ -87,7 +87,7 @@ deterministic engines.
 |   `-- handoffs/               # Workstream handover notes
 |-- infra/
 |   `-- github-actions/         # CI workflow sources
-|-- ios/Krediwise/
+|-- ios/CrediWise/
 |   |-- App/                    # App entry point, coordinator, dependency container
 |   |-- Core/                   # Networking, auth, persistence, design system, utilities
 |   |-- Features/               # Feature-scoped views and view models
