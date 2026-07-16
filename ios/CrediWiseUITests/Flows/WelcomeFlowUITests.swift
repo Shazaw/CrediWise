@@ -58,7 +58,7 @@ final class WelcomeFlowUITests: XCTestCase {
 
         XCTAssertTrue(app.staticTexts["upload.processing.status"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.buttons["upload.another"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.otherElements["upload.processing.stage.0"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.staticTexts["upload.processing.stage.0"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.staticTexts["positioning.disclaimer"].exists)
     }
 
