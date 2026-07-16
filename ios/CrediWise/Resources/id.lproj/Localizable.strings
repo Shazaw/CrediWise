@@ -117,6 +117,7 @@
 "review.loading" = "Memuat bukti hasil ekstraksi";
 "review.owner.raw" = "Pemilik pada sumber";
 "review.owner.normalized" = "Pemilik hasil normalisasi";
+"review.owner.unavailable" = "Tidak tersedia dari format rekening koran ini";
 "review.period" = "Periode rekening koran";
 "review.corrections.count" = "%d usulan koreksi";
 "review.transaction.confidence" = "Ekstraksi %d%%";
@@ -178,7 +179,13 @@
 "confidence.dimension.coverage" = "Cakupan";
 "confidence.dimension.freshness" = "Kebaruan";
 "confidence.dimension.ownership" = "Kepemilikan rekening";
+"confidence.dimension.provenance" = "Asal sumber";
+"confidence.dimension.metadata" = "Integritas metadata";
+"confidence.dimension.ocr" = "Kualitas ekstraksi";
+"confidence.dimension.visual" = "Konsistensi visual dan struktur";
+"confidence.dimension.completeness" = "Kelengkapan rekening koran";
 "confidence.reasons.title" = "Alasan hasil ini";
+"confidence.reason.verification_signal.title" = "Sinyal verifikasi";
 "confidence.reason.original_pdf.title" = "Bukti PDF asli";
 "confidence.reason.original_pdf.detail" = "Sumber diberikan sebagai rekening koran digital asli, bukan tangkapan layar.";
 "confidence.reason.balance.title" = "Saldo konsisten";

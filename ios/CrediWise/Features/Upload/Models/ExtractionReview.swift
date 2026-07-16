@@ -55,7 +55,7 @@ struct ExtractionReview: Equatable, Sendable {
 
     let documentID: String
     let fileName: String
-    let accountOwner: ExtractedField<String>
+    let accountOwner: ExtractedField<String>?
     let periodLabel: String
     let transactions: [Transaction]
 }

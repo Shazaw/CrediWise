@@ -66,7 +66,8 @@ Protected-PDF passwords exist only for the active retry call, and image uploads
 require the user to declare screenshot or camera-photo lineage. UI tests launch
 with deterministic synthetic upload data and never treat mocks as source truth.
 
-The extraction-review and Data Confidence production adapter remains unavailable
-until its additive OpenAPI contract is committed. `--ui-testing --review-flow`
-uses synthetic fixtures to validate the contract-independent UI and navigation;
-normal builds do not guess review endpoints or response fields.
+Normal builds also use the authenticated transaction, review, confirmation, and
+verification endpoints committed in the additive Cycle 4 OpenAPI contract. The
+adapter submits structured raw/system/proposed correction lineage and renders
+server-supplied Trust Layer scores without recalculation. `--ui-testing
+--review-flow` continues to use deterministic fixtures for isolated UI coverage.

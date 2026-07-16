@@ -100,8 +100,14 @@ struct ExtractionReviewView: View {
             Text(verbatim: ready.review.fileName)
                 .font(TypographyTokens.cardTitle)
                 .foregroundStyle(CrediWiseColors.textPrimary)
-            LabeledContent("review.owner.raw", value: ready.review.accountOwner.raw)
-            LabeledContent("review.owner.normalized", value: ready.review.accountOwner.normalized)
+            if let accountOwner = ready.review.accountOwner {
+                LabeledContent("review.owner.raw", value: accountOwner.raw)
+                LabeledContent("review.owner.normalized", value: accountOwner.normalized)
+            } else {
+                LabeledContent("review.owner.normalized") {
+                    Text("review.owner.unavailable")
+                }
+            }
             LabeledContent("review.period", value: ready.review.periodLabel)
             Text(
                 String(

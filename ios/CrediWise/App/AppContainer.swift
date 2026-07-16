@@ -67,7 +67,10 @@ struct AppContainer {
                 baseURL: baseURL,
                 authInterceptor: authInterceptor
             ),
-            documentVerificationRepository: UnavailableVerificationRepository(),
+            documentVerificationRepository: APIDocumentVerificationRepository(
+                baseURL: baseURL,
+                authInterceptor: authInterceptor
+            ),
             isDocumentUploadAvailable: true
         )
     }

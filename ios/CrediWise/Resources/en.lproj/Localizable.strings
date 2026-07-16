@@ -117,6 +117,7 @@
 "review.loading" = "Loading extracted evidence";
 "review.owner.raw" = "Source owner";
 "review.owner.normalized" = "Normalized owner";
+"review.owner.unavailable" = "Not supplied by this statement format";
 "review.period" = "Statement period";
 "review.corrections.count" = "%d proposed corrections";
 "review.transaction.confidence" = "Extraction %d%%";
@@ -178,7 +179,13 @@
 "confidence.dimension.coverage" = "Coverage";
 "confidence.dimension.freshness" = "Freshness";
 "confidence.dimension.ownership" = "Account ownership";
+"confidence.dimension.provenance" = "Source provenance";
+"confidence.dimension.metadata" = "Metadata integrity";
+"confidence.dimension.ocr" = "Extraction quality";
+"confidence.dimension.visual" = "Visual and structural consistency";
+"confidence.dimension.completeness" = "Statement completeness";
 "confidence.reasons.title" = "Why this result";
+"confidence.reason.verification_signal.title" = "Verification signal";
 "confidence.reason.original_pdf.title" = "Original PDF evidence";
 "confidence.reason.original_pdf.detail" = "The source was supplied as an original digital statement rather than a screenshot.";
 "confidence.reason.balance.title" = "Balances are consistent";
