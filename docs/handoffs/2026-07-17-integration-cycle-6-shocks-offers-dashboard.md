@@ -6,6 +6,7 @@
 - Base commit: `f7d2b3f`
 - Merged backend commit: `5284c25`
 - Merged frontend commit: `f07f594`
+- Latest CI-validated implementation commit: `8d2aa48`
 - Requirements: FR-10, FR-11, FR-12, FR-15, FR-18, T5.1-T5.8
 
 ## User request
@@ -18,11 +19,12 @@ Merge Cycle 6 backend first and frontend second, close every missing shock/offer
 - Added provider-neutral `ExplainerPort` with deterministic fallback and no public AI dependency.
 - Added authenticated iOS shock/offer DTOs, mappers, repositories, production dependency wiring, error handling, auth refresh invalidation, localized reason presentation, and release API build configuration.
 - Added Swift Charts temporal projections, complete offer cost/schedule/safety detail, simulated-provider labels, Indonesian primary localization, English fallback, Dynamic Type, and VoiceOver summaries.
+- Corrected the offer repository test target import and separated an async repository call from the synchronous `XCTUnwrap` autoclosure.
 
 ## Current state
 - Backend implementation and local validation are complete.
-- Frontend implementation and Linux-compatible static validation are complete.
-- macOS Xcode build, unit tests, and UI tests will be recorded after the integration branch is pushed.
+- Frontend implementation, static validation, macOS Xcode build, unit tests, and UI tests are complete.
+- The integration branch is pushed and both backend and frontend workflows are green.
 
 ## Validation evidence
 - Backend: `318 passed`, `96.21%` coverage.
@@ -32,6 +34,8 @@ Merge Cycle 6 backend first and frontend second, close every missing shock/offer
 - OpenAPI: `docs/api/openapi-v1.json` exactly matches `app.openapi()`.
 - Frontend: strict SwiftLint passed with zero violations across 152 files.
 - Frontend: positioning-copy lint, localization-key parity, and `git diff --check` passed.
+- Backend CI: run `29569185538` completed successfully.
+- Frontend CI: run `29569894489` completed successfully, including Xcode build-for-testing, simulator tests, and result-bundle upload.
 
 ## Files changed
 - `backend/**`: deterministic engines, services, repositories, schemas, migration, tests, and explainer boundary.
@@ -41,9 +45,7 @@ Merge Cycle 6 backend first and frontend second, close every missing shock/offer
 - `PLAN.md`: Cycle 6 implementation and checklist completion.
 
 ## Remaining work
-1. Push the three focused integration commits.
-2. Confirm backend and frontend GitHub Actions workflows are green.
-3. Record workflow run IDs and final commit hashes in this handoff.
+- No remaining Cycle 6 integration work.
 
 ## Risks and failure modes
 - Release iOS builds require an HTTPS `CREDIWISE_API_BASE_URL` build setting; DEBUG alone falls back to localhost.
@@ -63,4 +65,4 @@ swiftlint lint --strict --config ios/.swiftlint.yml ios/CrediWise ios/CrediWiseT
 - Do not move financial scoring or offer ordering into iOS.
 
 ## Uncommitted state
-- Pending focused integration commits at the time this handoff was created.
+- Clean after committing this final handoff update.
