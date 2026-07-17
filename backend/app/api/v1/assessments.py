@@ -7,18 +7,24 @@ Ownership follows `documents.py`'s pattern: a mismatched `user_id` raises
 """
 
 import uuid
+from decimal import Decimal
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.deps import require
-from app.core.errors import NotFoundError
+from app.core.errors import NotFoundError, ReassessmentRequiredError
 from app.core.rate_limit import rate_limit
 from app.db.session import get_db
+from app.engines import offer as offer_engine
+from app.engines import shock
+from app.integrations.explainer import ExplanationInput, ReasonInput, explain_with_fallback
 from app.models.assessment import Assessment
 from app.models.assessment_input_snapshot import AssessmentInputSnapshot
 from app.models.assessment_reason_code import AssessmentReasonCode
-from app.models.enums import ReasonTypeEnum, RoleEnum
+from app.models.enums import OfferSourceEnum, ReasonTypeEnum, RoleEnum
+from app.models.shock_scenario import ShockScenario
 from app.models.user import User
 from app.schemas.assessment import (
     AssessmentCreateResponse,
@@ -33,11 +39,28 @@ from app.schemas.assessment import (
     RecommendationResponse,
     RiskBandSummary,
     SafeBorrowingSummary,
+    ShockResilienceSummary,
     TwinResponse,
     TwinSummary,
 )
 from app.schemas.document import ReasonCodeResponse
+from app.schemas.error import STANDARD_ERROR_RESPONSES
+from app.schemas.offer import (
+    EssentialExpenseCoverageResponse,
+    LatePenaltyTermsResponse,
+    LenderResponse,
+    OfferResponse,
+    OffersListResponse,
+    PaymentScheduleEntryResponse,
+)
+from app.schemas.shock import (
+    ProjectionPointResponse,
+    ShockResultResponse,
+    ShockScenarioResponse,
+    SimulateShockRequest,
+)
 from app.services.assessment_service import AssessmentService, TwinView, band_from_score
+from app.services.offer_service import OfferService, OfferView
 
 router = APIRouter(prefix="/assessments", tags=["assessments"])
 
@@ -238,8 +261,15 @@ def get_assessment_dashboard(
     assessment = service.get(current_user, assessment_id)
     reason_codes = service.get_reason_codes(current_user, assessment_id)
 
-    positive = [c.description for c in reason_codes if c.reason_type is ReasonTypeEnum.POSITIVE]
-    risk_reasons = [c.description for c in reason_codes if c.reason_type is ReasonTypeEnum.RISK]
+    #: Shock reason codes (`SHOCK_*`) get their own card below -- excluded
+    #: from the Risk Band card's positive/risk lists so the two cards don't
+    #: duplicate the same evidence (PLAN §7.11: four *distinct* headline
+    #: cards).
+    risk_band_codes = [c for c in reason_codes if not c.reason_code.startswith("SHOCK_")]
+    shock_codes = [c for c in reason_codes if c.reason_code.startswith("SHOCK_")]
+
+    positive = [c.description for c in risk_band_codes if c.reason_type is ReasonTypeEnum.POSITIVE]
+    risk_reasons = [c.description for c in risk_band_codes if c.reason_type is ReasonTypeEnum.RISK]
     data_quality_reasons = [
         c.description for c in reason_codes if c.reason_type is ReasonTypeEnum.DATA_QUALITY
     ]
@@ -285,11 +315,21 @@ def get_assessment_dashboard(
             positive=positive,
             risk=risk_reasons,
             positive_reason_codes=_to_reason_code_responses(
-                [c for c in reason_codes if c.reason_type is ReasonTypeEnum.POSITIVE]
+                [c for c in risk_band_codes if c.reason_type is ReasonTypeEnum.POSITIVE]
             ),
             risk_reason_codes=_to_reason_code_responses(
-                [c for c in reason_codes if c.reason_type is ReasonTypeEnum.RISK]
+                [c for c in risk_band_codes if c.reason_type is ReasonTypeEnum.RISK]
             ),
+        ),
+        shock_resilience=ShockResilienceSummary(
+            score=assessment.shock_resilience_score,
+            band=(
+                shock.band_from_score(assessment.shock_resilience_score)
+                if assessment.shock_resilience_score is not None
+                else None
+            ),
+            reasons=[c.description for c in shock_codes],
+            reason_codes=_to_reason_code_responses(shock_codes),
         ),
         safe_borrowing=SafeBorrowingSummary(
             amount=assessment.safe_loan_amount,
@@ -315,3 +355,231 @@ def get_assessment_lineage(
 ) -> LineageResponse:
     snapshot = AssessmentService(db).get_lineage(current_user, assessment_id)
     return _to_lineage_response(assessment_id, snapshot)
+
+
+def _to_engine_shock_scenario_response(s: shock.ShockScenarioResult) -> ShockScenarioResponse:
+    return ShockScenarioResponse(
+        scenario_type=s.scenario_type,
+        parameters=s.parameters,
+        projected_cash_flow=s.projected_cash_flow,
+        minimum_projected_balance=s.minimum_projected_balance,
+        deficit_amount=s.deficit_amount,
+        affordability_status=s.affordability_status,
+        resilience_score_contribution=s.resilience_score_contribution,
+        required_liquidity_buffer=s.required_liquidity_buffer,
+        required_buffer_breached=s.required_buffer_breached,
+        projection_points=[ProjectionPointResponse(**vars(point)) for point in s.projection_points],
+    )
+
+
+def _to_stored_shock_scenario_response(
+    s: ShockScenario, required_liquidity_buffer: int
+) -> ShockScenarioResponse:
+    if s.required_buffer_breached is None or s.projection_points_json is None:
+        raise ReassessmentRequiredError(
+            "Stored shock evidence predates the complete contract; create a new assessment",
+            details={"assessment_id": str(s.assessment_id)},
+        )
+    return ShockScenarioResponse(
+        scenario_type=s.scenario_type,
+        parameters=s.scenario_parameters_json,
+        projected_cash_flow=s.projected_cash_flow,
+        minimum_projected_balance=s.minimum_projected_balance,
+        deficit_amount=s.deficit_amount,
+        affordability_status=s.affordability_status,
+        resilience_score_contribution=s.resilience_score_contribution,
+        required_liquidity_buffer=required_liquidity_buffer,
+        required_buffer_breached=s.required_buffer_breached,
+        projection_points=[ProjectionPointResponse(**point) for point in s.projection_points_json],
+    )
+
+
+@router.post(
+    "/{assessment_id}/simulate",
+    response_model=ShockResultResponse,
+    dependencies=[Depends(rate_limit("general"))],
+    responses=STANDARD_ERROR_RESPONSES,
+)
+def simulate_assessment_shock(
+    assessment_id: uuid.UUID,
+    body: SimulateShockRequest,
+    current_user: User = Depends(require(RoleEnum.USER)),
+    db: Session = Depends(get_db),
+) -> ShockResultResponse:
+    """PLAN §12.2 `POST /assessments/{id}/simulate` -- an ad-hoc preview,
+    never persisted (FR-10)."""
+    service = AssessmentService(db)
+    result = service.simulate_shock(
+        current_user,
+        assessment_id,
+        income_drop_pct=body.income_drop_pct,
+        emergency_expense=body.emergency_expense,
+        proposed_instalment=body.proposed_instalment,
+    )
+    reasons = [
+        ReasonCodeResponse(code=r.code, description=r.description) for r in result.reason_codes
+    ]
+    model_version, config_hash = service.get_model_lineage(current_user, assessment_id)
+    return ShockResultResponse(
+        assessment_id=assessment_id,
+        resilience_score=result.resilience_score,
+        band=result.band,
+        scenarios=[_to_engine_shock_scenario_response(s) for s in result.scenarios],
+        proposed_instalment=result.proposed_instalment,
+        required_liquidity_buffer=(
+            result.scenarios[0].required_liquidity_buffer if result.scenarios else 0
+        ),
+        reason_codes=reasons,
+        explanation=_shock_explanation(reasons),
+        model_version=model_version,
+        config_hash=config_hash,
+    )
+
+
+@router.get(
+    "/{assessment_id}/shocks",
+    response_model=ShockResultResponse,
+    dependencies=[Depends(rate_limit("general"))],
+    responses=STANDARD_ERROR_RESPONSES,
+)
+def get_assessment_shocks(
+    assessment_id: uuid.UUID,
+    current_user: User = Depends(require(RoleEnum.USER)),
+    db: Session = Depends(get_db),
+) -> ShockResultResponse:
+    """PLAN §12.2 `GET /assessments/{id}/shocks` -- the canonical default
+    battery persisted by the `ANALYSIS` stage (FR-10)."""
+    view = AssessmentService(db).get_shock_scenarios(current_user, assessment_id)
+    reasons = _to_reason_code_responses(view.reason_codes)
+    return ShockResultResponse(
+        assessment_id=assessment_id,
+        resilience_score=view.resilience_score,
+        band=(
+            shock.band_from_score(view.resilience_score)
+            if view.resilience_score is not None
+            else None
+        ),
+        scenarios=[
+            _to_stored_shock_scenario_response(s, view.required_liquidity_buffer)
+            for s in view.scenarios
+        ],
+        proposed_instalment=view.proposed_instalment,
+        required_liquidity_buffer=view.required_liquidity_buffer,
+        reason_codes=reasons,
+        explanation=_shock_explanation(reasons),
+        model_version=view.model_version,
+        config_hash=view.config_hash,
+    )
+
+
+def offer_to_response(view: OfferView) -> OfferResponse:
+    offer_row = view.offer
+    score = view.score
+    schedule_entries = offer_row.payment_schedule_json.get("entries", [])
+    return OfferResponse(
+        offer_id=offer_row.id,
+        lender=LenderResponse(
+            lender_id=view.lender.id,
+            name=view.lender.name,
+            regulatory_status=view.lender.regulatory_status,
+            logo_url=view.lender.logo_url,
+        ),
+        offer_source=offer_row.offer_source,
+        principal_amount=offer_row.principal_amount,
+        net_disbursed_amount=offer_row.net_disbursed_amount,
+        instalment_amount=offer_row.instalment_amount,
+        tenor_months=offer_row.tenor_months,
+        amortization_method=offer_row.amortization_method,
+        nominal_rate=offer_row.nominal_rate,
+        nominal_rate_basis="ANNUAL_NOMINAL",
+        effective_annual_rate=offer_row.effective_annual_rate,
+        interest_amount=offer_row.interest_amount,
+        upfront_fee=offer_row.upfront_fee,
+        financed_fee=offer_row.financed_fee,
+        service_fee=offer_row.service_fee,
+        admin_fee=offer_row.admin_fee,
+        total_repayment=offer_row.total_repayment,
+        late_penalty_terms=(
+            LatePenaltyTermsResponse.model_validate(offer_row.late_penalty_terms_json)
+            if offer_row.late_penalty_terms_json is not None
+            else None
+        ),
+        payment_schedule=[PaymentScheduleEntryResponse(**entry) for entry in schedule_entries],
+        due_date=offer_row.due_date,
+        frequency=offer_row.frequency,
+        safe_offer_score=score.safe_offer_score,
+        safety_band=offer_engine.offer_safety_band_from_score(score.safe_offer_score),
+        rank=score.rank,
+        affordability_status=score.affordability_status,
+        shock_resilience_status=score.shock_resilience_status,
+        total_cost_status=score.total_cost_status,
+        timing_status=score.timing_status,
+        warning_flags=list(score.warning_flags_json),
+        refinancing_dependency=bool(score.refinancing_dependency),
+        remaining_essential_expense_coverage=EssentialExpenseCoverageResponse(
+            amount=score.remaining_essential_expense_coverage or 0,
+            ratio=score.remaining_essential_expense_coverage_ratio or Decimal(0),
+        ),
+        reason_codes=[ReasonCodeResponse(**reason) for reason in (score.reason_codes_json or [])],
+        explanation=score.explanation,
+        model_version=view.model_version,
+        config_hash=view.config_hash,
+        simulation_notice=(
+            "SIMULATED offer for comparison only; not a real provider endorsement."
+            if offer_row.offer_source is OfferSourceEnum.SIMULATED
+            else None
+        ),
+    )
+
+
+@router.post(
+    "/{assessment_id}/offers",
+    response_model=OffersListResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(rate_limit("general"))],
+    responses=STANDARD_ERROR_RESPONSES,
+)
+def create_assessment_offers(
+    assessment_id: uuid.UUID,
+    current_user: User = Depends(require(RoleEnum.USER)),
+    db: Session = Depends(get_db),
+) -> OffersListResponse:
+    """PLAN §12.2 `POST /assessments/{id}/offers` -- seed/simulate offers
+    (FR-11). Deterministic offer templates against the seeded `lenders`
+    catalog; see `app/services/offer_service.py` module docstring for the
+    re-seeding behaviour."""
+    views = OfferService(db).create_or_simulate_offers(current_user, assessment_id)
+    return OffersListResponse(
+        assessment_id=assessment_id, offers=[offer_to_response(v) for v in views]
+    )
+
+
+@router.get(
+    "/{assessment_id}/offers",
+    response_model=OffersListResponse,
+    dependencies=[Depends(rate_limit("general"))],
+    responses=STANDARD_ERROR_RESPONSES,
+)
+def get_assessment_offers(
+    assessment_id: uuid.UUID,
+    current_user: User = Depends(require(RoleEnum.USER)),
+    db: Session = Depends(get_db),
+) -> OffersListResponse:
+    """PLAN §12.2 `GET /assessments/{id}/offers` -- ranked offers (FR-11 AC1:
+    ranked by safety, never commission)."""
+    views = OfferService(db).list_offers(current_user, assessment_id)
+    return OffersListResponse(
+        assessment_id=assessment_id, offers=[offer_to_response(v) for v in views]
+    )
+
+
+def _shock_explanation(reasons: list[ReasonCodeResponse]) -> str:
+    return explain_with_fallback(
+        ExplanationInput(
+            subject="SHOCK",
+            reasons=tuple(
+                ReasonInput(code=reason.code, description=reason.description) for reason in reasons
+            ),
+        ),
+        enabled=get_settings().ai_explanations,
+    )

@@ -36,9 +36,23 @@ ios/scripts/lint-positioning-copy.sh
 
 Select any locally installed iOS simulator if `iPhone 15` is unavailable.
 
-Debug builds connect to `http://127.0.0.1:8000` by default. Set the
-`CREDIWISE_API_BASE_URL` scheme environment variable to an HTTPS API URL or to
-the development machine's LAN address when testing on a physical device.
+Debug builds connect to `http://127.0.0.1:8000` by default. A scheme environment
+variable named `CREDIWISE_API_BASE_URL` overrides the generated Info.plist value.
+Debug accepts HTTP only for `localhost`, `127.0.0.1`, or `::1`; Release requires
+an absolute HTTPS URL.
+
+Release archives must set the user-defined `CREDIWISE_API_BASE_URL` build setting;
+the project generates the same-named Info.plist key from it. Do not commit a
+deployment URL. CI or an archive command can provide it explicitly:
+
+```bash
+xcodebuild \
+  -project ios/CrediWise.xcodeproj \
+  -scheme CrediWise \
+  -configuration Release \
+  CREDIWISE_API_BASE_URL=https://api.example.invalid \
+  archive
+```
 
 ## Current Foundation
 
@@ -78,3 +92,13 @@ uses the authenticated financing-need and assessment contracts, creates an
 assessment from the confirmed document, polls until analysis completes, and
 renders only server-supplied financial outputs. Run the deterministic isolated
 flow with `--ui-testing --cycle-5-flow`.
+
+Cycle 6 adds the fourth Shock Resilience headline card, authenticated shock
+simulation and offer repositories, interactive stress-test controls, real
+ordered projection points with an accessible Swift Charts summary, and
+server-ordered offer list/detail screens. Production uses the finalized
+`GET /assessments/{id}/shocks`, `POST /assessments/{id}/simulate`, assessment
+offer list/seed, and top-level offer safety contracts. The client preserves
+backend scores, bands, ranks, schedules, fees, reasons, and model lineage without
+client-side scoring or ranking. The isolated deterministic UI flow remains
+available with `--ui-testing --cycle-6-flow`.

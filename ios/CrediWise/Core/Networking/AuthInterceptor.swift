@@ -8,6 +8,7 @@ actor AuthInterceptor {
     private let refreshHandler: RefreshHandler
     private let unauthorizedHandler: UnauthorizedHandler
     private var refreshTask: Task<SessionTokens, Error>?
+    private var didInvalidateSession = false
 
     init(
         tokenStore: any TokenStore,
@@ -23,6 +24,7 @@ actor AuthInterceptor {
         guard let tokens = try await tokenStore.load() else {
             throw AuthInterceptorError.missingSession
         }
+        didInvalidateSession = false
         return attaching(accessToken: tokens.accessToken, to: request)
     }
 
@@ -31,8 +33,12 @@ actor AuthInterceptor {
         statusCode: Int,
         retryCount: Int
     ) async throws -> URLRequest? {
-        guard statusCode == 401, retryCount == 0 else {
+        guard statusCode == 401 else {
             return nil
+        }
+        guard retryCount == 0 else {
+            await invalidateSessionOnce()
+            throw AuthInterceptorError.unauthorized
         }
 
         let tokens = try await refreshTokens()
@@ -46,7 +52,6 @@ actor AuthInterceptor {
 
         let tokenStore = tokenStore
         let refreshHandler = refreshHandler
-        let unauthorizedHandler = unauthorizedHandler
         let task = Task {
             do {
                 guard let refreshToken = try await tokenStore.load()?.refreshToken else {
@@ -55,13 +60,13 @@ actor AuthInterceptor {
                 let tokens = try await refreshHandler(refreshToken)
                 try await tokenStore.save(tokens)
                 return tokens
+            } catch is CancellationError {
+                throw CancellationError()
             } catch let error as AuthInterceptorError {
-                try? await tokenStore.clear()
-                await unauthorizedHandler()
+                await self.invalidateSessionOnce()
                 throw error
             } catch {
-                try? await tokenStore.clear()
-                await unauthorizedHandler()
+                await self.invalidateSessionOnce()
                 throw AuthInterceptorError.refreshFailed
             }
         }
@@ -75,6 +80,13 @@ actor AuthInterceptor {
             refreshTask = nil
             throw error
         }
+    }
+
+    private func invalidateSessionOnce() async {
+        guard !didInvalidateSession else { return }
+        didInvalidateSession = true
+        try? await tokenStore.clear()
+        await unauthorizedHandler()
     }
 
     private func attaching(accessToken: String, to request: URLRequest) -> URLRequest {

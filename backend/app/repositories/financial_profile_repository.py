@@ -7,7 +7,7 @@ so it has its own repository)."""
 
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import case, select
 from sqlalchemy.orm import Session
 
 from app.models.cash_flow_event import CashFlowEvent
@@ -68,7 +68,18 @@ class FinancialProfileRepository:
         return events
 
     def get_cash_flow_events_for_assessment(self, assessment_id: uuid.UUID) -> list[CashFlowEvent]:
-        stmt = select(CashFlowEvent).where(
-            CashFlowEvent.assessment_id == assessment_id, CashFlowEvent.deleted_at.is_(None)
+        stmt = (
+            select(CashFlowEvent)
+            .where(
+                CashFlowEvent.assessment_id == assessment_id,
+                CashFlowEvent.deleted_at.is_(None),
+            )
+            .order_by(
+                CashFlowEvent.expected_day_of_month.asc().nulls_last(),
+                CashFlowEvent.event_date.asc().nulls_last(),
+                case((CashFlowEvent.direction == "DEBIT", 0), else_=1),
+                CashFlowEvent.event_type,
+                CashFlowEvent.id,
+            )
         )
         return list(self._db.execute(stmt).scalars().all())

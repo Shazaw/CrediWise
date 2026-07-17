@@ -73,6 +73,10 @@ class Settings(BaseSettings):
     kimi_model: str = "kimi-local"
     kimi_timeout_seconds: float = 10.0
 
+    # Optional explanation phrasing. No network provider is configured by
+    # default; deterministic reason-code templates are always available.
+    ai_explanations: bool = False
+
     @property
     def sqlalchemy_database_uri(self) -> str:
         return (

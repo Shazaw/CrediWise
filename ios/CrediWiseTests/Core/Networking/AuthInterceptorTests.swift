@@ -28,31 +28,53 @@ final class AuthInterceptorTests: XCTestCase {
         XCTAssertEqual(callCount, 1)
     }
 
-    func testInterceptorDoesNotRetryARequestTwice() async throws {
+    func testTerminalUnauthorizedClearsSessionAndInvalidatesOnce() async throws {
         let store = VolatileTokenStore(tokens: makeTokens())
-        let interceptor = makeInterceptor(store: store)
+        let invalidation = InvalidationProbe()
+        let interceptor = makeInterceptor(store: store, invalidation: invalidation)
 
-        let retry = try await interceptor.requestForRetry(
-            makeRequest(),
-            statusCode: 401,
-            retryCount: 1
-        )
+        for _ in 0..<2 {
+            do {
+                _ = try await interceptor.requestForRetry(
+                    makeRequest(),
+                    statusCode: 401,
+                    retryCount: 1
+                )
+                XCTFail("Expected terminal unauthorized error")
+            } catch {
+                XCTAssertEqual(error as? AuthInterceptorError, .unauthorized)
+            }
+        }
 
-        XCTAssertNil(retry)
+        let storedTokens = try await store.load()
+        let invalidationCount = await invalidation.callCount
+        XCTAssertNil(storedTokens)
+        XCTAssertEqual(invalidationCount, 1)
     }
 
     func testConcurrentUnauthorizedResponsesShareRefresh() async throws {
         let store = VolatileTokenStore(tokens: makeTokens(access: "expired"))
         let probe = RefreshProbe(result: .success(makeTokens(access: "renewed")), delay: true)
-        let interceptor = makeInterceptor(store: store, probe: probe)
+        let invalidation = InvalidationProbe()
+        let interceptor = makeInterceptor(store: store, probe: probe, invalidation: invalidation)
         let request = makeRequest()
 
         async let first = interceptor.requestForRetry(request, statusCode: 401, retryCount: 0)
         async let second = interceptor.requestForRetry(request, statusCode: 401, retryCount: 0)
         _ = try await (first, second)
 
+        async let firstTerminal: URLRequest? = try? await interceptor.requestForRetry(
+            request, statusCode: 401, retryCount: 1
+        )
+        async let secondTerminal: URLRequest? = try? await interceptor.requestForRetry(
+            request, statusCode: 401, retryCount: 1
+        )
+        _ = await (firstTerminal, secondTerminal)
+
         let callCount = await probe.callCount
+        let invalidationCount = await invalidation.callCount
         XCTAssertEqual(callCount, 1)
+        XCTAssertEqual(invalidationCount, 1)
     }
 
     func testRefreshFailureClearsTokensAndInvalidatesSession() async throws {
@@ -94,6 +116,31 @@ final class AuthInterceptorTests: XCTestCase {
         let invalidationCount = await invalidation.callCount
         XCTAssertEqual(refreshCount, 1)
         XCTAssertEqual(invalidationCount, 1)
+    }
+
+    func testRefreshCancellationPreservesSessionAndDoesNotInvalidate() async throws {
+        let tokens = makeTokens(access: "expired")
+        let store = VolatileTokenStore(tokens: tokens)
+        let probe = RefreshProbe(result: .failure(CancellationError()))
+        let invalidation = InvalidationProbe()
+        let interceptor = makeInterceptor(store: store, probe: probe, invalidation: invalidation)
+
+        do {
+            _ = try await interceptor.requestForRetry(
+                makeRequest(),
+                statusCode: 401,
+                retryCount: 0
+            )
+            XCTFail("Expected cancellation")
+        } catch is CancellationError {
+        } catch {
+            XCTFail("Expected CancellationError, got \(error)")
+        }
+
+        let storedTokens = try await store.load()
+        let invalidationCount = await invalidation.callCount
+        XCTAssertEqual(storedTokens, tokens)
+        XCTAssertEqual(invalidationCount, 0)
     }
 
     private func makeInterceptor(

@@ -3,6 +3,38 @@ import Foundation
 
 @MainActor
 final class AppCoordinator: ObservableObject {
+    struct Dependencies {
+        let authenticationRepository: any AuthenticationRepository
+        let documentUploadRepository: any DocumentUploadRepository
+        let documentVerificationRepository: any DocumentVerificationRepository
+        let financingNeedRepository: any FinancingNeedRepository
+        let assessmentDashboardRepository: any AssessmentDashboardRepository
+        let shockRepository: any ShockRepository
+        let offerRepository: any OfferRepository
+    }
+
+    struct Configuration {
+        let uploadPollingPolicy: DocumentUploadPollingPolicy
+        let allowsSyntheticUpload: Bool
+        let isDocumentUploadAvailable: Bool
+        let allowsSyntheticAssessment: Bool
+        let enablesCompleteAssessmentFlow: Bool
+
+        init(
+            uploadPollingPolicy: DocumentUploadPollingPolicy = DocumentUploadPollingPolicy(),
+            allowsSyntheticUpload: Bool = false,
+            isDocumentUploadAvailable: Bool = true,
+            allowsSyntheticAssessment: Bool = false,
+            enablesCompleteAssessmentFlow: Bool = true
+        ) {
+            self.uploadPollingPolicy = uploadPollingPolicy
+            self.allowsSyntheticUpload = allowsSyntheticUpload
+            self.isDocumentUploadAvailable = isDocumentUploadAvailable
+            self.allowsSyntheticAssessment = allowsSyntheticAssessment
+            self.enablesCompleteAssessmentFlow = enablesCompleteAssessmentFlow
+        }
+    }
+
     @Published var path: [AppRoute] = []
 
     let sessionManager: SessionManager
@@ -12,44 +44,47 @@ final class AppCoordinator: ObservableObject {
     private let documentVerificationRepository: any DocumentVerificationRepository
     private let financingNeedRepository: any FinancingNeedRepository
     private let assessmentDashboardRepository: any AssessmentDashboardRepository
+    private let shockRepository: any ShockRepository
+    private let offerRepository: any OfferRepository
     private let uploadPollingPolicy: DocumentUploadPollingPolicy
     private let allowsSyntheticUpload: Bool
     private let isDocumentUploadAvailable: Bool
     private let allowsSyntheticAssessment: Bool
+    private let enablesCompleteAssessmentFlow: Bool
     private(set) var financingNeedID: String?
 
     init(
         sessionManager: SessionManager,
-        authenticationRepository: any AuthenticationRepository,
-        documentUploadRepository: any DocumentUploadRepository,
-        documentVerificationRepository: any DocumentVerificationRepository,
-        financingNeedRepository: any FinancingNeedRepository,
-        assessmentDashboardRepository: any AssessmentDashboardRepository,
-        uploadPollingPolicy: DocumentUploadPollingPolicy = DocumentUploadPollingPolicy(),
-        allowsSyntheticUpload: Bool = false,
-        isDocumentUploadAvailable: Bool = true,
-        allowsSyntheticAssessment: Bool = false
+        dependencies: Dependencies,
+        configuration: Configuration = Configuration()
     ) {
         self.sessionManager = sessionManager
-        self.authenticationRepository = authenticationRepository
-        self.documentUploadRepository = documentUploadRepository
-        self.documentVerificationRepository = documentVerificationRepository
-        self.financingNeedRepository = financingNeedRepository
-        self.assessmentDashboardRepository = assessmentDashboardRepository
-        self.uploadPollingPolicy = uploadPollingPolicy
-        self.allowsSyntheticUpload = allowsSyntheticUpload
-        self.isDocumentUploadAvailable = isDocumentUploadAvailable
-        self.allowsSyntheticAssessment = allowsSyntheticAssessment
+        authenticationRepository = dependencies.authenticationRepository
+        documentUploadRepository = dependencies.documentUploadRepository
+        documentVerificationRepository = dependencies.documentVerificationRepository
+        financingNeedRepository = dependencies.financingNeedRepository
+        assessmentDashboardRepository = dependencies.assessmentDashboardRepository
+        shockRepository = dependencies.shockRepository
+        offerRepository = dependencies.offerRepository
+        uploadPollingPolicy = configuration.uploadPollingPolicy
+        allowsSyntheticUpload = configuration.allowsSyntheticUpload
+        isDocumentUploadAvailable = configuration.isDocumentUploadAvailable
+        allowsSyntheticAssessment = configuration.allowsSyntheticAssessment
+        enablesCompleteAssessmentFlow = configuration.enablesCompleteAssessmentFlow
     }
 
     convenience init() {
         self.init(
             sessionManager: SessionManager(tokenStore: VolatileTokenStore()),
-            authenticationRepository: MockAuthenticationRepository(),
-            documentUploadRepository: MockDocumentUploadRepository(),
-            documentVerificationRepository: MockDocumentVerificationRepository(),
-            financingNeedRepository: MockFinancingNeedRepository(),
-            assessmentDashboardRepository: MockAssessmentDashboardRepository()
+            dependencies: Dependencies(
+                authenticationRepository: MockAuthenticationRepository(),
+                documentUploadRepository: MockDocumentUploadRepository(),
+                documentVerificationRepository: MockDocumentVerificationRepository(),
+                financingNeedRepository: MockFinancingNeedRepository(),
+                assessmentDashboardRepository: MockAssessmentDashboardRepository(),
+                shockRepository: MockShockRepository(),
+                offerRepository: MockOfferRepository()
+            )
         )
     }
 
@@ -84,6 +119,18 @@ final class AppCoordinator: ObservableObject {
 
     func showAssessmentDashboard(assessmentID: String) {
         path.append(.assessmentDashboard(assessmentID: assessmentID))
+    }
+
+    func showShockSimulation(assessmentID: String) {
+        path.append(.shockSimulation(assessmentID: assessmentID))
+    }
+
+    func showOffers(assessmentID: String) {
+        path.append(.offers(assessmentID: assessmentID))
+    }
+
+    func showOfferDetail(assessmentID: String, offerID: String) {
+        path.append(.offerDetail(assessmentID: assessmentID, offerID: offerID))
     }
 
     func createAssessment(documentID: String) async throws {
@@ -153,6 +200,22 @@ final class AppCoordinator: ObservableObject {
         )
     }
 
+    func makeShockViewModel(assessmentID: String) -> ShockViewModel {
+        ShockViewModel(assessmentID: assessmentID, repository: shockRepository)
+    }
+
+    func makeOffersViewModel(assessmentID: String) -> OffersViewModel {
+        OffersViewModel(assessmentID: assessmentID, repository: offerRepository)
+    }
+
+    func makeOfferDetailViewModel(assessmentID: String, offerID: String) -> OfferDetailViewModel {
+        OfferDetailViewModel(
+            assessmentID: assessmentID,
+            offerID: offerID,
+            repository: offerRepository
+        )
+    }
+
     var shouldOfferSyntheticUpload: Bool {
         allowsSyntheticUpload
     }
@@ -163,6 +226,10 @@ final class AppCoordinator: ObservableObject {
 
     var shouldOfferSyntheticAssessment: Bool {
         allowsSyntheticAssessment
+    }
+
+    var shouldShowCompleteAssessmentFlow: Bool {
+        enablesCompleteAssessmentFlow
     }
 
     func signOut() async {

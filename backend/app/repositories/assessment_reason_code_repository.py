@@ -18,8 +18,12 @@ class AssessmentReasonCodeRepository:
         return codes
 
     def list_for_assessment(self, assessment_id: uuid.UUID) -> list[AssessmentReasonCode]:
-        stmt = select(AssessmentReasonCode).where(
-            AssessmentReasonCode.assessment_id == assessment_id,
-            AssessmentReasonCode.deleted_at.is_(None),
+        stmt = (
+            select(AssessmentReasonCode)
+            .where(
+                AssessmentReasonCode.assessment_id == assessment_id,
+                AssessmentReasonCode.deleted_at.is_(None),
+            )
+            .order_by(AssessmentReasonCode.reason_type, AssessmentReasonCode.reason_code)
         )
         return list(self._db.execute(stmt).scalars().all())

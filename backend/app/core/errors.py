@@ -69,6 +69,12 @@ class ConflictError(CrediWiseError):
     http_status = 409
 
 
+class ReassessmentRequiredError(ConflictError):
+    """Stored lineage cannot safely be evaluated with current rules."""
+
+    code = "REASSESSMENT_REQUIRED"
+
+
 class PipelineError(CrediWiseError):
     code = "PIPELINE_ERROR"
     http_status = 422

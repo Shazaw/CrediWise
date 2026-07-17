@@ -29,6 +29,14 @@ class AssessmentRepository:
         )
         return self._db.execute(stmt).scalar_one_or_none()
 
+    def get_by_id_for_update(self, assessment_id: uuid.UUID) -> Assessment | None:
+        stmt = (
+            select(Assessment)
+            .where(Assessment.id == assessment_id, Assessment.deleted_at.is_(None))
+            .with_for_update()
+        )
+        return self._db.execute(stmt).scalar_one_or_none()
+
     def list_for_user(self, user_id: uuid.UUID) -> list[Assessment]:
         stmt = (
             select(Assessment)

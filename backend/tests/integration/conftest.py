@@ -24,7 +24,7 @@ from sqlalchemy.orm import Session, sessionmaker
 import app.models  # noqa: F401 - populates Base.metadata
 from app.core.config import Settings, get_settings
 from app.db.base import Base
-from app.db.seeds import model_versions
+from app.db.seeds import lenders, model_versions
 from app.db.session import get_db
 from app.integrations.storage import set_storage_port
 from app.integrations.storage.s3_adapter import S3StorageAdapter
@@ -44,8 +44,11 @@ def db_engine() -> Iterator[Engine]:
         # Sprint 3's verification pipeline requires an ACTIVE model_versions
         # row to stamp on `document_verification_results` (PLAN §19.2); the
         # real app bootstraps this via `make backend-seed`, so gate tests
-        # reuse the same idempotent seed module here (PLAN §21.1).
+        # reuse the same idempotent seed module here (PLAN §21.1). Sprint 5
+        # adds the seeded `lenders` catalog `POST /assessments/{id}/offers`
+        # requires.
         model_versions.run(seed_session)
+        lenders.run(seed_session)
         seed_session.commit()
     yield engine
     Base.metadata.drop_all(engine)

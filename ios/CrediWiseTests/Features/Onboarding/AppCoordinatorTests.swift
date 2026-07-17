@@ -69,15 +69,38 @@ final class AppCoordinatorTests: XCTestCase {
         XCTAssertEqual(coordinator.path, [.assessmentDashboard(assessmentID: "assessment-123")])
     }
 
+    func testRoutesFromDashboardThroughShocksAndOfferDetail() {
+        let coordinator = AppCoordinator()
+
+        coordinator.showAssessmentDashboard(assessmentID: "assessment-123")
+        coordinator.showShockSimulation(assessmentID: "assessment-123")
+        coordinator.showOffers(assessmentID: "assessment-123")
+        coordinator.showOfferDetail(assessmentID: "assessment-123", offerID: "offer-unsafe")
+
+        XCTAssertEqual(
+            coordinator.path,
+            [
+                .assessmentDashboard(assessmentID: "assessment-123"),
+                .shockSimulation(assessmentID: "assessment-123"),
+                .offers(assessmentID: "assessment-123"),
+                .offerDetail(assessmentID: "assessment-123", offerID: "offer-unsafe")
+            ]
+        )
+    }
+
     func testCreatesAssessmentFromStoredNeedAndConfirmedDocument() async throws {
         let repository = MockAssessmentDashboardRepository()
         let coordinator = AppCoordinator(
             sessionManager: SessionManager(tokenStore: VolatileTokenStore()),
-            authenticationRepository: MockAuthenticationRepository(),
-            documentUploadRepository: MockDocumentUploadRepository(),
-            documentVerificationRepository: MockDocumentVerificationRepository(),
-            financingNeedRepository: MockFinancingNeedRepository(),
-            assessmentDashboardRepository: repository
+            dependencies: AppCoordinator.Dependencies(
+                authenticationRepository: MockAuthenticationRepository(),
+                documentUploadRepository: MockDocumentUploadRepository(),
+                documentVerificationRepository: MockDocumentVerificationRepository(),
+                financingNeedRepository: MockFinancingNeedRepository(),
+                assessmentDashboardRepository: repository,
+                shockRepository: MockShockRepository(),
+                offerRepository: MockOfferRepository()
+            )
         )
         coordinator.completeFinancingNeed(FinancingNeedReceipt(financingNeedID: "need-123"))
 
@@ -118,5 +141,38 @@ final class AppCoordinatorTests: XCTestCase {
         coordinator.switchAuthenticationMode(from: .registration)
 
         XCTAssertEqual(coordinator.path, [.signIn])
+    }
+
+    func testAPIBaseURLUsesEnvironmentBeforeBundleAndRequiresReleaseHTTPS() {
+        XCTAssertEqual(
+            AppContainer.validatedAPIBaseURL(
+                environmentValue: "https://environment.example.test",
+                bundleValue: "https://bundle.example.test",
+                allowsInsecureLocalhost: false
+            )?.absoluteString,
+            "https://environment.example.test"
+        )
+        XCTAssertNil(
+            AppContainer.validatedAPIBaseURL(
+                environmentValue: nil,
+                bundleValue: "http://api.example.test",
+                allowsInsecureLocalhost: false
+            )
+        )
+        XCTAssertEqual(
+            AppContainer.validatedAPIBaseURL(
+                environmentValue: nil,
+                bundleValue: "http://127.0.0.1:8000",
+                allowsInsecureLocalhost: true
+            )?.absoluteString,
+            "http://127.0.0.1:8000"
+        )
+        XCTAssertNil(
+            AppContainer.validatedAPIBaseURL(
+                environmentValue: nil,
+                bundleValue: "http://192.168.1.20:8000",
+                allowsInsecureLocalhost: true
+            )
+        )
     }
 }

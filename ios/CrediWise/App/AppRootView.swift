@@ -75,6 +75,18 @@ struct AppRootView: View {
     @ViewBuilder
     private func destination(for route: AppRoute) -> some View {
         switch route {
+        case .registration, .signIn:
+            authenticationDestination(for: route)
+        case .financingNeed, .upload, .extractionReview, .dataConfidence, .assessmentDashboard:
+            assessmentDestination(for: route)
+        case .shockSimulation, .offers, .offerDetail:
+            cycle6Destination(for: route)
+        }
+    }
+
+    @ViewBuilder
+    private func authenticationDestination(for route: AppRoute) -> some View {
+        switch route {
         case .registration:
             AuthenticationView(
                 viewModel: coordinator.makeAuthenticationViewModel(mode: .registration),
@@ -89,6 +101,14 @@ struct AppRootView: View {
                 onSignedIn: coordinator.completeSignIn,
                 onSwitchMode: { coordinator.switchAuthenticationMode(from: .signIn) }
             )
+        default:
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private func assessmentDestination(for route: AppRoute) -> some View {
+        switch route {
         case .financingNeed:
             FinancingNeedView(
                 viewModel: coordinator.makeFinancingNeedViewModel(),
@@ -115,8 +135,40 @@ struct AppRootView: View {
             )
         case let .assessmentDashboard(assessmentID):
             AssessmentDashboardView(
-                viewModel: coordinator.makeAssessmentDashboardViewModel(assessmentID: assessmentID)
+                viewModel: coordinator.makeAssessmentDashboardViewModel(assessmentID: assessmentID),
+                shockViewModel: coordinator.makeShockViewModel(assessmentID: assessmentID),
+                showsCompleteDashboard: coordinator.shouldShowCompleteAssessmentFlow,
+                onOpenShocks: { coordinator.showShockSimulation(assessmentID: assessmentID) },
+                onOpenOffers: { coordinator.showOffers(assessmentID: assessmentID) }
             )
+        default:
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private func cycle6Destination(for route: AppRoute) -> some View {
+        switch route {
+        case let .shockSimulation(assessmentID):
+            ShockSimulationView(
+                viewModel: coordinator.makeShockViewModel(assessmentID: assessmentID)
+            )
+        case let .offers(assessmentID):
+            OffersListView(
+                viewModel: coordinator.makeOffersViewModel(assessmentID: assessmentID),
+                onOpenOffer: { offerID in
+                    coordinator.showOfferDetail(assessmentID: assessmentID, offerID: offerID)
+                }
+            )
+        case let .offerDetail(assessmentID, offerID):
+            OfferDetailView(
+                viewModel: coordinator.makeOfferDetailViewModel(
+                    assessmentID: assessmentID,
+                    offerID: offerID
+                )
+            )
+        default:
+            EmptyView()
         }
     }
 

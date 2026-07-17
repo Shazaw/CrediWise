@@ -22,12 +22,13 @@ from typing import Protocol, cast
 
 from sqlalchemy.orm import Session
 
-from app.core.errors import NotFoundError, ValidationError
-from app.engines import cash_flow_twin, risk, safe_borrowing
+from app.core.errors import NotFoundError, ReassessmentRequiredError, ValidationError
+from app.engines import cash_flow_twin, risk, safe_borrowing, shock
 from app.engines.cash_flow_twin import TwinTransactionInput
 from app.engines.config import model_config as cfg
 from app.engines.risk import RiskInput
 from app.engines.safe_borrowing import SafeBorrowingInput
+from app.engines.shock import CashFlowEventInput, ShockInput
 from app.models.assessment import Assessment
 from app.models.assessment_document import AssessmentDocument
 from app.models.assessment_input_snapshot import AssessmentInputSnapshot
@@ -46,6 +47,7 @@ from app.models.enums import (
 from app.models.financial_profile import FinancialProfile
 from app.models.income_source import IncomeSource
 from app.models.monthly_cash_flow_snapshot import MonthlyCashFlowSnapshot
+from app.models.shock_scenario import ShockScenario
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.pipeline.dispatch import dispatch_assessment_analysis
@@ -58,6 +60,7 @@ from app.repositories.document_verification_result_repository import (
 from app.repositories.financial_profile_repository import FinancialProfileRepository
 from app.repositories.financing_need_repository import FinancingNeedRepository
 from app.repositories.model_version_repository import ModelVersionRepository
+from app.repositories.shock_scenario_repository import ShockScenarioRepository
 from app.repositories.source_document_repository import SourceDocumentRepository
 from app.repositories.transaction_repository import TransactionRepository
 from app.services import audit_service
@@ -72,6 +75,17 @@ class TwinView:
     cash_flow_events: list[CashFlowEvent]
 
 
+@dataclass(frozen=True)
+class ShockScenariosView:
+    resilience_score: Decimal | None
+    scenarios: list[ShockScenario]
+    reason_codes: list[AssessmentReasonCode]
+    proposed_instalment: int
+    required_liquidity_buffer: int
+    model_version: str
+    config_hash: str
+
+
 class AssessmentService:
     def __init__(self, db: Session) -> None:
         self._db = db
@@ -84,6 +98,7 @@ class AssessmentService:
         self._model_versions = ModelVersionRepository(db)
         self._profiles = FinancialProfileRepository(db)
         self._reason_codes = AssessmentReasonCodeRepository(db)
+        self._shock_scenarios = ShockScenarioRepository(db)
 
     def create(
         self,
@@ -114,8 +129,13 @@ class AssessmentService:
                 )
             documents.append(document)
 
-        model_version = self._model_versions.get_active(cfg.MODEL_NAME)
-        assert model_version is not None  # noqa: S101 - seeded at bootstrap (T1.7)
+        model_version = self._model_versions.get_active_exact(
+            cfg.MODEL_NAME, cfg.MODEL_VERSION, cfg.config_hash()
+        )
+        if model_version is None:
+            raise ValidationError(
+                "Current model configuration is not active; run the model-version seed"
+            )
 
         assessment = Assessment(
             id=uuid.uuid4(),
@@ -217,6 +237,96 @@ class AssessmentService:
             raise NotFoundError("Lineage not available yet")
         return snapshot
 
+    def get_model_lineage(self, user: User, assessment_id: uuid.UUID) -> tuple[str, str]:
+        assessment = self._get_owned(user, assessment_id)
+        model = self._model_versions.get_by_id(assessment.model_version_id)
+        assert model is not None  # noqa: S101 - assessment FK guarantees existence
+        return model.version, model.config_hash
+
+    def get_shock_scenarios(self, user: User, assessment_id: uuid.UUID) -> ShockScenariosView:
+        """PLAN §12.2 `GET /assessments/{id}/shocks` -- the canonical default
+        battery persisted by `run_assessment_analysis` (FR-10 AC1/AC2)."""
+        assessment = self._get_owned(user, assessment_id)
+        _require_current_model_lineage(self._model_versions, assessment)
+        model = self._model_versions.get_by_id(assessment.model_version_id)
+        assert model is not None  # noqa: S101 - assessment FK guarantees existence
+        return ShockScenariosView(
+            resilience_score=assessment.shock_resilience_score,
+            scenarios=self._shock_scenarios.list_for_assessment(assessment.id),
+            reason_codes=[
+                reason
+                for reason in self._reason_codes.list_for_assessment(assessment.id)
+                if reason.reason_code.startswith("SHOCK_")
+            ],
+            proposed_instalment=assessment.maximum_safe_instalment or 0,
+            required_liquidity_buffer=assessment.required_liquidity_buffer or 0,
+            model_version=model.version,
+            config_hash=model.config_hash,
+        )
+
+    def simulate_shock(
+        self,
+        user: User,
+        assessment_id: uuid.UUID,
+        *,
+        income_drop_pct: Decimal | None,
+        emergency_expense: int | None,
+        proposed_instalment: int | None,
+    ) -> shock.ShockResult:
+        """PLAN §12.2 `POST /assessments/{id}/simulate` -- an ad-hoc, *not
+        persisted* re-run of `ShockEngine` (FR-10 EC: params validated 0-100%
+        income drop / non-negative emergency amount) against the same
+        already-computed `FinancialProfile`, letting a user preview "what if
+        my instalment/income-drop/emergency-expense were different" without
+        creating a new assessment (PLAN §11.3 `assessment_input_snapshots`
+        stays immutable; this never writes to it)."""
+        assessment = self._get_owned(user, assessment_id)
+        _require_current_model_lineage(self._model_versions, assessment)
+        profile = self._profiles.get_profile_for_assessment(assessment.id)
+        if profile is None:
+            raise NotFoundError("Twin not available yet")
+        if income_drop_pct is not None and not (Decimal(0) <= income_drop_pct <= Decimal(100)):
+            raise ValidationError("income_drop_pct must be between 0 and 100")
+        if emergency_expense is not None and emergency_expense < 0:
+            raise ValidationError("emergency_expense must be non-negative")
+        if proposed_instalment is not None and proposed_instalment < 0:
+            raise ValidationError("proposed_instalment must be non-negative")
+
+        income_sources = self._profiles.get_income_sources_for_assessment(assessment.id)
+        cash_flow_events = self._profiles.get_cash_flow_events_for_assessment(assessment.id)
+        dominant_source = max(income_sources, key=lambda s: s.concentration_ratio, default=None)
+        required_liquidity_buffer = assessment.required_liquidity_buffer or 0
+
+        return shock.run(
+            ShockInput(
+                median_income=profile.median_income,
+                essential_expenses=profile.essential_expenses,
+                average_free_cash_flow=profile.average_free_cash_flow,
+                weakest_month_cash_flow=profile.weakest_month_cash_flow,
+                savings_buffer=profile.savings_buffer,
+                required_liquidity_buffer=required_liquidity_buffer,
+                proposed_instalment=(
+                    proposed_instalment
+                    if proposed_instalment is not None
+                    else (assessment.maximum_safe_instalment or 0)
+                ),
+                largest_income_source_amount=(
+                    dominant_source.average_amount if dominant_source else None
+                ),
+                custom_income_drop_pct=(
+                    income_drop_pct / Decimal(100) if income_drop_pct is not None else None
+                ),
+                custom_emergency_expense=emergency_expense,
+                include_custom_scenario=(
+                    income_drop_pct is not None
+                    or emergency_expense is not None
+                    or proposed_instalment is not None
+                ),
+                cash_flow_events=_to_shock_events(cash_flow_events),
+                proposed_instalment_day=assessment.recommended_due_date_start or 20,
+            )
+        )
+
     def _get_owned(self, user: User, assessment_id: uuid.UUID) -> Assessment:
         assessment = self._assessments.get_by_id(assessment_id)
         if assessment is None or assessment.user_id != user.id:
@@ -242,12 +352,17 @@ def run_assessment_analysis(db: Session, assessment_id: uuid.UUID) -> None:
     """Idempotent/resumable per NFR-3: an assessment not sitting in
     `PENDING` has already been analyzed (or is terminal), so a retry is a
     no-op. Runs `CashFlowTwinEngine` -> `RiskEngine` -> `SafeBorrowingEngine`
-    (PLAN §8.3) and persists their outputs; `ShockEngine`/`OfferEngine`
-    (Sprint 5) extend this same task later, not this cycle."""
+    -> `ShockEngine` (PLAN §8.3) and persists their outputs. `OfferEngine`
+    is deliberately *not* run here -- it's triggered by its own endpoint
+    (`POST /assessments/{id}/offers`, PLAN §12.2) once the caller has a
+    completed assessment to seed offers against, not part of the automatic
+    analysis stage."""
     assessments = AssessmentRepository(db)
     assessment = assessments.get_by_id(assessment_id)
     if assessment is None or assessment.status != AssessmentStatusEnum.PENDING:
         return
+
+    _require_current_model_lineage(ModelVersionRepository(db), assessment)
 
     with track_assessment_stage(db, assessment.id, PipelineStageEnum.ANALYSIS):
         financing_need = FinancingNeedRepository(db).get_by_id(assessment.financing_need_id)
@@ -318,15 +433,53 @@ def run_assessment_analysis(db: Session, assessment_id: uuid.UUID) -> None:
                     dominant_source.dominant_arrival_day if dominant_source else None
                 ),
                 dominant_income_frequency=dominant_source.frequency if dominant_source else None,
+                savings_buffer=twin_result.savings_buffer,
+            )
+        )
+
+        # PLAN §8.3 diagram order (Twin -> Risk -> Shock -> SafeBorrowing ->
+        # Offer): `ShockCapacity` is already folded into
+        # `safe_borrowing_result` above (ADR-016, closed form, no engine
+        # dependency); this second `ShockEngine` run uses the *final*
+        # `maximum_safe_instalment` to populate the full scenario battery +
+        # resilience score the dashboard's Shock card and `GET .../shocks`
+        # display (FR-10).
+        shock_result = shock.run(
+            ShockInput(
+                median_income=twin_result.median_income,
+                essential_expenses=twin_result.essential_expenses,
+                average_free_cash_flow=twin_result.average_free_cash_flow,
+                weakest_month_cash_flow=twin_result.weakest_month_cash_flow,
+                savings_buffer=twin_result.savings_buffer,
+                required_liquidity_buffer=safe_borrowing_result.required_liquidity_buffer,
+                proposed_instalment=safe_borrowing_result.maximum_safe_instalment,
+                largest_income_source_amount=(
+                    dominant_source.average_amount if dominant_source else None
+                ),
+                cash_flow_events=tuple(
+                    CashFlowEventInput(
+                        day_of_month=e.expected_day_of_month,
+                        amount=e.amount,
+                        direction=e.direction,
+                        event_type=e.event_type,
+                    )
+                    for e in twin_result.cash_flow_events
+                    if e.expected_day_of_month is not None
+                ),
+                proposed_instalment_day=safe_borrowing_result.recommended_due_date_start or 20,
             )
         )
 
         _persist_twin(db, assessment, twin_result)
-        _persist_reason_codes(db, assessment.id, twin_result, risk_result, safe_borrowing_result)
+        _persist_shock_scenarios(db, assessment.id, shock_result)
+        _persist_reason_codes(
+            db, assessment.id, twin_result, risk_result, safe_borrowing_result, shock_result
+        )
 
         assessment.data_confidence_score = data_confidence_score
         assessment.indicative_risk_band = risk_result.band
         assessment.model_confidence = risk_result.model_confidence
+        assessment.shock_resilience_score = shock_result.resilience_score
         assessment.safe_loan_amount = safe_borrowing_result.safe_loan_amount
         assessment.maximum_safe_instalment = safe_borrowing_result.maximum_safe_instalment
         assessment.required_liquidity_buffer = safe_borrowing_result.required_liquidity_buffer
@@ -385,6 +538,22 @@ def band_from_score(score: Decimal) -> BandEnum:
     if score >= thresholds["medium"]:
         return BandEnum.MEDIUM
     return BandEnum.LOW
+
+
+def _require_current_model_lineage(
+    model_versions: ModelVersionRepository, assessment: Assessment
+) -> None:
+    model = model_versions.get_by_id(assessment.model_version_id)
+    if (
+        model is None
+        or model.version != cfg.MODEL_VERSION
+        or model.config_hash != cfg.config_hash()
+    ):
+        raise ReassessmentRequiredError(
+            "Assessment model does not match the current calculation configuration; "
+            "create a new assessment",
+            details={"assessment_id": str(assessment.id)},
+        )
 
 
 def _persist_twin(
@@ -484,7 +653,7 @@ class _ReasonCodeLike(Protocol):
 
 
 _POSITIVE_MARKERS = ("EXCELLENT", "STRONG", "CLEAN", "MATCHED", "SELECTED", "GOOD")
-_HIGH_SEVERITY_MARKERS = ("ZERO", "INSUFFICIENT")
+_HIGH_SEVERITY_MARKERS = ("ZERO", "INSUFFICIENT", "DEFICIT", "FRAGILE")
 _MEDIUM_SEVERITY_MARKERS = ("WEAK", "MISMATCH", "LIMITED_BY", "HIGH", "CAUTION", "CONCENTRATION")
 
 
@@ -507,17 +676,51 @@ def _classify_reason(code: str) -> tuple[ReasonTypeEnum, SeverityEnum]:
     return ReasonTypeEnum.RISK, SeverityEnum.LOW
 
 
+def _persist_shock_scenarios(
+    db: Session, assessment_id: uuid.UUID, shock_result: shock.ShockResult
+) -> None:
+    rows = [
+        ShockScenario(
+            id=uuid.uuid4(),
+            assessment_id=assessment_id,
+            scenario_type=s.scenario_type,
+            scenario_parameters_json=s.parameters,
+            projected_cash_flow=s.projected_cash_flow,
+            minimum_projected_balance=s.minimum_projected_balance,
+            deficit_amount=s.deficit_amount,
+            affordability_status=s.affordability_status,
+            resilience_score_contribution=s.resilience_score_contribution,
+            projection_points_json=[
+                {
+                    "sequence": point.sequence,
+                    "day_of_month": point.day_of_month,
+                    "event_type": point.event_type,
+                    "amount": point.amount,
+                    "projected_balance": point.projected_balance,
+                }
+                for point in s.projection_points
+            ],
+            required_buffer_breached=s.required_buffer_breached,
+        )
+        for s in shock_result.scenarios
+    ]
+    if rows:
+        ShockScenarioRepository(db).add_all(rows)
+
+
 def _persist_reason_codes(
     db: Session,
     assessment_id: uuid.UUID,
     twin_result: cash_flow_twin.FinancialProfileResult,
     risk_result: risk.RiskResult,
     safe_borrowing_result: safe_borrowing.RecommendationResult,
+    shock_result: shock.ShockResult,
 ) -> None:
     all_reasons: tuple[_ReasonCodeLike, ...] = (
         *cast("list[_ReasonCodeLike]", twin_result.reason_codes),
         *cast("list[_ReasonCodeLike]", risk_result.reason_codes),
         *cast("list[_ReasonCodeLike]", safe_borrowing_result.reason_codes),
+        *cast("list[_ReasonCodeLike]", shock_result.reason_codes),
     )
     if not all_reasons:
         return
@@ -536,3 +739,16 @@ def _persist_reason_codes(
             )
         )
     AssessmentReasonCodeRepository(db).add_all(rows)
+
+
+def _to_shock_events(events: list[CashFlowEvent]) -> tuple[CashFlowEventInput, ...]:
+    return tuple(
+        CashFlowEventInput(
+            day_of_month=event.expected_day_of_month,
+            amount=event.amount,
+            direction=event.direction,
+            event_type=event.event_type,
+        )
+        for event in events
+        if event.expected_day_of_month is not None
+    )

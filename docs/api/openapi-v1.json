@@ -1,6 +1,26 @@
 {
   "components": {
     "schemas": {
+      "AffordEnum": {
+        "description": "PLAN \u00a75.8's documented outcome classes (\"SURVIVABLE ... STRAINED ...\nDEFICIT\"), used by both `shock_scenarios.affordability_status` and\n`offer_assessments.affordability_status` (both named `afford_enum` in\n\u00a711.3 \u2014 one shared type, not two). Added Sprint 5/T5.1/T5.3.",
+        "enum": [
+          "SURVIVABLE",
+          "STRAINED",
+          "DEFICIT"
+        ],
+        "title": "AffordEnum",
+        "type": "string"
+      },
+      "AmortizationEnum": {
+        "description": "PLAN \u00a75.7 \"amortisation method (`FLAT | REDUCING_BALANCE |\nFIXED_SCHEDULE`)\" \u2014 not enumerated in Appendix A. `FIXED_SCHEDULE` is\nreserved for a future lender-supplied schedule that doesn't follow either\nformula (not produced by `app/engines/loan_math.py` this sprint). Added\nSprint 5/T5.3.",
+        "enum": [
+          "FLAT",
+          "REDUCING_BALANCE",
+          "FIXED_SCHEDULE"
+        ],
+        "title": "AmortizationEnum",
+        "type": "string"
+      },
       "AssessmentCreateResponse": {
         "properties": {
           "assessment_id": {
@@ -529,6 +549,9 @@
           "safe_borrowing": {
             "$ref": "#/components/schemas/SafeBorrowingSummary"
           },
+          "shock_resilience": {
+            "$ref": "#/components/schemas/ShockResilienceSummary"
+          },
           "status": {
             "$ref": "#/components/schemas/AssessmentStatusEnum"
           },
@@ -549,6 +572,7 @@
           "model_version_id",
           "data_confidence",
           "risk_band",
+          "shock_resilience",
           "safe_borrowing",
           "twin"
         ],
@@ -865,6 +889,66 @@
         "title": "EmploymentTypeEnum",
         "type": "string"
       },
+      "ErrorDetail": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "correlation_id": {
+            "title": "Correlation Id",
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": true,
+            "title": "Details",
+            "type": "object"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "details",
+          "correlation_id"
+        ],
+        "title": "ErrorDetail",
+        "type": "object"
+      },
+      "ErrorEnvelope": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetail"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "title": "ErrorEnvelope",
+        "type": "object"
+      },
+      "EssentialExpenseCoverageResponse": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "ratio": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Ratio",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "ratio"
+        ],
+        "title": "EssentialExpenseCoverageResponse",
+        "type": "object"
+      },
       "FinancingNeedListResponse": {
         "properties": {
           "items": {
@@ -1021,6 +1105,91 @@
           "confidence"
         ],
         "title": "IncomeSourceResponse",
+        "type": "object"
+      },
+      "LatePenaltyTermsResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "basis": {
+            "enum": [
+              "OVERDUE_INSTALMENT_PER_DAY",
+              "OVERDUE_INSTALMENT_PER_MONTH",
+              "FIXED"
+            ],
+            "title": "Basis",
+            "type": "string"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate"
+          },
+          "trigger_days": {
+            "minimum": 0.0,
+            "title": "Trigger Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "trigger_days",
+          "rate",
+          "amount",
+          "basis"
+        ],
+        "title": "LatePenaltyTermsResponse",
+        "type": "object"
+      },
+      "LenderResponse": {
+        "properties": {
+          "lender_id": {
+            "format": "uuid",
+            "title": "Lender Id",
+            "type": "string"
+          },
+          "logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Url"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "regulatory_status": {
+            "$ref": "#/components/schemas/RegStatusEnum"
+          }
+        },
+        "required": [
+          "lender_id",
+          "name",
+          "regulatory_status",
+          "logo_url"
+        ],
+        "title": "LenderResponse",
         "type": "object"
       },
       "LineageResponse": {
@@ -1216,6 +1385,311 @@
         "title": "MonthlySnapshotResponse",
         "type": "object"
       },
+      "OfferRatingEnum": {
+        "description": "Gap-fill (PLAN \u00a724.11): PLAN \u00a711.3's `offer_assessments` row types\n`total_cost_status`/`timing_status` as a generic `status_enum` without\nnaming its members. A three-tier rating (rather than reusing `band_enum`,\nwhich is the Trust-Layer-specific HIGH/MEDIUM/LOW vocabulary) keeps offer\ncopy in its own domain language. Added Sprint 5/T5.3.",
+        "enum": [
+          "GOOD",
+          "FAIR",
+          "POOR"
+        ],
+        "title": "OfferRatingEnum",
+        "type": "string"
+      },
+      "OfferResponse": {
+        "properties": {
+          "admin_fee": {
+            "title": "Admin Fee",
+            "type": "integer"
+          },
+          "affordability_status": {
+            "$ref": "#/components/schemas/AffordEnum"
+          },
+          "amortization_method": {
+            "$ref": "#/components/schemas/AmortizationEnum"
+          },
+          "config_hash": {
+            "title": "Config Hash",
+            "type": "string"
+          },
+          "due_date": {
+            "title": "Due Date",
+            "type": "integer"
+          },
+          "effective_annual_rate": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Annual Rate"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "financed_fee": {
+            "title": "Financed Fee",
+            "type": "integer"
+          },
+          "frequency": {
+            "$ref": "#/components/schemas/FreqEnum"
+          },
+          "instalment_amount": {
+            "title": "Instalment Amount",
+            "type": "integer"
+          },
+          "interest_amount": {
+            "title": "Interest Amount",
+            "type": "integer"
+          },
+          "late_penalty_terms": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LatePenaltyTermsResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lender": {
+            "$ref": "#/components/schemas/LenderResponse"
+          },
+          "model_version": {
+            "title": "Model Version",
+            "type": "string"
+          },
+          "net_disbursed_amount": {
+            "title": "Net Disbursed Amount",
+            "type": "integer"
+          },
+          "nominal_rate": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nominal Rate"
+          },
+          "nominal_rate_basis": {
+            "const": "ANNUAL_NOMINAL",
+            "title": "Nominal Rate Basis",
+            "type": "string"
+          },
+          "offer_id": {
+            "format": "uuid",
+            "title": "Offer Id",
+            "type": "string"
+          },
+          "offer_source": {
+            "$ref": "#/components/schemas/OfferSourceEnum"
+          },
+          "payment_schedule": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentScheduleEntryResponse"
+            },
+            "title": "Payment Schedule",
+            "type": "array"
+          },
+          "principal_amount": {
+            "title": "Principal Amount",
+            "type": "integer"
+          },
+          "rank": {
+            "title": "Rank",
+            "type": "integer"
+          },
+          "reason_codes": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCodeResponse"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "refinancing_dependency": {
+            "title": "Refinancing Dependency",
+            "type": "boolean"
+          },
+          "remaining_essential_expense_coverage": {
+            "$ref": "#/components/schemas/EssentialExpenseCoverageResponse"
+          },
+          "safe_offer_score": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Safe Offer Score",
+            "type": "string"
+          },
+          "safety_band": {
+            "$ref": "#/components/schemas/OfferSafetyBandEnum"
+          },
+          "service_fee": {
+            "title": "Service Fee",
+            "type": "integer"
+          },
+          "shock_resilience_status": {
+            "$ref": "#/components/schemas/BandEnum"
+          },
+          "simulation_notice": {
+            "anyOf": [
+              {
+                "const": "SIMULATED offer for comparison only; not a real provider endorsement.",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Simulation Notice"
+          },
+          "tenor_months": {
+            "title": "Tenor Months",
+            "type": "integer"
+          },
+          "timing_status": {
+            "$ref": "#/components/schemas/OfferRatingEnum"
+          },
+          "total_cost_status": {
+            "$ref": "#/components/schemas/OfferRatingEnum"
+          },
+          "total_repayment": {
+            "title": "Total Repayment",
+            "type": "integer"
+          },
+          "upfront_fee": {
+            "title": "Upfront Fee",
+            "type": "integer"
+          },
+          "warning_flags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warning Flags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "offer_id",
+          "lender",
+          "offer_source",
+          "principal_amount",
+          "net_disbursed_amount",
+          "instalment_amount",
+          "tenor_months",
+          "amortization_method",
+          "nominal_rate",
+          "nominal_rate_basis",
+          "effective_annual_rate",
+          "interest_amount",
+          "upfront_fee",
+          "financed_fee",
+          "service_fee",
+          "admin_fee",
+          "total_repayment",
+          "late_penalty_terms",
+          "payment_schedule",
+          "due_date",
+          "frequency",
+          "safe_offer_score",
+          "safety_band",
+          "rank",
+          "affordability_status",
+          "shock_resilience_status",
+          "total_cost_status",
+          "timing_status",
+          "warning_flags",
+          "refinancing_dependency",
+          "remaining_essential_expense_coverage",
+          "reason_codes",
+          "explanation",
+          "model_version",
+          "config_hash",
+          "simulation_notice"
+        ],
+        "title": "OfferResponse",
+        "type": "object"
+      },
+      "OfferSafetyBandEnum": {
+        "description": "PLAN \u00a75.9: \"Bands: SAFE >= 75, CAUTION 50-74, UNSAFE < 50\" \u2014 named\nonly in prose; `offer_assessments` stores `safe_offer_score` (`NUMERIC`)\nand `rank` (`INT`) but no band column, so this is computed on read (same\npattern as `ShockResilienceBandEnum` above). Added Sprint 5/T5.3.",
+        "enum": [
+          "SAFE",
+          "CAUTION",
+          "UNSAFE"
+        ],
+        "title": "OfferSafetyBandEnum",
+        "type": "string"
+      },
+      "OfferSourceEnum": {
+        "description": "PLAN \u00a711.3 `lender_offers.offer_source` \u2014 member set given inline\n(`SIMULATED, LENDER_API, MANUAL_LENDER_ENTRY`), not in Appendix A. Added\nSprint 5/T5.3.",
+        "enum": [
+          "SIMULATED",
+          "LENDER_API",
+          "MANUAL_LENDER_ENTRY"
+        ],
+        "title": "OfferSourceEnum",
+        "type": "string"
+      },
+      "OffersListResponse": {
+        "properties": {
+          "assessment_id": {
+            "format": "uuid",
+            "title": "Assessment Id",
+            "type": "string"
+          },
+          "offers": {
+            "items": {
+              "$ref": "#/components/schemas/OfferResponse"
+            },
+            "title": "Offers",
+            "type": "array"
+          }
+        },
+        "required": [
+          "assessment_id",
+          "offers"
+        ],
+        "title": "OffersListResponse",
+        "type": "object"
+      },
+      "PaymentScheduleEntryResponse": {
+        "properties": {
+          "interest_component": {
+            "title": "Interest Component",
+            "type": "integer"
+          },
+          "payment_amount": {
+            "title": "Payment Amount",
+            "type": "integer"
+          },
+          "period": {
+            "title": "Period",
+            "type": "integer"
+          },
+          "principal_component": {
+            "title": "Principal Component",
+            "type": "integer"
+          },
+          "remaining_balance": {
+            "title": "Remaining Balance",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "period",
+          "payment_amount",
+          "principal_component",
+          "interest_component",
+          "remaining_balance"
+        ],
+        "title": "PaymentScheduleEntryResponse",
+        "type": "object"
+      },
       "ProfileResponse": {
         "properties": {
           "business_type": {
@@ -1262,6 +1736,39 @@
           "locale"
         ],
         "title": "ProfileResponse",
+        "type": "object"
+      },
+      "ProjectionPointResponse": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "day_of_month": {
+            "title": "Day Of Month",
+            "type": "integer"
+          },
+          "event_type": {
+            "title": "Event Type",
+            "type": "string"
+          },
+          "projected_balance": {
+            "title": "Projected Balance",
+            "type": "integer"
+          },
+          "sequence": {
+            "title": "Sequence",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sequence",
+          "day_of_month",
+          "event_type",
+          "amount",
+          "projected_balance"
+        ],
+        "title": "ProjectionPointResponse",
         "type": "object"
       },
       "PurposeEnum": {
@@ -1415,6 +1922,16 @@
         "title": "RefreshRequest",
         "type": "object"
       },
+      "RegStatusEnum": {
+        "description": "PLAN \u00a711.3 `lenders.regulatory_status` (`reg_status_enum`) documents\ntwo members (`REGULATED, UNLISTED`); a third, `SIMULATED_REGULATED_PROVIDER`,\nis required by FR-11 AC5 for MVP seeded providers so offer copy never\nimplies a real regulated endorsement (PLAN \u00a76.4/\u00a716 non-goals: no real\nlender integration in MVP). Added Sprint 5/T5.3.",
+        "enum": [
+          "REGULATED",
+          "UNLISTED",
+          "SIMULATED_REGULATED_PROVIDER"
+        ],
+        "title": "RegStatusEnum",
+        "type": "string"
+      },
       "RegisterRequest": {
         "additionalProperties": false,
         "properties": {
@@ -1435,6 +1952,13 @@
         ],
         "title": "RegisterRequest",
         "type": "object"
+      },
+      "ResilienceScoreScope": {
+        "enum": [
+          "CANONICAL_BATTERY"
+        ],
+        "title": "ResilienceScoreScope",
+        "type": "string"
       },
       "ReviewRequest": {
         "properties": {
@@ -1632,6 +2156,267 @@
           "frequency"
         ],
         "title": "SafeBorrowingSummary",
+        "type": "object"
+      },
+      "ShockResilienceBandEnum": {
+        "description": "PLAN \u00a75.8: \"Bands: STRONG >= 75, MODERATE 50-74, FRAGILE < 50\" \u2014 named\nonly in prose, not a stored column (`assessments.shock_resilience_score`\nstores the `NUMERIC` score only; the band is computed on read, the same\npattern `band_from_score` already uses for Data Confidence). Added\nSprint 5/T5.1.",
+        "enum": [
+          "STRONG",
+          "MODERATE",
+          "FRAGILE"
+        ],
+        "title": "ShockResilienceBandEnum",
+        "type": "string"
+      },
+      "ShockResilienceSummary": {
+        "properties": {
+          "band": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShockResilienceBandEnum"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason_codes": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCodeResponse"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          }
+        },
+        "required": [
+          "score",
+          "band",
+          "reasons",
+          "reason_codes"
+        ],
+        "title": "ShockResilienceSummary",
+        "type": "object"
+      },
+      "ShockResultResponse": {
+        "properties": {
+          "assessment_id": {
+            "format": "uuid",
+            "title": "Assessment Id",
+            "type": "string"
+          },
+          "band": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShockResilienceBandEnum"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "config_hash": {
+            "title": "Config Hash",
+            "type": "string"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "model_version": {
+            "title": "Model Version",
+            "type": "string"
+          },
+          "proposed_instalment": {
+            "title": "Proposed Instalment",
+            "type": "integer"
+          },
+          "reason_codes": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCodeResponse"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "required_liquidity_buffer": {
+            "title": "Required Liquidity Buffer",
+            "type": "integer"
+          },
+          "resilience_score": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resilience Score"
+          },
+          "resilience_score_scope": {
+            "$ref": "#/components/schemas/ResilienceScoreScope",
+            "default": "CANONICAL_BATTERY"
+          },
+          "scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/ShockScenarioResponse"
+            },
+            "title": "Scenarios",
+            "type": "array"
+          }
+        },
+        "required": [
+          "assessment_id",
+          "resilience_score",
+          "band",
+          "scenarios",
+          "proposed_instalment",
+          "required_liquidity_buffer",
+          "reason_codes",
+          "explanation",
+          "model_version",
+          "config_hash"
+        ],
+        "title": "ShockResultResponse",
+        "type": "object"
+      },
+      "ShockScenarioResponse": {
+        "properties": {
+          "affordability_status": {
+            "$ref": "#/components/schemas/AffordEnum"
+          },
+          "deficit_amount": {
+            "title": "Deficit Amount",
+            "type": "integer"
+          },
+          "minimum_projected_balance": {
+            "title": "Minimum Projected Balance",
+            "type": "integer"
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "title": "Parameters",
+            "type": "object"
+          },
+          "projected_cash_flow": {
+            "title": "Projected Cash Flow",
+            "type": "integer"
+          },
+          "projection_points": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectionPointResponse"
+            },
+            "title": "Projection Points",
+            "type": "array"
+          },
+          "required_buffer_breached": {
+            "title": "Required Buffer Breached",
+            "type": "boolean"
+          },
+          "required_liquidity_buffer": {
+            "title": "Required Liquidity Buffer",
+            "type": "integer"
+          },
+          "resilience_score_contribution": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Resilience Score Contribution",
+            "type": "string"
+          },
+          "scenario_type": {
+            "$ref": "#/components/schemas/ShockTypeEnum"
+          }
+        },
+        "required": [
+          "scenario_type",
+          "parameters",
+          "projected_cash_flow",
+          "minimum_projected_balance",
+          "deficit_amount",
+          "affordability_status",
+          "resilience_score_contribution",
+          "required_liquidity_buffer",
+          "required_buffer_breached",
+          "projection_points"
+        ],
+        "title": "ShockScenarioResponse",
+        "type": "object"
+      },
+      "ShockTypeEnum": {
+        "description": "Gap-fill (PLAN \u00a724.11): `shock_scenarios.scenario_type` \u2014 not\nenumerated in Appendix A. Member set is PLAN \u00a75.8's documented default\nscenario battery (income-drop tiers, delayed dominant income, a fixed\nemergency expense, largest-income-source loss, weakest-month replay) plus\n`CUSTOM` for `POST /assessments/{id}/simulate`'s user-adjustable inputs\n(PLAN \u00a712.2/\u00a712.3). Added Sprint 5/T5.1.",
+        "enum": [
+          "INCOME_DROP_10",
+          "INCOME_DROP_20",
+          "INCOME_DROP_30",
+          "DELAYED_INCOME",
+          "EMERGENCY_EXPENSE",
+          "INCOME_SOURCE_LOSS",
+          "WEAKEST_MONTH_REPLAY",
+          "CUSTOM"
+        ],
+        "title": "ShockTypeEnum",
+        "type": "string"
+      },
+      "SimulateShockRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "emergency_expense": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Emergency Expense"
+          },
+          "income_drop_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Income Drop Pct"
+          },
+          "proposed_instalment": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposed Instalment"
+          }
+        },
+        "title": "SimulateShockRequest",
         "type": "object"
       },
       "SourceTypeEnum": {
@@ -2123,15 +2908,65 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Create Assessment",
@@ -2182,15 +3017,65 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Get Assessment",
@@ -2242,15 +3127,65 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Get Assessment Dashboard",
@@ -2301,18 +3236,286 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Get Assessment Lineage",
+        "tags": [
+          "assessments"
+        ]
+      }
+    },
+    "/api/v1/assessments/{assessment_id}/offers": {
+      "get": {
+        "description": "PLAN \u00a712.2 `GET /assessments/{id}/offers` -- ranked offers (FR-11 AC1:\nranked by safety, never commission).",
+        "operationId": "get_assessment_offers_api_v1_assessments__assessment_id__offers_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assessment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Assessment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OffersListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          }
+        },
+        "summary": "Get Assessment Offers",
+        "tags": [
+          "assessments"
+        ]
+      },
+      "post": {
+        "description": "PLAN \u00a712.2 `POST /assessments/{id}/offers` -- seed/simulate offers\n(FR-11). Deterministic offer templates against the seeded `lenders`\ncatalog; see `app/services/offer_service.py` module docstring for the\nre-seeding behaviour.",
+        "operationId": "create_assessment_offers_api_v1_assessments__assessment_id__offers_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assessment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Assessment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OffersListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          }
+        },
+        "summary": "Create Assessment Offers",
         "tags": [
           "assessments"
         ]
@@ -2360,18 +3563,298 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Get Assessment Recommendation",
+        "tags": [
+          "assessments"
+        ]
+      }
+    },
+    "/api/v1/assessments/{assessment_id}/shocks": {
+      "get": {
+        "description": "PLAN \u00a712.2 `GET /assessments/{id}/shocks` -- the canonical default\nbattery persisted by the `ANALYSIS` stage (FR-10).",
+        "operationId": "get_assessment_shocks_api_v1_assessments__assessment_id__shocks_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assessment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Assessment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShockResultResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          }
+        },
+        "summary": "Get Assessment Shocks",
+        "tags": [
+          "assessments"
+        ]
+      }
+    },
+    "/api/v1/assessments/{assessment_id}/simulate": {
+      "post": {
+        "description": "PLAN \u00a712.2 `POST /assessments/{id}/simulate` -- an ad-hoc preview,\nnever persisted (FR-10).",
+        "operationId": "simulate_assessment_shock_api_v1_assessments__assessment_id__simulate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assessment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Assessment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulateShockRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShockResultResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          }
+        },
+        "summary": "Simulate Assessment Shock",
         "tags": [
           "assessments"
         ]
@@ -2419,15 +3902,65 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Get Assessment Twin",
@@ -2460,15 +3993,65 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Login",
@@ -2512,15 +4095,65 @@
           "204": {
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Logout",
@@ -2553,15 +4186,65 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Refresh",
@@ -2594,15 +4277,65 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Register",
@@ -2653,15 +4386,65 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Upload Document",
@@ -2712,15 +4495,65 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Confirm Document",
@@ -2781,15 +4614,65 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Review Document",
@@ -2840,15 +4723,65 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Get Document Status",
@@ -2928,15 +4861,65 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Get Document Transactions",
@@ -2987,15 +4970,65 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Get Document Verification",
@@ -3036,15 +5069,65 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "List Financing Needs",
@@ -3093,15 +5176,65 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Create Financing Need",
@@ -3142,15 +5275,65 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Get Me",
@@ -3201,20 +5384,179 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Update Profile",
         "tags": [
           "me"
+        ]
+      }
+    },
+    "/api/v1/offers/{offer_id}/safety": {
+      "get": {
+        "operationId": "get_offer_safety_api_v1_offers__offer_id__safety_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "offer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Offer Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfferResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          }
+        },
+        "summary": "Get Offer Safety",
+        "tags": [
+          "offers"
         ]
       }
     },
@@ -3236,6 +5578,66 @@
               }
             },
             "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Health",
@@ -3256,6 +5658,66 @@
               }
             },
             "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Ready",
