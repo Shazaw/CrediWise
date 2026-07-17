@@ -62,9 +62,7 @@ struct AppRootView: View {
     private var authenticatedFlow: some View {
         NavigationStack(path: $coordinator.path) {
             AuthenticatedHomeView(
-                onStart: coordinator.shouldOfferSyntheticAssessment
-                    ? coordinator.showFinancingNeed
-                    : coordinator.showUpload,
+                onStart: startAuthenticatedFlow,
                 showsCycle5Preview: coordinator.shouldOfferSyntheticAssessment,
                 onSignOut: coordinator.signOut
             )
@@ -111,14 +109,24 @@ struct AppRootView: View {
         case let .dataConfidence(documentID):
             DataConfidenceView(
                 viewModel: coordinator.makeDataConfidenceViewModel(documentID: documentID),
-                onContinueToDashboard: coordinator.shouldOfferSyntheticAssessment
-                    ? coordinator.showSyntheticAssessmentDashboard
-                    : nil
+                onContinueToDashboard: dashboardContinuation
             )
         case let .assessmentDashboard(assessmentID):
             AssessmentDashboardView(
                 viewModel: coordinator.makeAssessmentDashboardViewModel(assessmentID: assessmentID)
             )
         }
+    }
+
+    private var startAuthenticatedFlow: () -> Void {
+        if coordinator.shouldOfferSyntheticAssessment {
+            return { coordinator.showFinancingNeed() }
+        }
+        return { coordinator.showUpload() }
+    }
+
+    private var dashboardContinuation: (() -> Void)? {
+        guard coordinator.shouldOfferSyntheticAssessment else { return nil }
+        return { coordinator.showSyntheticAssessmentDashboard() }
     }
 }
