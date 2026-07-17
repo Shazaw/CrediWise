@@ -254,9 +254,8 @@ final class APIOfferRepositoryTests: XCTestCase {
             )
         let session = OfferStubSession(responses: [.init(statusCode: 200, body: body)])
         let repository = try await makeRepository(session: session)
-        let offer = try XCTUnwrap(
-            try await repository.offers(assessmentID: assessmentID.uuidString).first
-        )
+        let offers = try await repository.offers(assessmentID: assessmentID.uuidString)
+        let offer = try XCTUnwrap(offers.first)
         XCTAssertEqual(offer.affordabilityStatus, variant.expectedAffordability)
         XCTAssertEqual(offer.shockResilienceStatus, variant.expectedShock)
         XCTAssertEqual(offer.totalCostStatus, variant.expectedCost)
