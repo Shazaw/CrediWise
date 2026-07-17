@@ -1,3 +1,5 @@
+import Foundation
+
 actor MockShockRepository: ShockRepository {
     struct SimulationRequest: Equatable, Sendable {
         let assessmentID: String
@@ -22,9 +24,7 @@ actor MockShockRepository: ShockRepository {
 
     func shocks(assessmentID: String) async throws -> ShockAssessment {
         shockAssessmentIDs.append(assessmentID)
-        if let error {
-            throw error
-        }
+        if let error { throw error }
         return report(initialReport, assessmentID: assessmentID, parameters: nil)
     }
 
@@ -32,175 +32,101 @@ actor MockShockRepository: ShockRepository {
         assessmentID: String,
         parameters: ShockSimulationParameters
     ) async throws -> ShockAssessment {
-        recordedSimulationRequests.append(
-            SimulationRequest(assessmentID: assessmentID, parameters: parameters)
-        )
-        if let error {
-            throw error
-        }
+        recordedSimulationRequests.append(.init(assessmentID: assessmentID, parameters: parameters))
+        if let error { throw error }
         return report(simulatedReport, assessmentID: assessmentID, parameters: parameters)
     }
 
-    func shockRequests() -> [String] {
-        shockAssessmentIDs
-    }
-
-    func simulationRequests() -> [SimulationRequest] {
-        recordedSimulationRequests
-    }
+    func shockRequests() -> [String] { shockAssessmentIDs }
+    func simulationRequests() -> [SimulationRequest] { recordedSimulationRequests }
 
     static func makeInitialReport() -> ShockAssessment {
-        makeReport(score: 68, band: .moderate, modelVersion: "shock-v1")
+        makeReport(kind: .incomeDrop20, score: 68)
     }
 
     static func makeSimulatedReport() -> ShockAssessment {
-        makeReport(score: 68, band: .moderate, modelVersion: "shock-v1-custom")
+        makeReport(kind: .custom, score: 64)
     }
 
     private static func makeReport(
-        score: Int,
-        band: ShockAssessment.ResilienceBand,
-        modelVersion: String
+        kind: ShockAssessment.ScenarioKind,
+        score: Decimal
     ) -> ShockAssessment {
-        ShockAssessment(
+        let kinds: [ShockAssessment.ScenarioKind] = kind == .custom
+            ? [.custom]
+            : [
+                .incomeDrop10, .incomeDrop20, .incomeDrop30, .delayedIncome,
+                .emergencyExpense, .incomeSourceLoss, .weakestMonthReplay
+            ]
+        return ShockAssessment(
             assessmentID: "synthetic-assessment-id",
-            score: score,
-            band: band,
+            resilienceScore: score,
+            resilienceScoreScope: .canonicalBattery,
+            band: .moderate,
+            scenarios: kinds.enumerated().map { index, scenarioKind in
+                scenario(kind: scenarioKind, index: index)
+            },
+            proposedInstalment: 350_000,
             requiredLiquidityBuffer: 1_250_000,
-            scenarios: makeScenarios(),
             reasons: [
                 .init(
-                    id: "temporal-buffer",
-                    titleKey: "shocks.reason.temporal_buffer.title",
-                    detailKey: "shocks.reason.temporal_buffer.detail"
-                ),
-                .init(
-                    id: "weakest-month",
-                    titleKey: "shocks.reason.weakest_month.title",
-                    detailKey: "shocks.reason.weakest_month.detail"
-                ),
-                .init(
-                    id: "source-concentration",
-                    titleKey: "shocks.reason.source_concentration.title",
-                    detailKey: "shocks.reason.source_concentration.detail"
+                    code: "SHOCK_TEMPORAL_LIQUIDITY",
+                    description: "Some scenarios create temporary liquidity pressure.",
+                    titleKey: "shocks.reason.temporal_liquidity",
+                    detailKey: "shocks.reason.temporal_liquidity.detail",
+                    isKnown: true
                 )
             ],
-            modelVersion: modelVersion,
-            appliedParameters: nil
+            explanation: "The supplied scenarios show where cash-flow timing creates pressure.",
+            modelVersion: "shock-v1",
+            configHash: "synthetic-shock-config-v1",
+            submittedParameters: nil
         )
     }
 
-    private static func makeScenarios() -> [ShockAssessment.Scenario] {
-        incomeDropScenarios() + timingScenarios() + lossScenarios()
-    }
-
-    private static func incomeDropScenarios() -> [ShockAssessment.Scenario] {
-        [
-            .init(
-                id: "income-drop-10",
-                kind: .incomeDrop,
-                titleKey: "shocks.scenario.income_drop_10.title",
-                monthlyProjectedBalance: 1_800_000,
-                minimumTemporalBalance: 1_400_000,
-                requiredBufferBreached: false,
-                deficit: 0,
-                status: .survivable,
-                scoreContribution: 10,
-                chartPoints: makeChart(prefix: "survivable", balances: [2_100_000, 1_700_000, 1_800_000])
-            ),
-            .init(
-                id: "income-drop-20",
-                kind: .incomeDrop,
-                titleKey: "shocks.scenario.income_drop_20.title",
-                monthlyProjectedBalance: 1_400_000,
-                minimumTemporalBalance: 1_250_000,
-                requiredBufferBreached: false,
-                deficit: 0,
-                status: .survivable,
-                scoreContribution: 20,
-                chartPoints: makeChart(prefix: "income-20", balances: [2_100_000, 1_250_000, 1_400_000])
-            ),
-            .init(
-                id: "income-drop-30",
-                kind: .incomeDrop,
-                titleKey: "shocks.scenario.income_drop_30.title",
-                monthlyProjectedBalance: 600_000,
-                minimumTemporalBalance: 200_000,
-                requiredBufferBreached: true,
-                deficit: 0,
-                status: .strained,
-                scoreContribution: 5,
-                chartPoints: makeChart(prefix: "income-30", balances: [2_100_000, 200_000, 600_000])
-            )
-        ]
-    }
-
-    private static func timingScenarios() -> [ShockAssessment.Scenario] {
-        [
-            .init(
-                id: "delayed-income",
-                kind: .delayedIncome,
-                titleKey: "shocks.scenario.delayed_income.title",
-                monthlyProjectedBalance: 1_650_000,
-                minimumTemporalBalance: 1_300_000,
-                requiredBufferBreached: false,
-                deficit: 0,
-                status: .survivable,
-                scoreContribution: 15,
-                chartPoints: makeChart(prefix: "delayed", balances: [1_600_000, 1_300_000, 1_650_000])
-            ),
-            .init(
-                id: "emergency-expense",
-                kind: .emergencyExpense,
-                titleKey: "shocks.scenario.emergency_expense.title",
-                monthlyProjectedBalance: 900_000,
-                minimumTemporalBalance: 250_000,
-                requiredBufferBreached: true,
-                deficit: 0,
-                status: .strained,
-                scoreContribution: 7.5,
-                chartPoints: makeChart(prefix: "strained", balances: [1_900_000, 250_000, 900_000])
-            )
-        ]
-    }
-
-    private static func lossScenarios() -> [ShockAssessment.Scenario] {
-        [
-            .init(
-                id: "income-source-loss",
-                kind: .incomeSourceLoss,
-                titleKey: "shocks.scenario.income_source_loss.title",
-                monthlyProjectedBalance: -450_000,
-                minimumTemporalBalance: -700_000,
-                requiredBufferBreached: true,
-                deficit: 700_000,
-                status: .deficit,
-                scoreContribution: 0,
-                chartPoints: makeChart(prefix: "deficit", balances: [1_100_000, -200_000, -700_000])
-            ),
-            .init(
-                id: "weakest-month",
-                kind: .weakestMonth,
-                titleKey: "shocks.scenario.weakest_month.title",
-                monthlyProjectedBalance: 850_000,
-                minimumTemporalBalance: 350_000,
-                requiredBufferBreached: true,
-                deficit: 0,
-                status: .strained,
-                scoreContribution: 10,
-                chartPoints: makeChart(prefix: "weakest", balances: [1_450_000, 350_000, 850_000])
-            )
-        ]
-    }
-
-    private static func makeChart(prefix: String, balances: [Int64]) -> [ShockAssessment.ProjectionPoint] {
-        balances.enumerated().map { index, balance in
-            .init(
-                id: "\(prefix)-\(index)",
-                periodKey: "shocks.period.\(index + 1)",
-                balance: balance
-            )
-        }
+    private static func scenario(
+        kind: ShockAssessment.ScenarioKind,
+        index: Int
+    ) -> ShockAssessment.Scenario {
+        let isDeficit = kind == .incomeSourceLoss
+        let minimum: Int64 = isDeficit ? -700_000 : 900_000 + Int64(index * 50_000)
+        let status: ShockAssessment.AffordabilityStatus = isDeficit ? .deficit : .strained
+        return .init(
+            id: "\(kind.rawValue)-\(index)",
+            kind: kind,
+            parameters: ["fixture_index": .number(Decimal(index))],
+            projectedCashFlow: isDeficit ? -450_000 : 1_400_000,
+            minimumProjectedBalance: minimum,
+            deficitAmount: isDeficit ? 700_000 : 0,
+            status: status,
+            resilienceScoreContribution: isDeficit ? 0 : 10,
+            requiredLiquidityBuffer: 1_250_000,
+            requiredBufferBreached: true,
+            projectionPoints: [
+                .init(
+                    id: "\(kind.rawValue)-0", sequence: 0, dayOfMonth: 1,
+                    eventType: "OPENING_BALANCE",
+                    eventLabelKey: "shocks.event.opening_balance",
+                    isKnownEventType: true,
+                    amount: 0, projectedBalance: 2_100_000
+                ),
+                .init(
+                    id: "\(kind.rawValue)-1", sequence: 1, dayOfMonth: 18,
+                    eventType: "ESSENTIAL_EXPENSE",
+                    eventLabelKey: "shocks.event.essential_expense",
+                    isKnownEventType: true,
+                    amount: -1_200_000, projectedBalance: minimum
+                ),
+                .init(
+                    id: "\(kind.rawValue)-2", sequence: 2, dayOfMonth: 30,
+                    eventType: "MONTH_END_RECONCILIATION",
+                    eventLabelKey: "shocks.event.month_end_reconciliation",
+                    isKnownEventType: true,
+                    amount: 500_000,
+                    projectedBalance: isDeficit ? -450_000 : 1_400_000
+                )
+            ]
+        )
     }
 
     private func report(
@@ -208,15 +134,19 @@ actor MockShockRepository: ShockRepository {
         assessmentID: String,
         parameters: ShockSimulationParameters?
     ) -> ShockAssessment {
-        ShockAssessment(
+        .init(
             assessmentID: assessmentID,
-            score: source.score,
+            resilienceScore: source.resilienceScore,
+            resilienceScoreScope: source.resilienceScoreScope,
             band: source.band,
-            requiredLiquidityBuffer: source.requiredLiquidityBuffer,
             scenarios: source.scenarios,
+            proposedInstalment: source.proposedInstalment,
+            requiredLiquidityBuffer: source.requiredLiquidityBuffer,
             reasons: source.reasons,
+            explanation: source.explanation,
             modelVersion: source.modelVersion,
-            appliedParameters: parameters
+            configHash: source.configHash,
+            submittedParameters: parameters
         )
     }
 }

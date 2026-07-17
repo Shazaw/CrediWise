@@ -129,6 +129,7 @@ final class WelcomeFlowUITests: XCTestCase {
         simulateButton.tap()
         let chart = app.descendants(matching: .any)["shocks.chart"]
         scrollUntilHittable(chart, in: app, attempts: 8)
+        XCTAssertTrue(chart.exists)
 
         app.navigationBars.buttons.element(boundBy: 0).tap()
         let offersButton = app.buttons["dashboard.offers.action"]

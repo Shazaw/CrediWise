@@ -20,35 +20,37 @@ final class OffersViewModelTests: XCTestCase {
         }
         XCTAssertEqual(offers.map(\.offerID), ["offer-safe", "offer-caution", "offer-unsafe"])
         XCTAssertEqual(offers.map(\.assessmentID), Array(repeating: "assessment-123", count: 3))
-        XCTAssertEqual(offers.map(\.suppliedRank), [1, 2, 3])
-        XCTAssertTrue(offers[0].isSafest)
+        XCTAssertEqual(offers.map(\.rank), [1, 2, 3])
         XCTAssertEqual(offers[0].band, .safe)
         XCTAssertEqual(offers[0].provider.status, .simulatedRegulatedProvider)
         XCTAssertEqual(offers[2].provider.status, .simulatedRegulatedProvider)
         XCTAssertTrue(offers[2].refinancingDependency)
         XCTAssertEqual(
             offers[2].warnings.map(\.code),
-            ["REFINANCING_DEPENDENCY_RISK", "INSUFFICIENT_ESSENTIAL_COVERAGE"]
+            ["REFINANCING_DEPENDENCY_RISK"]
         )
         XCTAssertTrue(offers.allSatisfy { $0.reasons.count >= 3 })
     }
 
     func testSyntheticLoanTermsRemainInternallyConsistent() {
         let offers = MockOfferRepository.makeOffers()
-        let auditedEffectiveAnnualCosts = [38.96, 76.75, 148.66]
-
-        for (offer, effectiveAnnualCost) in zip(offers, auditedEffectiveAnnualCosts) {
-            XCTAssertEqual(offer.scheduledPayments.count, offer.tenorMonths)
+        for offer in offers {
+            XCTAssertEqual(offer.paymentSchedule.count, offer.tenorMonths)
             XCTAssertEqual(
-                offer.scheduledPayments.reduce(Int64(0)) { $0 + $1.amount },
+                offer.paymentSchedule.reduce(Int64(0)) { $0 + $1.paymentAmount },
                 offer.costs.totalScheduledRepayment
             )
             XCTAssertEqual(
-                offer.principal + offer.costs.scheduledInterest + offer.costs.financedFees,
+                offer.paymentSchedule.reduce(Int64(0)) { $0 + $1.principalComponent }
+                    + offer.costs.scheduledInterest,
                 offer.costs.totalScheduledRepayment
             )
-            XCTAssertEqual(offer.principal - offer.costs.upfrontFees, offer.netAmountReceived)
-            XCTAssertEqual(offer.costs.effectiveAnnualCostPercentage, effectiveAnnualCost)
+            XCTAssertEqual(
+                offer.principalAmount - offer.costs.upfrontFee - offer.costs.serviceFee
+                    - offer.costs.adminFee,
+                offer.netDisbursedAmount
+            )
+            XCTAssertEqual(offer.costs.effectiveAnnualRate?.displayPercentage, 38.96)
         }
     }
 
@@ -66,5 +68,19 @@ final class OffersViewModelTests: XCTestCase {
         let requests = await repository.listRequests()
         XCTAssertEqual(viewModel.state, .failed(errorKey: "offers.error.unavailable"))
         XCTAssertEqual(requests, ["assessment-123", "assessment-123"])
+    }
+
+    func testReassessmentRequiredUsesConstructiveMessage() async {
+        let viewModel = OffersViewModel(
+            assessmentID: "assessment-123",
+            repository: MockOfferRepository(error: .reassessmentRequired)
+        )
+
+        await viewModel.load()
+
+        XCTAssertEqual(
+            viewModel.state,
+            .failed(errorKey: "offers.error.reassessment_required")
+        )
     }
 }

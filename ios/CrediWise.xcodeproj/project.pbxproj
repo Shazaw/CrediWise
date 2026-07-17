@@ -152,6 +152,15 @@
 		A0000000000000000000008F /* ShockViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000091 /* ShockViewModelTests.swift */; };
 		A00000000000000000000090 /* OffersViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000092 /* OffersViewModelTests.swift */; };
 		A00000000000000000000091 /* OfferDetailViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000093 /* OfferDetailViewModelTests.swift */; };
+		A00000000000000000000094 /* ShockDTOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000094 /* ShockDTOs.swift */; };
+		A00000000000000000000095 /* ShockMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000095 /* ShockMapper.swift */; };
+		A00000000000000000000096 /* APIShockRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000096 /* APIShockRepository.swift */; };
+		A00000000000000000000097 /* OfferDTOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000097 /* OfferDTOs.swift */; };
+		A00000000000000000000098 /* OfferMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000098 /* OfferMapper.swift */; };
+		A00000000000000000000099 /* APIOfferRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000099 /* APIOfferRepository.swift */; };
+		A0000000000000000000009A /* APIShockRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000009A /* APIShockRepositoryTests.swift */; };
+		A0000000000000000000009B /* APIOfferRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000009B /* APIOfferRepositoryTests.swift */; };
+		A0000000000000000000009C /* APIOfferRepositoryTestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000009C /* APIOfferRepositoryTestSupport.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -318,6 +327,15 @@
 		B00000000000000000000091 /* ShockViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShockViewModelTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000092 /* OffersViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersViewModelTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000093 /* OfferDetailViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferDetailViewModelTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000094 /* ShockDTOs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShockDTOs.swift; sourceTree = "<group>"; };
+		B00000000000000000000095 /* ShockMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShockMapper.swift; sourceTree = "<group>"; };
+		B00000000000000000000096 /* APIShockRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIShockRepository.swift; sourceTree = "<group>"; };
+		B00000000000000000000097 /* OfferDTOs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferDTOs.swift; sourceTree = "<group>"; };
+		B00000000000000000000098 /* OfferMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferMapper.swift; sourceTree = "<group>"; };
+		B00000000000000000000099 /* APIOfferRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIOfferRepository.swift; sourceTree = "<group>"; };
+		B0000000000000000000009A /* APIShockRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIShockRepositoryTests.swift; sourceTree = "<group>"; };
+		B0000000000000000000009B /* APIOfferRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIOfferRepositoryTests.swift; sourceTree = "<group>"; };
+		B0000000000000000000009C /* APIOfferRepositoryTestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIOfferRepositoryTestSupport.swift; sourceTree = "<group>"; };
 		B00000000000000000000100 /* CrediWise.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrediWise.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B00000000000000000000101 /* CrediWiseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrediWiseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B00000000000000000000102 /* CrediWiseUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrediWiseUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -796,7 +814,10 @@
 		D0000000000000000000002E /* Repositories */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000096 /* APIShockRepository.swift */,
 				B0000000000000000000007E /* MockShockRepository.swift */,
+				B00000000000000000000094 /* ShockDTOs.swift */,
+				B00000000000000000000095 /* ShockMapper.swift */,
 				B0000000000000000000007B /* ShockRepository.swift */,
 				B0000000000000000000007C /* ShockRepositoryError.swift */,
 				B0000000000000000000007D /* UnavailableShockRepository.swift */,
@@ -844,7 +865,10 @@
 		D00000000000000000000033 /* Repositories */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000099 /* APIOfferRepository.swift */,
 				B00000000000000000000089 /* MockOfferRepository.swift */,
+				B00000000000000000000097 /* OfferDTOs.swift */,
+				B00000000000000000000098 /* OfferMapper.swift */,
 				B00000000000000000000086 /* OfferRepository.swift */,
 				B00000000000000000000087 /* OfferRepositoryError.swift */,
 				B00000000000000000000088 /* UnavailableOfferRepository.swift */,
@@ -875,13 +899,18 @@
 		};
 		D00000000000000000000036 /* Shocks Tests */ = {
 			isa = PBXGroup;
-			children = (B00000000000000000000091 /* ShockViewModelTests.swift */);
+			children = (
+				B0000000000000000000009A /* APIShockRepositoryTests.swift */,
+				B00000000000000000000091 /* ShockViewModelTests.swift */,
+			);
 			path = Features/Shocks;
 			sourceTree = "<group>";
 		};
 		D00000000000000000000037 /* Offers Tests */ = {
 			isa = PBXGroup;
 			children = (
+				B0000000000000000000009C /* APIOfferRepositoryTestSupport.swift */,
+				B0000000000000000000009B /* APIOfferRepositoryTests.swift */,
 				B00000000000000000000093 /* OfferDetailViewModelTests.swift */,
 				B00000000000000000000092 /* OffersViewModelTests.swift */,
 			);
@@ -1131,10 +1160,16 @@
 				A0000000000000000000008C /* OfferRow.swift in Sources */,
 				A0000000000000000000008D /* OffersListView.swift in Sources */,
 				A0000000000000000000008E /* OfferDetailView.swift in Sources */,
+				A00000000000000000000094 /* ShockDTOs.swift in Sources */,
+				A00000000000000000000095 /* ShockMapper.swift in Sources */,
+				A00000000000000000000096 /* APIShockRepository.swift in Sources */,
+				A00000000000000000000097 /* OfferDTOs.swift in Sources */,
+				A00000000000000000000098 /* OfferMapper.swift in Sources */,
+				A00000000000000000000099 /* APIOfferRepository.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F00000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A0000000000000000000002A /* APIAuthenticationRepositoryTests.swift in Sources */, A00000000000000000000076 /* APIAssessmentDashboardRepositoryTests.swift in Sources */, A00000000000000000000059 /* APIDocumentVerificationRepositoryTests.swift in Sources */, A00000000000000000000040 /* APIDocumentUploadRepositoryTests.swift in Sources */, A00000000000000000000075 /* APIFinancingNeedRepositoryTests.swift in Sources */, A00000000000000000000012 /* AppCoordinatorTests.swift in Sources */, A00000000000000000000070 /* AssessmentDashboardViewModelTests.swift in Sources */, A00000000000000000000027 /* AuthenticationViewModelTests.swift in Sources */, A00000000000000000000026 /* AuthInterceptorTests.swift in Sources */, A00000000000000000000055 /* DataConfidenceViewModelTests.swift in Sources */, A0000000000000000000003B /* DocumentUploadPollingPolicyTests.swift in Sources */, A00000000000000000000054 /* ExtractionReviewViewModelTests.swift in Sources */, A0000000000000000000006F /* FinancingNeedViewModelTests.swift in Sources */, A00000000000000000000056 /* IDRFormatterTests.swift in Sources */, A00000000000000000000090 /* OffersViewModelTests.swift in Sources */, A00000000000000000000091 /* OfferDetailViewModelTests.swift in Sources */, A00000000000000000000025 /* SessionManagerTests.swift in Sources */, A0000000000000000000008F /* ShockViewModelTests.swift in Sources */, A0000000000000000000003A /* UploadFileValidatorTests.swift in Sources */, A0000000000000000000003C /* UploadViewModelTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+		F00000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A0000000000000000000002A /* APIAuthenticationRepositoryTests.swift in Sources */, A00000000000000000000076 /* APIAssessmentDashboardRepositoryTests.swift in Sources */, A00000000000000000000059 /* APIDocumentVerificationRepositoryTests.swift in Sources */, A00000000000000000000040 /* APIDocumentUploadRepositoryTests.swift in Sources */, A00000000000000000000075 /* APIFinancingNeedRepositoryTests.swift in Sources */, A0000000000000000000009C /* APIOfferRepositoryTestSupport.swift in Sources */, A0000000000000000000009B /* APIOfferRepositoryTests.swift in Sources */, A0000000000000000000009A /* APIShockRepositoryTests.swift in Sources */, A00000000000000000000012 /* AppCoordinatorTests.swift in Sources */, A00000000000000000000070 /* AssessmentDashboardViewModelTests.swift in Sources */, A00000000000000000000027 /* AuthenticationViewModelTests.swift in Sources */, A00000000000000000000026 /* AuthInterceptorTests.swift in Sources */, A00000000000000000000055 /* DataConfidenceViewModelTests.swift in Sources */, A0000000000000000000003B /* DocumentUploadPollingPolicyTests.swift in Sources */, A00000000000000000000054 /* ExtractionReviewViewModelTests.swift in Sources */, A0000000000000000000006F /* FinancingNeedViewModelTests.swift in Sources */, A00000000000000000000056 /* IDRFormatterTests.swift in Sources */, A00000000000000000000090 /* OffersViewModelTests.swift in Sources */, A00000000000000000000091 /* OfferDetailViewModelTests.swift in Sources */, A00000000000000000000025 /* SessionManagerTests.swift in Sources */, A0000000000000000000008F /* ShockViewModelTests.swift in Sources */, A0000000000000000000003A /* UploadFileValidatorTests.swift in Sources */, A0000000000000000000003C /* UploadViewModelTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
 		F00000000000000000000007 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000013 /* WelcomeFlowUITests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
@@ -1158,8 +1193,8 @@
 /* Begin XCBuildConfiguration section */
 		H00000000000000000000001 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; DEBUG_INFORMATION_FORMAT = dwarf; ENABLE_TESTABILITY = YES; GCC_C_LANGUAGE_STANDARD = gnu17; IPHONEOS_DEPLOYMENT_TARGET = 16.0; ONLY_ACTIVE_ARCH = YES; SDKROOT = iphoneos; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; }; name = Debug; };
 		H00000000000000000000002 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; ENABLE_NS_ASSERTIONS = NO; GCC_C_LANGUAGE_STANDARD = gnu17; IPHONEOS_DEPLOYMENT_TARGET = 16.0; SDKROOT = iphoneos; SWIFT_COMPILATION_MODE = wholemodule; }; name = Release; };
-		H00000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = CrediWise; INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsLocalNetworking = YES; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait; IPHONEOS_DEPLOYMENT_TARGET = 16.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Debug; };
-		H00000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = CrediWise; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait; IPHONEOS_DEPLOYMENT_TARGET = 16.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
+		H00000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor; CODE_SIGN_STYLE = Automatic; CREDIWISE_API_BASE_URL = ""; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = CrediWise; INFOPLIST_KEY_CREDIWISE_API_BASE_URL = "$(CREDIWISE_API_BASE_URL)"; INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsLocalNetworking = YES; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait; IPHONEOS_DEPLOYMENT_TARGET = 16.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Debug; };
+		H00000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor; CODE_SIGN_STYLE = Automatic; CREDIWISE_API_BASE_URL = ""; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = CrediWise; INFOPLIST_KEY_CREDIWISE_API_BASE_URL = "$(CREDIWISE_API_BASE_URL)"; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait; IPHONEOS_DEPLOYMENT_TARGET = 16.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
 		H00000000000000000000005 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 16.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app.tests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CrediWise.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CrediWise"; }; name = Debug; };
 		H00000000000000000000006 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 16.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app.tests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CrediWise.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CrediWise"; }; name = Release; };
 		H00000000000000000000007 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 16.0; PRODUCT_BUNDLE_IDENTIFIER = com.crediwise.app.uitests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.9; TARGETED_DEVICE_FAMILY = "1,2"; TEST_TARGET_NAME = CrediWise; }; name = Debug; };

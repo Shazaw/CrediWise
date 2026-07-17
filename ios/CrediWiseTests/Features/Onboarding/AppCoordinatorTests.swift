@@ -142,4 +142,37 @@ final class AppCoordinatorTests: XCTestCase {
 
         XCTAssertEqual(coordinator.path, [.signIn])
     }
+
+    func testAPIBaseURLUsesEnvironmentBeforeBundleAndRequiresReleaseHTTPS() {
+        XCTAssertEqual(
+            AppContainer.validatedAPIBaseURL(
+                environmentValue: "https://environment.example.test",
+                bundleValue: "https://bundle.example.test",
+                allowsInsecureLocalhost: false
+            )?.absoluteString,
+            "https://environment.example.test"
+        )
+        XCTAssertNil(
+            AppContainer.validatedAPIBaseURL(
+                environmentValue: nil,
+                bundleValue: "http://api.example.test",
+                allowsInsecureLocalhost: false
+            )
+        )
+        XCTAssertEqual(
+            AppContainer.validatedAPIBaseURL(
+                environmentValue: nil,
+                bundleValue: "http://127.0.0.1:8000",
+                allowsInsecureLocalhost: true
+            )?.absoluteString,
+            "http://127.0.0.1:8000"
+        )
+        XCTAssertNil(
+            AppContainer.validatedAPIBaseURL(
+                environmentValue: nil,
+                bundleValue: "http://192.168.1.20:8000",
+                allowsInsecureLocalhost: true
+            )
+        )
+    }
 }

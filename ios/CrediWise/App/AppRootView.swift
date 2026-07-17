@@ -137,7 +137,7 @@ struct AppRootView: View {
             AssessmentDashboardView(
                 viewModel: coordinator.makeAssessmentDashboardViewModel(assessmentID: assessmentID),
                 shockViewModel: coordinator.makeShockViewModel(assessmentID: assessmentID),
-                showsCompleteDashboard: coordinator.shouldOfferSyntheticCycle6,
+                showsCompleteDashboard: coordinator.shouldShowCompleteAssessmentFlow,
                 onOpenShocks: { coordinator.showShockSimulation(assessmentID: assessmentID) },
                 onOpenOffers: { coordinator.showOffers(assessmentID: assessmentID) }
             )

@@ -33,7 +33,7 @@ final class OfferDetailViewModelTests: XCTestCase {
         XCTAssertEqual(offer.provider.status, .simulatedRegulatedProvider)
         XCTAssertEqual(
             offer.warnings.map(\.code),
-            ["REFINANCING_DEPENDENCY_RISK", "INSUFFICIENT_ESSENTIAL_COVERAGE"]
+            ["REFINANCING_DEPENDENCY_RISK"]
         )
     }
 

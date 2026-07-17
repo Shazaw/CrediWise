@@ -62,6 +62,17 @@ struct ShockSimulationView: View {
             )
             .accessibilityIdentifier("shocks.emergency_expense")
 
+            LabeledContent("shocks.controls.proposed_instalment") {
+                TextField(
+                    "shocks.controls.proposed_instalment",
+                    value: $viewModel.proposedInstalment,
+                    format: .number
+                )
+                .keyboardType(.numberPad)
+                .multilineTextAlignment(.trailing)
+                .accessibilityIdentifier("shocks.proposed_instalment")
+            }
+
             CTAButton(title: "shocks.controls.simulate") {
                 operationTask?.cancel()
                 operationTask = Task { await viewModel.simulate() }
@@ -91,15 +102,19 @@ struct ShockSimulationView: View {
     private func reportContent(_ report: ShockAssessment) -> some View {
         let selected = report.scenarios.first(where: { $0.id == selectedScenarioID }) ?? report.scenarios.first
         return VStack(alignment: .leading, spacing: SpacingTokens.large) {
-            ShockResilienceCard(report: report, onOpen: {})
-                .allowsHitTesting(false)
+            ShockResilienceCard(report: report, onOpen: nil)
 
-            if let parameters = report.appliedParameters {
+            Text(LocalizedStringKey("shocks.score_scope.\(report.resilienceScoreScope.rawValue)"))
+                .font(TypographyTokens.caption)
+                .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))
+
+            if let parameters = report.submittedParameters {
                 Text(
                     String(
                         format: NSLocalizedString("shocks.applied_parameters", comment: "Applied shock parameters"),
                         parameters.incomeDropPercentage,
-                        IDRFormatter.string(from: parameters.emergencyExpense)
+                        IDRFormatter.string(from: parameters.emergencyExpense),
+                        IDRFormatter.string(from: parameters.proposedInstalment)
                     )
                 )
                 .font(TypographyTokens.caption)
@@ -119,31 +134,66 @@ struct ShockSimulationView: View {
             }
 
             if let selected {
-                ShockProjectionChart(
-                    scenario: selected,
-                    requiredLiquidityBuffer: report.requiredLiquidityBuffer
-                )
+                ShockProjectionChart(scenario: selected)
             }
 
-            ForEach(report.reasons) { reason in
-                VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
-                    Text(LocalizedStringKey(reason.titleKey))
-                        .font(TypographyTokens.body.weight(.semibold))
-                    Text(LocalizedStringKey(reason.detailKey))
+            reasonsSection(report.reasons)
+            explanationSection()
+            modelVersion(report.modelVersion)
+        }
+    }
+
+    private func reasonsSection(_ reasons: [ShockAssessment.Reason]) -> some View {
+        ForEach(reasons) { reason in
+            VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
+                Text(LocalizedStringKey(reason.titleKey))
+                    .font(TypographyTokens.body.weight(.semibold))
+                if !reason.isKnown {
+                    Text(
+                        String(
+                            format: NSLocalizedString(
+                                "shocks.reason.unknown_code",
+                                comment: "Unknown shock reason code"
+                            ),
+                            reason.code
+                        )
+                    )
+                    .font(TypographyTokens.caption.monospaced())
+                }
+                if let detailKey = reason.detailKey {
+                    Text(LocalizedStringKey(detailKey))
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))
+                } else {
+                    Text(verbatim: reason.description)
                         .font(TypographyTokens.caption)
                         .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))
                 }
             }
-
-            Text(
-                String(
-                    format: NSLocalizedString("shocks.model_version", comment: "Shock model version"),
-                    report.modelVersion
-                )
-            )
-            .font(TypographyTokens.caption)
-            .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.62))
         }
+    }
+
+    private func explanationSection() -> some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
+            Text("shocks.explanation.title")
+                .font(TypographyTokens.cardTitle)
+            Text("shocks.explanation.context")
+                .font(TypographyTokens.caption)
+                .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))
+            Text("shocks.explanation.summary")
+                .font(TypographyTokens.body)
+        }
+    }
+
+    private func modelVersion(_ version: String) -> some View {
+        Text(
+            String(
+                format: NSLocalizedString("shocks.model_version", comment: "Shock model version"),
+                version
+            )
+        )
+        .font(TypographyTokens.caption)
+        .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.62))
     }
 
     private func scenarioRow(_ scenario: ShockAssessment.Scenario, isSelected: Bool) -> some View {
@@ -152,19 +202,19 @@ struct ShockSimulationView: View {
                 .foregroundStyle(statusColor(scenario.status))
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
-                Text(LocalizedStringKey(scenario.titleKey))
+                Text(LocalizedStringKey("shocks.scenario.\(scenario.kind.rawValue).title"))
                     .font(TypographyTokens.body.weight(.semibold))
                 Text(LocalizedStringKey("shocks.status.\(scenario.status.rawValue)"))
                     .font(TypographyTokens.caption)
                     .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))
             }
             Spacer()
-            Text(verbatim: IDRFormatter.string(from: scenario.minimumTemporalBalance))
+            Text(verbatim: IDRFormatter.string(from: scenario.minimumProjectedBalance))
                 .font(TypographyTokens.caption.monospacedDigit().weight(.bold))
             Text(
                 String(
                     format: NSLocalizedString("shocks.scenario.contribution", comment: "Score contribution"),
-                    scenario.scoreContribution
+                    NSDecimalNumber(decimal: scenario.resilienceScoreContribution).doubleValue
                 )
             )
             .font(TypographyTokens.caption)

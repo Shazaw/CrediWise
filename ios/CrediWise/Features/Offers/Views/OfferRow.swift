@@ -9,14 +9,14 @@ struct OfferRow: View {
             VStack(alignment: .leading, spacing: SpacingTokens.medium) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
-                        Text(LocalizedStringKey(offer.provider.nameKey))
+                        Text(verbatim: offer.provider.displayName)
                             .font(TypographyTokens.cardTitle)
-                        Text("offers.provider.simulated")
+                        Text(LocalizedStringKey("offers.source.\(offer.offerSource.rawValue)"))
                             .font(TypographyTokens.caption.weight(.bold))
                             .foregroundStyle(CrediWiseColors.primary)
                     }
                     Spacer()
-                    Text(LocalizedStringKey(bandKey))
+                    Text(LocalizedStringKey("offers.band.\(offer.band.rawValue)"))
                         .font(TypographyTokens.caption.weight(.bold))
                         .foregroundStyle(bandTextColor)
                         .padding(.horizontal, SpacingTokens.small)
@@ -26,13 +26,13 @@ struct OfferRow: View {
                 }
 
                 HStack(alignment: .firstTextBaseline) {
-                    Text(verbatim: IDRFormatter.string(from: offer.netAmountReceived))
+                    Text(verbatim: IDRFormatter.string(from: offer.netDisbursedAmount))
                         .font(TypographyTokens.title.monospacedDigit())
                     Spacer()
                     Text(
                         String(
                             format: NSLocalizedString("offers.row.score", comment: "Offer safety score"),
-                            offer.score
+                            NSDecimalNumber(decimal: offer.safeOfferScore).doubleValue
                         )
                     )
                     .font(TypographyTokens.body.monospacedDigit().weight(.bold))
@@ -41,14 +41,14 @@ struct OfferRow: View {
                 Text(
                     String(
                         format: NSLocalizedString("offers.row.instalment", comment: "Offer instalment"),
-                        IDRFormatter.string(from: offer.instalment),
+                        IDRFormatter.string(from: offer.instalmentAmount),
                         offer.tenorMonths
                     )
                 )
                 .font(TypographyTokens.caption)
                 .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))
 
-                if offer.isSafest {
+                if offer.rank == 1 {
                     Label("offers.row.safest", systemImage: "shield.checkered")
                         .font(TypographyTokens.caption.weight(.bold))
                         .foregroundStyle(CrediWiseColors.success)
@@ -77,10 +77,6 @@ struct OfferRow: View {
         .accessibilityIdentifier("offers.row.\(offer.offerID)")
     }
 
-    private var bandKey: String {
-        "offers.band.\(offer.band.rawValue)"
-    }
-
     private var bandColor: Color {
         switch offer.band {
         case .safe: return CrediWiseColors.accent
@@ -94,25 +90,23 @@ struct OfferRow: View {
     }
 
     private var accessibilityLabel: Text {
-        let safestStatus = NSLocalizedString(
-            offer.isSafest ? "offers.row.safest" : "offers.row.not_safest",
-            comment: "Safest offer status"
-        )
-        let warningSummary = offer.warnings.first.map {
-            NSLocalizedString($0.titleKey, comment: "Offer warning")
-        } ?? NSLocalizedString("offers.row.no_warning", comment: "Offer warning status")
-        return Text(
+        Text(
             String(
                 format: NSLocalizedString("offers.row.accessibility", comment: "Offer summary"),
-                offer.suppliedRank,
-                NSLocalizedString(offer.provider.nameKey, comment: "Simulated provider"),
-                NSLocalizedString(bandKey, comment: "Safety band"),
-                offer.score,
-                IDRFormatter.string(from: offer.netAmountReceived),
-                IDRFormatter.string(from: offer.instalment),
+                offer.rank,
+                offer.provider.displayName,
+                NSLocalizedString("offers.band.\(offer.band.rawValue)", comment: "Safety band"),
+                NSDecimalNumber(decimal: offer.safeOfferScore).doubleValue,
+                IDRFormatter.string(from: offer.netDisbursedAmount),
+                IDRFormatter.string(from: offer.instalmentAmount),
                 offer.tenorMonths,
-                safestStatus,
-                warningSummary
+                NSLocalizedString(
+                    offer.rank == 1 ? "offers.row.safest" : "offers.row.not_safest",
+                    comment: "Safest offer status"
+                ),
+                offer.warnings.first.map {
+                    NSLocalizedString($0.titleKey, comment: "Offer warning")
+                } ?? NSLocalizedString("offers.row.no_warning", comment: "Offer warning status")
             )
         )
     }

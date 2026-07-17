@@ -18,20 +18,20 @@ final class AppCoordinator: ObservableObject {
         let allowsSyntheticUpload: Bool
         let isDocumentUploadAvailable: Bool
         let allowsSyntheticAssessment: Bool
-        let allowsSyntheticCycle6: Bool
+        let enablesCompleteAssessmentFlow: Bool
 
         init(
             uploadPollingPolicy: DocumentUploadPollingPolicy = DocumentUploadPollingPolicy(),
             allowsSyntheticUpload: Bool = false,
             isDocumentUploadAvailable: Bool = true,
             allowsSyntheticAssessment: Bool = false,
-            allowsSyntheticCycle6: Bool = false
+            enablesCompleteAssessmentFlow: Bool = true
         ) {
             self.uploadPollingPolicy = uploadPollingPolicy
             self.allowsSyntheticUpload = allowsSyntheticUpload
             self.isDocumentUploadAvailable = isDocumentUploadAvailable
             self.allowsSyntheticAssessment = allowsSyntheticAssessment
-            self.allowsSyntheticCycle6 = allowsSyntheticCycle6
+            self.enablesCompleteAssessmentFlow = enablesCompleteAssessmentFlow
         }
     }
 
@@ -50,7 +50,7 @@ final class AppCoordinator: ObservableObject {
     private let allowsSyntheticUpload: Bool
     private let isDocumentUploadAvailable: Bool
     private let allowsSyntheticAssessment: Bool
-    private let allowsSyntheticCycle6: Bool
+    private let enablesCompleteAssessmentFlow: Bool
     private(set) var financingNeedID: String?
 
     init(
@@ -70,7 +70,7 @@ final class AppCoordinator: ObservableObject {
         allowsSyntheticUpload = configuration.allowsSyntheticUpload
         isDocumentUploadAvailable = configuration.isDocumentUploadAvailable
         allowsSyntheticAssessment = configuration.allowsSyntheticAssessment
-        allowsSyntheticCycle6 = configuration.allowsSyntheticCycle6
+        enablesCompleteAssessmentFlow = configuration.enablesCompleteAssessmentFlow
     }
 
     convenience init() {
@@ -228,8 +228,8 @@ final class AppCoordinator: ObservableObject {
         allowsSyntheticAssessment
     }
 
-    var shouldOfferSyntheticCycle6: Bool {
-        allowsSyntheticCycle6
+    var shouldShowCompleteAssessmentFlow: Bool {
+        enablesCompleteAssessmentFlow
     }
 
     func signOut() async {

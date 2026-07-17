@@ -31,17 +31,12 @@ struct OfferDetailView: View {
         switch viewModel.state {
         case .idle, .loading:
             ProgressView("offers.loading")
-                .tint(CrediWiseColors.primary)
-                .frame(maxWidth: .infinity)
-                .padding(SpacingTokens.xxLarge)
         case let .loaded(offer):
             offerContent(offer)
         case let .failed(errorKey):
             VStack(alignment: .leading, spacing: SpacingTokens.medium) {
-                Text("offers.error.title")
-                    .font(TypographyTokens.cardTitle)
+                Text("offers.error.title").font(TypographyTokens.cardTitle)
                 Text(LocalizedStringKey(errorKey))
-                    .font(TypographyTokens.body)
                 PrimaryButton(title: "common.retry") {
                     operationTask = Task { await viewModel.retry() }
                 }
@@ -52,95 +47,153 @@ struct OfferDetailView: View {
     private func offerContent(_ offer: SafeOffer) -> some View {
         VStack(alignment: .leading, spacing: SpacingTokens.large) {
             offerHeader(offer)
-
-            if !offer.warnings.isEmpty {
-                warningSection(offer.warnings)
+            if offer.offerSource == .simulated {
+                if offer.simulationNotice != nil {
+                    Text("offers.simulation_notice")
+                        .font(TypographyTokens.caption.weight(.bold))
+                        .foregroundStyle(CrediWiseColors.primary)
+                        .accessibilityIdentifier("offers.simulated")
+                }
             }
-
+            if !offer.warnings.isEmpty { warningSection(offer.warnings) }
             proceedsCard(offer)
             costsCard(offer)
+            scheduleCard(offer)
             safetyCard(offer)
-
+            VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
+                Text("offers.explanation.title")
+                    .font(TypographyTokens.cardTitle)
+                Text("offers.explanation.context")
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))
+                Text("offers.explanation.summary")
+                    .font(TypographyTokens.body)
+            }
             Text("offer_detail.lender_notice")
                 .font(TypographyTokens.caption)
-                .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))
-
-            Text(
-                String(
-                    format: NSLocalizedString("offers.model_version", comment: "Offer model version"),
-                    offer.modelVersion
-                )
-            )
-            .font(TypographyTokens.caption)
-            .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.62))
+            lineage(offer)
         }
     }
 
     private func offerHeader(_ offer: SafeOffer) -> some View {
-        VStack(alignment: .leading, spacing: SpacingTokens.small) {
-            Text(LocalizedStringKey(offer.provider.nameKey))
-                .font(TypographyTokens.title)
-            Label("offers.provider.simulated", systemImage: "testtube.2")
-                .font(TypographyTokens.caption.weight(.bold))
-                .foregroundStyle(CrediWiseColors.primary)
-                .accessibilityIdentifier("offers.simulated")
-            Text(
-                String(
-                    format: NSLocalizedString("offer_detail.score", comment: "Safe Offer Score"),
-                    offer.score,
-                    NSLocalizedString("offers.band.\(offer.band.rawValue)", comment: "Safety band")
+        HStack(alignment: .top, spacing: SpacingTokens.medium) {
+            if let logoURL = offer.provider.logoURL {
+                AsyncImage(url: logoURL) { image in
+                    image.resizable().scaledToFit()
+                } placeholder: {
+                    ProgressView()
+                }
+                .frame(width: 48, height: 48)
+                .accessibilityHidden(true)
+            }
+            VStack(alignment: .leading, spacing: SpacingTokens.small) {
+                Text(verbatim: offer.provider.displayName).font(TypographyTokens.title)
+                Text(LocalizedStringKey("offers.source.\(offer.offerSource.rawValue)"))
+                    .font(TypographyTokens.caption.weight(.bold))
+                Text(LocalizedStringKey("offers.provider_status.\(offer.provider.status.rawValue)"))
+                    .font(TypographyTokens.caption)
+                Text(
+                    String(
+                        format: NSLocalizedString("offer_detail.score", comment: "Safe Offer Score"),
+                        NSDecimalNumber(decimal: offer.safeOfferScore).doubleValue,
+                        NSLocalizedString("offers.band.\(offer.band.rawValue)", comment: "Safety band")
+                    )
                 )
-            )
-            .font(TypographyTokens.cardTitle)
+                .font(TypographyTokens.cardTitle)
+            }
         }
     }
 
     private func proceedsCard(_ offer: SafeOffer) -> some View {
         detailCard(title: "offer_detail.proceeds.title") {
-            amountRow("offer_detail.principal", offer.principal)
-            amountRow("offer_detail.net_received", offer.netAmountReceived)
-            amountRow("offer_detail.instalment", offer.instalment)
-            textRow("offer_detail.tenor", tenorText(offer.tenorMonths))
-            textRow("offer_detail.frequency", localizedFrequency(offer.paymentFrequency))
-            textRow("offer_detail.due_day", dueDayText(offer.dueDayOfMonth))
-            textRow("offer_detail.amortization", localizedAmortization(offer.amortizationMethod))
-            textRow("offer_detail.nominal_rate", nominalRateText(offer))
-            textRow("offer_detail.rate_basis", localizedRateBasis(offer.rateBasis))
-            textRow("offer_detail.schedule", paymentScheduleText(offer.scheduledPayments))
+            amountRow("offer_detail.principal", offer.principalAmount)
+            amountRow("offer_detail.net_received", offer.netDisbursedAmount)
+            amountRow("offer_detail.instalment", offer.instalmentAmount)
+            textRow("offer_detail.tenor", format("offer_detail.tenor_value", offer.tenorMonths))
+            textRow("offer_detail.frequency", localized("offers.frequency.\(offer.paymentFrequency.rawValue)"))
+            textRow("offer_detail.due_day", format("offer_detail.due_day_value", offer.dueDayOfMonth))
+            textRow("offer_detail.amortization", localized("offers.amortization.\(offer.amortizationMethod.rawValue)"))
+            textRow("offer_detail.nominal_rate", percentage(offer.nominalRate))
+            textRow("offer_detail.rate_basis", localized("offers.rate_basis.\(offer.nominalRateBasis.rawValue)"))
         }
     }
 
     private func costsCard(_ offer: SafeOffer) -> some View {
         detailCard(title: "offer_detail.costs.title") {
             amountRow("offer_detail.interest", offer.costs.scheduledInterest)
-            amountRow("offer_detail.upfront_fees", offer.costs.upfrontFees)
-            amountRow("offer_detail.financed_fees", offer.costs.financedFees)
+            amountRow("offer_detail.upfront_fees", offer.costs.upfrontFee)
+            amountRow("offer_detail.financed_fees", offer.costs.financedFee)
+            amountRow("offer_detail.service_fee", offer.costs.serviceFee)
+            amountRow("offer_detail.admin_fee", offer.costs.adminFee)
             amountRow("offer_detail.total_repayment", offer.costs.totalScheduledRepayment)
-            textRow("offer_detail.effective_cost", effectiveCostText(offer.costs))
-            textRow(
-                "offer_detail.penalty_terms",
-                NSLocalizedString(offer.costs.penaltyTermsKey, comment: "Penalty terms")
-            )
+            textRow("offer_detail.effective_cost", percentage(offer.costs.effectiveAnnualRate))
+            textRow("offer_detail.penalty_terms", penaltyText(offer.costs.latePenaltyTerms))
+        }
+    }
+
+    private func scheduleCard(_ offer: SafeOffer) -> some View {
+        detailCard(title: "offer_detail.schedule.title") {
+            ForEach(offer.paymentSchedule) { payment in
+                VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
+                    Text(format("offer_detail.schedule.period", payment.period))
+                        .font(TypographyTokens.body.weight(.semibold))
+                    amountRow("offer_detail.schedule.payment", payment.paymentAmount)
+                    amountRow("offer_detail.schedule.principal", payment.principalComponent)
+                    amountRow("offer_detail.schedule.interest", payment.interestComponent)
+                    amountRow("offer_detail.schedule.balance", payment.remainingBalance)
+                }
+                Divider()
+            }
         }
     }
 
     private func safetyCard(_ offer: SafeOffer) -> some View {
         detailCard(title: "offer_detail.safety.title") {
-            amountRow("offer_detail.essential_coverage", offer.remainingEssentialCoverage)
             textRow(
-                "offer_detail.refinancing_dependency",
-                NSLocalizedString(
-                    offer.refinancingDependency ? "common.yes" : "common.no",
-                    comment: "Boolean value"
+                "offer_detail.affordability_status",
+                localized("offers.affordability.\(offer.affordabilityStatus.rawValue)")
+            )
+            textRow(
+                "offer_detail.shock_status",
+                localized("offers.confidence.\(offer.shockResilienceStatus.rawValue)")
+            )
+            textRow("offer_detail.cost_status", localized("offers.rating.\(offer.totalCostStatus.rawValue)"))
+            textRow("offer_detail.timing_status", localized("offers.rating.\(offer.timingStatus.rawValue)"))
+            amountRow("offer_detail.essential_coverage", offer.remainingEssentialExpenseCoverage.amount)
+            textRow(
+                "offer_detail.essential_coverage_ratio",
+                String(
+                    format: localized("offer_detail.rate_value"),
+                    offer.remainingEssentialExpenseCoverage.displayPercentage
                 )
             )
+            textRow(
+                "offer_detail.refinancing_dependency",
+                localized(offer.refinancingDependency ? "common.yes" : "common.no")
+            )
+            if offer.refinancingDependency {
+                Text("offers.warning.refinancing_dependency.detail")
+                    .font(TypographyTokens.caption.weight(.semibold))
+                    .foregroundStyle(CrediWiseColors.danger)
+            }
             ForEach(offer.reasons) { reason in
                 VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                     Text(LocalizedStringKey(reason.titleKey))
                         .font(TypographyTokens.body.weight(.semibold))
-                    Text(LocalizedStringKey(reason.detailKey))
-                        .font(TypographyTokens.caption)
-                        .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))
+                    if !reason.isKnown {
+                        Text(
+                            String(
+                                format: localized("offers.reason.unknown_code"),
+                                reason.code
+                            )
+                        )
+                        .font(TypographyTokens.caption.monospaced())
+                    }
+                    if let detailKey = reason.detailKey {
+                        Text(LocalizedStringKey(detailKey)).font(TypographyTokens.caption)
+                    } else {
+                        Text(verbatim: reason.description).font(TypographyTokens.caption)
+                    }
                 }
             }
         }
@@ -152,17 +205,26 @@ struct OfferDetailView: View {
                 VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                     Label(LocalizedStringKey(warning.titleKey), systemImage: "exclamationmark.triangle.fill")
                         .font(TypographyTokens.body.weight(.bold))
-                    Text(LocalizedStringKey(warning.detailKey))
-                        .font(TypographyTokens.caption)
+                    Text(LocalizedStringKey(warning.detailKey)).font(TypographyTokens.caption)
+                    if warning.usesGenericCopy {
+                        Text(verbatim: warning.code).font(TypographyTokens.caption.monospaced())
+                    }
                 }
                 .accessibilityIdentifier("offers.warning.\(warning.code)")
             }
         }
         .foregroundStyle(CrediWiseColors.danger)
         .padding(SpacingTokens.standard)
-        .frame(maxWidth: .infinity, alignment: .leading)
         .background(CrediWiseColors.danger.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: RadiusTokens.button))
+    }
+
+    private func lineage(_ offer: SafeOffer) -> some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
+            Text(String(format: localized("offers.model_version"), offer.modelVersion))
+        }
+        .font(TypographyTokens.caption)
+        .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.62))
     }
 
     private func detailCard<Content: View>(
@@ -170,8 +232,7 @@ struct OfferDetailView: View {
         @ViewBuilder content: () -> Content
     ) -> some View {
         VStack(alignment: .leading, spacing: SpacingTokens.medium) {
-            Text(title)
-                .font(TypographyTokens.cardTitle)
+            Text(title).font(TypographyTokens.cardTitle)
             content()
         }
         .padding(SpacingTokens.large)
@@ -181,79 +242,37 @@ struct OfferDetailView: View {
     }
 
     private func amountRow(_ title: LocalizedStringKey, _ amount: Int64) -> some View {
-        LabeledContent(title) {
-            Text(verbatim: IDRFormatter.string(from: amount))
-                .font(TypographyTokens.body.monospacedDigit())
-        }
+        LabeledContent(title) { Text(verbatim: IDRFormatter.string(from: amount)) }
     }
 
     private func textRow(_ title: LocalizedStringKey, _ value: String) -> some View {
-        LabeledContent(title) {
-            Text(verbatim: value)
-                .multilineTextAlignment(.trailing)
-        }
+        LabeledContent(title) { Text(verbatim: value).multilineTextAlignment(.trailing) }
     }
 
-    private func tenorText(_ months: Int) -> String {
-        String(format: NSLocalizedString("offer_detail.tenor_value", comment: "Tenor"), months)
+    private func percentage(_ rate: SafeOffer.Rate?) -> String {
+        guard let rate else { return localized("dashboard.value.unavailable") }
+        return String(format: localized("offer_detail.rate_value"), rate.displayPercentage)
     }
 
-    private func localizedFrequency(_ frequency: SafeOffer.PaymentFrequency) -> String {
-        NSLocalizedString("offers.frequency.\(frequency.rawValue)", comment: "Payment frequency")
-    }
-
-    private func dueDayText(_ day: Int) -> String {
-        String(format: NSLocalizedString("offer_detail.due_day_value", comment: "Payment due day"), day)
-    }
-
-    private func localizedAmortization(_ method: SafeOffer.AmortizationMethod) -> String {
-        NSLocalizedString("offers.amortization.\(method.rawValue)", comment: "Amortization method")
-    }
-
-    private func nominalRateText(_ offer: SafeOffer) -> String {
-        guard let percentage = offer.nominalAnnualRatePercentage else {
-            return NSLocalizedString("dashboard.value.unavailable", comment: "Unavailable value")
-        }
+    private func penaltyText(_ terms: SafeOffer.LatePenaltyTerms?) -> String {
+        guard let terms else { return localized("offer_detail.penalty_none") }
+        let rate = percentage(terms.rate)
+        let amount = terms.amount.map { IDRFormatter.string(from: $0) }
+            ?? localized("dashboard.value.unavailable")
         return String(
-            format: NSLocalizedString("offer_detail.nominal_rate_value", comment: "Nominal annual rate"),
-            percentage
+            format: localized("offer_detail.penalty_value"),
+            terms.triggerDays,
+            rate,
+            amount,
+            localized("offers.penalty_basis.\(terms.basis.rawValue)")
         )
     }
 
-    private func localizedRateBasis(_ basis: SafeOffer.RateBasis?) -> String {
-        guard let basis else {
-            return NSLocalizedString("dashboard.value.unavailable", comment: "Unavailable value")
-        }
-        return NSLocalizedString("offers.rate_basis.\(basis.rawValue)", comment: "Rate basis")
+    private func localized(_ key: String) -> String {
+        NSLocalizedString(key, comment: "Offer detail value")
     }
 
-    private func paymentScheduleText(_ payments: [SafeOffer.ScheduledPayment]) -> String {
-        guard let first = payments.first else {
-            return NSLocalizedString("dashboard.value.unavailable", comment: "Unavailable value")
-        }
-        let amounts = payments.map(\.amount)
-        guard amounts.allSatisfy({ $0 == first.amount }) else {
-            return String(
-                format: NSLocalizedString("offer_detail.schedule_variable", comment: "Variable payment schedule"),
-                payments.count,
-                IDRFormatter.string(from: amounts.min() ?? 0),
-                IDRFormatter.string(from: amounts.max() ?? 0)
-            )
-        }
-        return String(
-            format: NSLocalizedString("offer_detail.schedule_value", comment: "Payment schedule"),
-            payments.count,
-            IDRFormatter.string(from: first.amount)
-        )
-    }
-
-    private func effectiveCostText(_ costs: SafeOffer.CostBreakdown) -> String {
-        guard let percentage = costs.effectiveAnnualCostPercentage else {
-            return NSLocalizedString("dashboard.value.unavailable", comment: "Unavailable value")
-        }
-        return String(
-            format: NSLocalizedString("offer_detail.effective_cost_value", comment: "Effective annual cost"),
-            percentage
-        )
+    private func format(_ key: String, _ value: Int) -> String {
+        String(format: localized(key), value)
     }
 }

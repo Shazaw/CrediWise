@@ -44,7 +44,7 @@ struct AppContainer {
                 allowsSyntheticUpload: isUITesting,
                 isDocumentUploadAvailable: dependencies.isDocumentUploadAvailable,
                 allowsSyntheticAssessment: isUITesting && isCycle5Flow,
-                allowsSyntheticCycle6: isUITesting && isCycle6Flow
+                enablesCompleteAssessmentFlow: !isUITesting || isCycle6Flow
             )
         )
     }
@@ -55,16 +55,7 @@ struct AppContainer {
         sessionManager: SessionManager
     ) -> AppDependencies {
         guard let baseURL = apiBaseURL() else {
-            return AppDependencies(
-                authenticationRepository: UnavailableAuthenticationRepository(),
-                documentUploadRepository: UnavailableDocumentUploadRepository(),
-                documentVerificationRepository: UnavailableVerificationRepository(),
-                financingNeedRepository: UnavailableFinancingNeedRepository(),
-                assessmentDashboardRepository: UnavailableAssessmentDashboardRepository(),
-                shockRepository: UnavailableShockRepository(),
-                offerRepository: UnavailableOfferRepository(),
-                isDocumentUploadAvailable: false
-            )
+            return unavailableDependencies()
         }
 
         let authenticationRepository = APIAuthenticationRepository(
@@ -100,22 +91,72 @@ struct AppContainer {
                 authInterceptor: authInterceptor,
                 verificationRepository: verificationRepository
             ),
-            shockRepository: UnavailableShockRepository(),
-            offerRepository: UnavailableOfferRepository(),
+            shockRepository: APIShockRepository(
+                baseURL: baseURL,
+                authInterceptor: authInterceptor
+            ),
+            offerRepository: APIOfferRepository(
+                baseURL: baseURL,
+                authInterceptor: authInterceptor
+            ),
             isDocumentUploadAvailable: true
         )
     }
 
-    private func apiBaseURL() -> URL? {
-        if let override = ProcessInfo.processInfo.environment["CREDIWISE_API_BASE_URL"] {
-            return URL(string: override)
-        }
+    private func unavailableDependencies() -> AppDependencies {
+        AppDependencies(
+            authenticationRepository: UnavailableAuthenticationRepository(),
+            documentUploadRepository: UnavailableDocumentUploadRepository(),
+            documentVerificationRepository: UnavailableVerificationRepository(),
+            financingNeedRepository: UnavailableFinancingNeedRepository(),
+            assessmentDashboardRepository: UnavailableAssessmentDashboardRepository(),
+            shockRepository: UnavailableShockRepository(),
+            offerRepository: UnavailableOfferRepository(),
+            isDocumentUploadAvailable: false
+        )
+    }
 
+    private func apiBaseURL() -> URL? {
+        let environmentValue = ProcessInfo.processInfo.environment["CREDIWISE_API_BASE_URL"]
+        let bundleValue = Bundle.main.object(
+            forInfoDictionaryKey: "CREDIWISE_API_BASE_URL"
+        ) as? String
         #if DEBUG
-        return URL(string: "http://127.0.0.1:8000")
+        return Self.validatedAPIBaseURL(
+            environmentValue: environmentValue,
+            bundleValue: bundleValue,
+            allowsInsecureLocalhost: true
+        ) ?? URL(string: "http://127.0.0.1:8000")
         #else
-        return nil
+        return Self.validatedAPIBaseURL(
+            environmentValue: environmentValue,
+            bundleValue: bundleValue,
+            allowsInsecureLocalhost: false
+        )
         #endif
+    }
+
+    static func validatedAPIBaseURL(
+        environmentValue: String?,
+        bundleValue: String?,
+        allowsInsecureLocalhost: Bool
+    ) -> URL? {
+        let value = [environmentValue, bundleValue]
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .first { !$0.isEmpty }
+        guard let value, let url = URL(string: value), url.host?.isEmpty == false else {
+            return nil
+        }
+        if url.scheme?.lowercased() == "https" {
+            return url
+        }
+        let localHosts = ["127.0.0.1", "localhost", "::1"]
+        guard allowsInsecureLocalhost,
+              url.scheme?.lowercased() == "http",
+              localHosts.contains(url.host?.lowercased() ?? "") else {
+            return nil
+        }
+        return url
     }
 }
 

@@ -3,36 +3,29 @@ import SwiftUI
 
 struct ShockProjectionChart: View {
     let scenario: ShockAssessment.Scenario
-    let requiredLiquidityBuffer: Int64
 
     var body: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.medium) {
+            Text("shocks.chart.title")
+                .font(TypographyTokens.cardTitle)
             Chart {
-                ForEach(scenario.chartPoints) { point in
-                    AreaMark(
-                        x: .value("Period", NSLocalizedString(point.periodKey, comment: "Projection period")),
-                        y: .value("Balance", Double(point.balance))
-                    )
-                    .foregroundStyle(CrediWiseColors.primary.opacity(0.12))
-
+                ForEach(scenario.projectionPoints) { point in
                     LineMark(
-                        x: .value("Period", NSLocalizedString(point.periodKey, comment: "Projection period")),
-                        y: .value("Balance", Double(point.balance))
+                        x: .value("Sequence", point.sequence),
+                        y: .value("Projected balance", Double(point.projectedBalance))
                     )
                     .foregroundStyle(CrediWiseColors.primary)
-                    .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round))
-
                     PointMark(
-                        x: .value("Period", NSLocalizedString(point.periodKey, comment: "Projection period")),
-                        y: .value("Balance", Double(point.balance))
+                        x: .value("Sequence", point.sequence),
+                        y: .value("Projected balance", Double(point.projectedBalance))
                     )
-                    .foregroundStyle(point.balance < 0 ? CrediWiseColors.danger : CrediWiseColors.primary)
+                    .foregroundStyle(
+                        point.projectedBalance < 0 ? CrediWiseColors.danger : CrediWiseColors.primary
+                    )
                 }
-
-                RuleMark(y: .value("Required buffer", Double(requiredLiquidityBuffer)))
+                RuleMark(y: .value("Required buffer", Double(scenario.requiredLiquidityBuffer)))
                     .foregroundStyle(CrediWiseColors.warning)
                     .lineStyle(StrokeStyle(lineWidth: 2, dash: [6, 4]))
-
                 RuleMark(y: .value("Zero", 0.0))
                     .foregroundStyle(CrediWiseColors.danger)
             }
@@ -54,10 +47,16 @@ struct ShockProjectionChart: View {
                 .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))
                 .accessibilityIdentifier("shocks.chart_summary")
 
+            ForEach(scenario.projectionPoints) { point in
+                Text(pointSummary(point))
+                    .font(TypographyTokens.caption)
+            }
+
             Divider()
-            metric("shocks.scenario.monthly_balance", scenario.monthlyProjectedBalance)
-            metric("shocks.scenario.minimum_balance", scenario.minimumTemporalBalance)
-            metric("shocks.scenario.deficit", scenario.deficit)
+            metric("shocks.scenario.projected_cash_flow", scenario.projectedCashFlow)
+            metric("shocks.scenario.minimum_balance", scenario.minimumProjectedBalance)
+            metric("shocks.scenario.required_buffer", scenario.requiredLiquidityBuffer)
+            metric("shocks.scenario.deficit", scenario.deficitAmount)
             LabeledContent("shocks.scenario.buffer") {
                 Text(
                     LocalizedStringKey(
@@ -77,36 +76,44 @@ struct ShockProjectionChart: View {
     }
 
     private var accessibilitySummary: String {
-        let startingBalance = scenario.chartPoints.first?.balance ?? scenario.minimumTemporalBalance
-        let endingBalance = scenario.chartPoints.last?.balance ?? scenario.monthlyProjectedBalance
+        let points = scenario.projectionPoints.map(pointSummary).joined(separator: "; ")
         return String(
             format: NSLocalizedString("shocks.chart.accessibility", comment: "Shock chart summary"),
-            NSLocalizedString(scenario.titleKey, comment: "Shock scenario"),
-            NSLocalizedString(statusKey, comment: "Shock status"),
-            NSLocalizedString(trendKey, comment: "Balance trend"),
-            IDRFormatter.string(from: startingBalance),
-            IDRFormatter.string(from: endingBalance),
-            IDRFormatter.string(from: scenario.monthlyProjectedBalance),
-            IDRFormatter.string(from: scenario.minimumTemporalBalance),
-            IDRFormatter.string(from: scenario.deficit),
+            scenarioTitle,
+            NSLocalizedString("shocks.status.\(scenario.status.rawValue)", comment: "Shock status"),
+            points,
+            IDRFormatter.string(from: scenario.projectedCashFlow),
+            IDRFormatter.string(from: scenario.minimumProjectedBalance),
+            IDRFormatter.string(from: scenario.deficitAmount),
             scenario.requiredBufferBreached
                 ? NSLocalizedString("shocks.buffer.breached", comment: "Buffer breached")
                 : NSLocalizedString("shocks.buffer.preserved", comment: "Buffer preserved")
         )
     }
 
-    private var statusKey: String {
-        "shocks.status.\(scenario.status.rawValue)"
+    private var scenarioTitle: String {
+        NSLocalizedString("shocks.scenario.\(scenario.kind.rawValue).title", comment: "Shock scenario")
     }
 
-    private var trendKey: String {
-        guard let first = scenario.chartPoints.first?.balance,
-              let last = scenario.chartPoints.last?.balance else {
-            return "shocks.trend.steady"
+    private func pointSummary(_ point: ShockAssessment.ProjectionPoint) -> String {
+        String(
+            format: NSLocalizedString("shocks.chart.point", comment: "Projection point"),
+            point.sequence,
+            point.dayOfMonth,
+            eventDisplayName(point),
+            IDRFormatter.string(from: point.amount),
+            IDRFormatter.string(from: point.projectedBalance)
+        )
+    }
+
+    private func eventDisplayName(_ point: ShockAssessment.ProjectionPoint) -> String {
+        if point.isKnownEventType {
+            return NSLocalizedString(point.eventLabelKey, comment: "Shock timeline event")
         }
-        if last > first { return "shocks.trend.rising" }
-        if last < first { return "shocks.trend.falling" }
-        return "shocks.trend.steady"
+        return String(
+            format: NSLocalizedString("shocks.event.unknown_value", comment: "Unknown event type"),
+            point.eventType
+        )
     }
 
     private func metric(_ title: LocalizedStringKey, _ amount: Int64) -> some View {
@@ -115,5 +122,4 @@ struct ShockProjectionChart: View {
                 .font(TypographyTokens.body.monospacedDigit())
         }
     }
-
 }

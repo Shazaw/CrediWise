@@ -20,6 +20,8 @@ final class OffersViewModel: ObservableObject {
             state = .loaded(try await repository.offers(assessmentID: assessmentID))
         } catch is CancellationError {
             state = previousState
+        } catch let error as OfferRepositoryError {
+            state = .failed(errorKey: errorKey(error))
         } catch {
             state = .failed(errorKey: "offers.error.unavailable")
         }
@@ -29,5 +31,16 @@ final class OffersViewModel: ObservableObject {
         guard case .failed = state else { return }
         state = .idle
         await load()
+    }
+
+    private func errorKey(_ error: OfferRepositoryError) -> String {
+        switch error {
+        case .invalidIdentifier, .notFound: return "offers.error.not_found"
+        case .invalidParameters: return "offers.error.invalid_parameters"
+        case .notReady: return "offers.error.not_ready"
+        case .rateLimited: return "offers.error.rate_limited"
+        case .reassessmentRequired: return "offers.error.reassessment_required"
+        case .unavailable: return "offers.error.unavailable"
+        }
     }
 }
