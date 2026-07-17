@@ -10,7 +10,8 @@ struct AppContainer {
                 service: Bundle.main.bundleIdentifier ?? "com.crediwise.app"
             )
         let sessionManager = SessionManager(tokenStore: tokenStore)
-        let isCycle5Flow = ProcessInfo.processInfo.arguments.contains("--cycle-5-flow")
+        let isCycle6Flow = ProcessInfo.processInfo.arguments.contains("--cycle-6-flow")
+        let isCycle5Flow = ProcessInfo.processInfo.arguments.contains("--cycle-5-flow") || isCycle6Flow
         let dependencies = isUITesting
             ? AppDependencies(
                 authenticationRepository: MockAuthenticationRepository(),
@@ -22,21 +23,29 @@ struct AppContainer {
                 documentVerificationRepository: MockDocumentVerificationRepository(),
                 financingNeedRepository: MockFinancingNeedRepository(),
                 assessmentDashboardRepository: MockAssessmentDashboardRepository(),
+                shockRepository: MockShockRepository(),
+                offerRepository: MockOfferRepository(),
                 isDocumentUploadAvailable: true
             )
             : makeProductionDependencies(tokenStore: tokenStore, sessionManager: sessionManager)
 
         return AppCoordinator(
             sessionManager: sessionManager,
-            authenticationRepository: dependencies.authenticationRepository,
-            documentUploadRepository: dependencies.documentUploadRepository,
-            documentVerificationRepository: dependencies.documentVerificationRepository,
-            financingNeedRepository: dependencies.financingNeedRepository,
-            assessmentDashboardRepository: dependencies.assessmentDashboardRepository,
-            uploadPollingPolicy: DocumentUploadPollingPolicy(),
-            allowsSyntheticUpload: isUITesting,
-            isDocumentUploadAvailable: dependencies.isDocumentUploadAvailable,
-            allowsSyntheticAssessment: isUITesting && isCycle5Flow
+            dependencies: AppCoordinator.Dependencies(
+                authenticationRepository: dependencies.authenticationRepository,
+                documentUploadRepository: dependencies.documentUploadRepository,
+                documentVerificationRepository: dependencies.documentVerificationRepository,
+                financingNeedRepository: dependencies.financingNeedRepository,
+                assessmentDashboardRepository: dependencies.assessmentDashboardRepository,
+                shockRepository: dependencies.shockRepository,
+                offerRepository: dependencies.offerRepository
+            ),
+            configuration: AppCoordinator.Configuration(
+                allowsSyntheticUpload: isUITesting,
+                isDocumentUploadAvailable: dependencies.isDocumentUploadAvailable,
+                allowsSyntheticAssessment: isUITesting && isCycle5Flow,
+                allowsSyntheticCycle6: isUITesting && isCycle6Flow
+            )
         )
     }
 
@@ -52,6 +61,8 @@ struct AppContainer {
                 documentVerificationRepository: UnavailableVerificationRepository(),
                 financingNeedRepository: UnavailableFinancingNeedRepository(),
                 assessmentDashboardRepository: UnavailableAssessmentDashboardRepository(),
+                shockRepository: UnavailableShockRepository(),
+                offerRepository: UnavailableOfferRepository(),
                 isDocumentUploadAvailable: false
             )
         }
@@ -69,16 +80,17 @@ struct AppContainer {
                 await sessionManager.signOut()
             }
         )
+        let verificationRepository = APIDocumentVerificationRepository(
+            baseURL: baseURL,
+            authInterceptor: authInterceptor
+        )
         return AppDependencies(
             authenticationRepository: authenticationRepository,
             documentUploadRepository: APIDocumentUploadRepository(
                 baseURL: baseURL,
                 authInterceptor: authInterceptor
             ),
-            documentVerificationRepository: APIDocumentVerificationRepository(
-                baseURL: baseURL,
-                authInterceptor: authInterceptor
-            ),
+            documentVerificationRepository: verificationRepository,
             financingNeedRepository: APIFinancingNeedRepository(
                 baseURL: baseURL,
                 authInterceptor: authInterceptor
@@ -86,11 +98,10 @@ struct AppContainer {
             assessmentDashboardRepository: APIAssessmentDashboardRepository(
                 baseURL: baseURL,
                 authInterceptor: authInterceptor,
-                verificationRepository: APIDocumentVerificationRepository(
-                    baseURL: baseURL,
-                    authInterceptor: authInterceptor
-                )
+                verificationRepository: verificationRepository
             ),
+            shockRepository: UnavailableShockRepository(),
+            offerRepository: UnavailableOfferRepository(),
             isDocumentUploadAvailable: true
         )
     }
@@ -114,5 +125,7 @@ private struct AppDependencies {
     let documentVerificationRepository: any DocumentVerificationRepository
     let financingNeedRepository: any FinancingNeedRepository
     let assessmentDashboardRepository: any AssessmentDashboardRepository
+    let shockRepository: any ShockRepository
+    let offerRepository: any OfferRepository
     let isDocumentUploadAvailable: Bool
 }

@@ -125,6 +125,33 @@
 		A00000000000000000000074 /* AssessmentDashboardMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000076 /* AssessmentDashboardMapper.swift */; };
 		A00000000000000000000075 /* APIFinancingNeedRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000077 /* APIFinancingNeedRepositoryTests.swift */; };
 		A00000000000000000000076 /* APIAssessmentDashboardRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000078 /* APIAssessmentDashboardRepositoryTests.swift */; };
+		A00000000000000000000077 /* ShockAssessment.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000079 /* ShockAssessment.swift */; };
+		A00000000000000000000078 /* ShockSimulationParameters.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000007A /* ShockSimulationParameters.swift */; };
+		A00000000000000000000079 /* ShockRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000007B /* ShockRepository.swift */; };
+		A0000000000000000000007A /* ShockRepositoryError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000007C /* ShockRepositoryError.swift */; };
+		A0000000000000000000007B /* UnavailableShockRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000007D /* UnavailableShockRepository.swift */; };
+		A0000000000000000000007C /* MockShockRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000007E /* MockShockRepository.swift */; };
+		A0000000000000000000007D /* ShockViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000007F /* ShockViewState.swift */; };
+		A0000000000000000000007E /* ShockViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000080 /* ShockViewModel.swift */; };
+		A0000000000000000000007F /* ShockResilienceCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000081 /* ShockResilienceCard.swift */; };
+		A00000000000000000000080 /* ShockSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000082 /* ShockSlider.swift */; };
+		A00000000000000000000081 /* ShockProjectionChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000083 /* ShockProjectionChart.swift */; };
+		A00000000000000000000082 /* ShockSimulationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000084 /* ShockSimulationView.swift */; };
+		A00000000000000000000083 /* SafeOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000085 /* SafeOffer.swift */; };
+		A00000000000000000000084 /* OfferRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000086 /* OfferRepository.swift */; };
+		A00000000000000000000085 /* OfferRepositoryError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000087 /* OfferRepositoryError.swift */; };
+		A00000000000000000000086 /* UnavailableOfferRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000088 /* UnavailableOfferRepository.swift */; };
+		A00000000000000000000087 /* MockOfferRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000089 /* MockOfferRepository.swift */; };
+		A00000000000000000000088 /* OffersViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000008A /* OffersViewState.swift */; };
+		A00000000000000000000089 /* OffersViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000008B /* OffersViewModel.swift */; };
+		A0000000000000000000008A /* OfferDetailViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000008C /* OfferDetailViewState.swift */; };
+		A0000000000000000000008B /* OfferDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000008D /* OfferDetailViewModel.swift */; };
+		A0000000000000000000008C /* OfferRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000008E /* OfferRow.swift */; };
+		A0000000000000000000008D /* OffersListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000008F /* OffersListView.swift */; };
+		A0000000000000000000008E /* OfferDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000090 /* OfferDetailView.swift */; };
+		A0000000000000000000008F /* ShockViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000091 /* ShockViewModelTests.swift */; };
+		A00000000000000000000090 /* OffersViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000092 /* OffersViewModelTests.swift */; };
+		A00000000000000000000091 /* OfferDetailViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000093 /* OfferDetailViewModelTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -264,6 +291,33 @@
 		B00000000000000000000076 /* AssessmentDashboardMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssessmentDashboardMapper.swift; sourceTree = "<group>"; };
 		B00000000000000000000077 /* APIFinancingNeedRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIFinancingNeedRepositoryTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000078 /* APIAssessmentDashboardRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIAssessmentDashboardRepositoryTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000079 /* ShockAssessment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShockAssessment.swift; sourceTree = "<group>"; };
+		B0000000000000000000007A /* ShockSimulationParameters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShockSimulationParameters.swift; sourceTree = "<group>"; };
+		B0000000000000000000007B /* ShockRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShockRepository.swift; sourceTree = "<group>"; };
+		B0000000000000000000007C /* ShockRepositoryError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShockRepositoryError.swift; sourceTree = "<group>"; };
+		B0000000000000000000007D /* UnavailableShockRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnavailableShockRepository.swift; sourceTree = "<group>"; };
+		B0000000000000000000007E /* MockShockRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockShockRepository.swift; sourceTree = "<group>"; };
+		B0000000000000000000007F /* ShockViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShockViewState.swift; sourceTree = "<group>"; };
+		B00000000000000000000080 /* ShockViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShockViewModel.swift; sourceTree = "<group>"; };
+		B00000000000000000000081 /* ShockResilienceCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShockResilienceCard.swift; sourceTree = "<group>"; };
+		B00000000000000000000082 /* ShockSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShockSlider.swift; sourceTree = "<group>"; };
+		B00000000000000000000083 /* ShockProjectionChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShockProjectionChart.swift; sourceTree = "<group>"; };
+		B00000000000000000000084 /* ShockSimulationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShockSimulationView.swift; sourceTree = "<group>"; };
+		B00000000000000000000085 /* SafeOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeOffer.swift; sourceTree = "<group>"; };
+		B00000000000000000000086 /* OfferRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferRepository.swift; sourceTree = "<group>"; };
+		B00000000000000000000087 /* OfferRepositoryError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferRepositoryError.swift; sourceTree = "<group>"; };
+		B00000000000000000000088 /* UnavailableOfferRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnavailableOfferRepository.swift; sourceTree = "<group>"; };
+		B00000000000000000000089 /* MockOfferRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockOfferRepository.swift; sourceTree = "<group>"; };
+		B0000000000000000000008A /* OffersViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersViewState.swift; sourceTree = "<group>"; };
+		B0000000000000000000008B /* OffersViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersViewModel.swift; sourceTree = "<group>"; };
+		B0000000000000000000008C /* OfferDetailViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferDetailViewState.swift; sourceTree = "<group>"; };
+		B0000000000000000000008D /* OfferDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferDetailViewModel.swift; sourceTree = "<group>"; };
+		B0000000000000000000008E /* OfferRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferRow.swift; sourceTree = "<group>"; };
+		B0000000000000000000008F /* OffersListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersListView.swift; sourceTree = "<group>"; };
+		B00000000000000000000090 /* OfferDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferDetailView.swift; sourceTree = "<group>"; };
+		B00000000000000000000091 /* ShockViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShockViewModelTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000092 /* OffersViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersViewModelTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000093 /* OfferDetailViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferDetailViewModelTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000100 /* CrediWise.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrediWise.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B00000000000000000000101 /* CrediWiseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrediWiseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B00000000000000000000102 /* CrediWiseUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrediWiseUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -364,7 +418,9 @@
 			children = (
 				D0000000000000000000001F /* Dashboard */,
 				D00000000000000000000024 /* FinancingNeed */,
+				D00000000000000000000031 /* Offers */,
 				D0000000000000000000000B /* Onboarding */,
+				D0000000000000000000002C /* Shocks */,
 				D00000000000000000000019 /* Upload */,
 			);
 			path = Features;
@@ -408,6 +464,8 @@
 				D0000000000000000000000F /* Features */,
 				D00000000000000000000022 /* Dashboard Tests */,
 				D0000000000000000000002B /* FinancingNeed Tests */,
+				D00000000000000000000037 /* Offers Tests */,
+				D00000000000000000000036 /* Shocks Tests */,
 				D0000000000000000000001E /* Upload Tests */,
 			);
 			path = CrediWiseTests;
@@ -715,6 +773,121 @@
 			path = Features/FinancingNeed;
 			sourceTree = "<group>";
 		};
+		D0000000000000000000002C /* Shocks */ = {
+			isa = PBXGroup;
+			children = (
+				D0000000000000000000002D /* Models */,
+				D0000000000000000000002E /* Repositories */,
+				D0000000000000000000002F /* ViewModels */,
+				D00000000000000000000030 /* Views */,
+			);
+			path = Shocks;
+			sourceTree = "<group>";
+		};
+		D0000000000000000000002D /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000079 /* ShockAssessment.swift */,
+				B0000000000000000000007A /* ShockSimulationParameters.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		D0000000000000000000002E /* Repositories */ = {
+			isa = PBXGroup;
+			children = (
+				B0000000000000000000007E /* MockShockRepository.swift */,
+				B0000000000000000000007B /* ShockRepository.swift */,
+				B0000000000000000000007C /* ShockRepositoryError.swift */,
+				B0000000000000000000007D /* UnavailableShockRepository.swift */,
+			);
+			path = Repositories;
+			sourceTree = "<group>";
+		};
+		D0000000000000000000002F /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000080 /* ShockViewModel.swift */,
+				B0000000000000000000007F /* ShockViewState.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000030 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000083 /* ShockProjectionChart.swift */,
+				B00000000000000000000081 /* ShockResilienceCard.swift */,
+				B00000000000000000000084 /* ShockSimulationView.swift */,
+				B00000000000000000000082 /* ShockSlider.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000031 /* Offers */ = {
+			isa = PBXGroup;
+			children = (
+				D00000000000000000000032 /* Models */,
+				D00000000000000000000033 /* Repositories */,
+				D00000000000000000000034 /* ViewModels */,
+				D00000000000000000000035 /* Views */,
+			);
+			path = Offers;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000032 /* Models */ = {
+			isa = PBXGroup;
+			children = (B00000000000000000000085 /* SafeOffer.swift */);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000033 /* Repositories */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000089 /* MockOfferRepository.swift */,
+				B00000000000000000000086 /* OfferRepository.swift */,
+				B00000000000000000000087 /* OfferRepositoryError.swift */,
+				B00000000000000000000088 /* UnavailableOfferRepository.swift */,
+			);
+			path = Repositories;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000034 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				B0000000000000000000008D /* OfferDetailViewModel.swift */,
+				B0000000000000000000008C /* OfferDetailViewState.swift */,
+				B0000000000000000000008B /* OffersViewModel.swift */,
+				B0000000000000000000008A /* OffersViewState.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000035 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000090 /* OfferDetailView.swift */,
+				B0000000000000000000008E /* OfferRow.swift */,
+				B0000000000000000000008F /* OffersListView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000036 /* Shocks Tests */ = {
+			isa = PBXGroup;
+			children = (B00000000000000000000091 /* ShockViewModelTests.swift */);
+			path = Features/Shocks;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000037 /* Offers Tests */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000093 /* OfferDetailViewModelTests.swift */,
+				B00000000000000000000092 /* OffersViewModelTests.swift */,
+			);
+			path = Features/Offers;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -934,10 +1107,34 @@
 				A00000000000000000000072 /* APIAssessmentDashboardRepository.swift in Sources */,
 				A00000000000000000000073 /* AssessmentDashboardDTOs.swift in Sources */,
 				A00000000000000000000074 /* AssessmentDashboardMapper.swift in Sources */,
+				A00000000000000000000077 /* ShockAssessment.swift in Sources */,
+				A00000000000000000000078 /* ShockSimulationParameters.swift in Sources */,
+				A00000000000000000000079 /* ShockRepository.swift in Sources */,
+				A0000000000000000000007A /* ShockRepositoryError.swift in Sources */,
+				A0000000000000000000007B /* UnavailableShockRepository.swift in Sources */,
+				A0000000000000000000007C /* MockShockRepository.swift in Sources */,
+				A0000000000000000000007D /* ShockViewState.swift in Sources */,
+				A0000000000000000000007E /* ShockViewModel.swift in Sources */,
+				A0000000000000000000007F /* ShockResilienceCard.swift in Sources */,
+				A00000000000000000000080 /* ShockSlider.swift in Sources */,
+				A00000000000000000000081 /* ShockProjectionChart.swift in Sources */,
+				A00000000000000000000082 /* ShockSimulationView.swift in Sources */,
+				A00000000000000000000083 /* SafeOffer.swift in Sources */,
+				A00000000000000000000084 /* OfferRepository.swift in Sources */,
+				A00000000000000000000085 /* OfferRepositoryError.swift in Sources */,
+				A00000000000000000000086 /* UnavailableOfferRepository.swift in Sources */,
+				A00000000000000000000087 /* MockOfferRepository.swift in Sources */,
+				A00000000000000000000088 /* OffersViewState.swift in Sources */,
+				A00000000000000000000089 /* OffersViewModel.swift in Sources */,
+				A0000000000000000000008A /* OfferDetailViewState.swift in Sources */,
+				A0000000000000000000008B /* OfferDetailViewModel.swift in Sources */,
+				A0000000000000000000008C /* OfferRow.swift in Sources */,
+				A0000000000000000000008D /* OffersListView.swift in Sources */,
+				A0000000000000000000008E /* OfferDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F00000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A0000000000000000000002A /* APIAuthenticationRepositoryTests.swift in Sources */, A00000000000000000000076 /* APIAssessmentDashboardRepositoryTests.swift in Sources */, A00000000000000000000059 /* APIDocumentVerificationRepositoryTests.swift in Sources */, A00000000000000000000040 /* APIDocumentUploadRepositoryTests.swift in Sources */, A00000000000000000000075 /* APIFinancingNeedRepositoryTests.swift in Sources */, A00000000000000000000012 /* AppCoordinatorTests.swift in Sources */, A00000000000000000000070 /* AssessmentDashboardViewModelTests.swift in Sources */, A00000000000000000000027 /* AuthenticationViewModelTests.swift in Sources */, A00000000000000000000026 /* AuthInterceptorTests.swift in Sources */, A00000000000000000000055 /* DataConfidenceViewModelTests.swift in Sources */, A0000000000000000000003B /* DocumentUploadPollingPolicyTests.swift in Sources */, A00000000000000000000054 /* ExtractionReviewViewModelTests.swift in Sources */, A0000000000000000000006F /* FinancingNeedViewModelTests.swift in Sources */, A00000000000000000000056 /* IDRFormatterTests.swift in Sources */, A00000000000000000000025 /* SessionManagerTests.swift in Sources */, A0000000000000000000003A /* UploadFileValidatorTests.swift in Sources */, A0000000000000000000003C /* UploadViewModelTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+		F00000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A0000000000000000000002A /* APIAuthenticationRepositoryTests.swift in Sources */, A00000000000000000000076 /* APIAssessmentDashboardRepositoryTests.swift in Sources */, A00000000000000000000059 /* APIDocumentVerificationRepositoryTests.swift in Sources */, A00000000000000000000040 /* APIDocumentUploadRepositoryTests.swift in Sources */, A00000000000000000000075 /* APIFinancingNeedRepositoryTests.swift in Sources */, A00000000000000000000012 /* AppCoordinatorTests.swift in Sources */, A00000000000000000000070 /* AssessmentDashboardViewModelTests.swift in Sources */, A00000000000000000000027 /* AuthenticationViewModelTests.swift in Sources */, A00000000000000000000026 /* AuthInterceptorTests.swift in Sources */, A00000000000000000000055 /* DataConfidenceViewModelTests.swift in Sources */, A0000000000000000000003B /* DocumentUploadPollingPolicyTests.swift in Sources */, A00000000000000000000054 /* ExtractionReviewViewModelTests.swift in Sources */, A0000000000000000000006F /* FinancingNeedViewModelTests.swift in Sources */, A00000000000000000000056 /* IDRFormatterTests.swift in Sources */, A00000000000000000000090 /* OffersViewModelTests.swift in Sources */, A00000000000000000000091 /* OfferDetailViewModelTests.swift in Sources */, A00000000000000000000025 /* SessionManagerTests.swift in Sources */, A0000000000000000000008F /* ShockViewModelTests.swift in Sources */, A0000000000000000000003A /* UploadFileValidatorTests.swift in Sources */, A0000000000000000000003C /* UploadViewModelTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
 		F00000000000000000000007 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000013 /* WelcomeFlowUITests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 

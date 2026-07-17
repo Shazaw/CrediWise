@@ -69,15 +69,38 @@ final class AppCoordinatorTests: XCTestCase {
         XCTAssertEqual(coordinator.path, [.assessmentDashboard(assessmentID: "assessment-123")])
     }
 
+    func testRoutesFromDashboardThroughShocksAndOfferDetail() {
+        let coordinator = AppCoordinator()
+
+        coordinator.showAssessmentDashboard(assessmentID: "assessment-123")
+        coordinator.showShockSimulation(assessmentID: "assessment-123")
+        coordinator.showOffers(assessmentID: "assessment-123")
+        coordinator.showOfferDetail(assessmentID: "assessment-123", offerID: "offer-unsafe")
+
+        XCTAssertEqual(
+            coordinator.path,
+            [
+                .assessmentDashboard(assessmentID: "assessment-123"),
+                .shockSimulation(assessmentID: "assessment-123"),
+                .offers(assessmentID: "assessment-123"),
+                .offerDetail(assessmentID: "assessment-123", offerID: "offer-unsafe")
+            ]
+        )
+    }
+
     func testCreatesAssessmentFromStoredNeedAndConfirmedDocument() async throws {
         let repository = MockAssessmentDashboardRepository()
         let coordinator = AppCoordinator(
             sessionManager: SessionManager(tokenStore: VolatileTokenStore()),
-            authenticationRepository: MockAuthenticationRepository(),
-            documentUploadRepository: MockDocumentUploadRepository(),
-            documentVerificationRepository: MockDocumentVerificationRepository(),
-            financingNeedRepository: MockFinancingNeedRepository(),
-            assessmentDashboardRepository: repository
+            dependencies: AppCoordinator.Dependencies(
+                authenticationRepository: MockAuthenticationRepository(),
+                documentUploadRepository: MockDocumentUploadRepository(),
+                documentVerificationRepository: MockDocumentVerificationRepository(),
+                financingNeedRepository: MockFinancingNeedRepository(),
+                assessmentDashboardRepository: repository,
+                shockRepository: MockShockRepository(),
+                offerRepository: MockOfferRepository()
+            )
         )
         coordinator.completeFinancingNeed(FinancingNeedReceipt(financingNeedID: "need-123"))
 
