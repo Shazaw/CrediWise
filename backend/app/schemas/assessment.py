@@ -17,6 +17,7 @@ from app.models.enums import (
     FreqEnum,
     IncomeSourceEnum,
     RiskBandEnum,
+    ShockResilienceBandEnum,
 )
 from app.schemas.document import ReasonCodeResponse
 
@@ -156,6 +157,13 @@ class TwinSummary(BaseModel):
     weakest_month_cash_flow: int
 
 
+class ShockResilienceSummary(BaseModel):
+    score: Decimal | None
+    band: ShockResilienceBandEnum | None
+    reasons: list[str]
+    reason_codes: list[ReasonCodeResponse]
+
+
 class DashboardResponse(BaseModel):
     assessment_id: uuid.UUID
     status: AssessmentStatusEnum
@@ -163,6 +171,7 @@ class DashboardResponse(BaseModel):
     positioning_notice: str = POSITIONING_NOTICE
     data_confidence: DataConfidenceSummary
     risk_band: RiskBandSummary
+    shock_resilience: ShockResilienceSummary
     safe_borrowing: SafeBorrowingSummary
     twin: TwinSummary | None
 

@@ -3,17 +3,23 @@ FR-9).
 
 Pure per PLAN §10.1: no DB, network, filesystem, clock, or RNG.
 
-`ShockCapacity` (PLAN §5.6: "the highest instalment that remains at least
-STRAINED, not DEFICIT, under the configured moderate shock") is
-*intentionally absent* from `MaximumSafeInstalment`'s `min(...)` below --
-`ShockEngine` doesn't exist until Sprint 5 (PLAN §25). This is the same
-class of documented gap as T3.3's cross-document-consistency deferral: the
-formula's other four terms (`BaseCapacity`, `DSTICapacity`,
-`WeakestMonthCapacity`, `TemporalLiquidityCapacity`) are fully implemented
-now; Sprint 5 adds the fifth `min(...)` term once shock scenarios exist,
-which can only ever *lower* `MaximumSafeInstalment` further (never raise
-it), so this cycle's numbers are a conservative upper bound, not an
-overstatement.
+**`ShockCapacity` (ADR-016, Sprint 5):** PLAN §5.6 defines it as "the highest
+instalment that remains at least STRAINED, not DEFICIT, under the configured
+moderate shock." Rather than depending on `ShockEngine` (PLAN §10.1: engines
+depend on nothing but their own inputs and `model_config`, not on each
+other), this is computed here in closed form: a shock's projected minimum
+balance is linear in the proposed instalment
+(`savings_buffer + scenario_free_cash_flow - instalment`), so "the highest
+instalment that keeps it >= 0" has an exact algebraic solution that needs no
+search and no dependency on the richer multi-scenario engine. The "moderate
+shock" is PLAN §5.8's 20%-income-drop scenario (`moderate_shock_income_drop_pct`
+in `model_config.py`, shared with `app/engines/shock.py`'s own scenario
+battery so the two engines never disagree about what "moderate" means).
+Sprint 4 shipped the other four `min(...)` terms (`BaseCapacity`,
+`DSTICapacity`, `WeakestMonthCapacity`, `TemporalLiquidityCapacity`);
+`ShockCapacity` is the fifth, added this sprint. Because `min(...)` can only
+be lowered by adding a term, never raised, this only ever tightens Sprint 4's
+numbers (documented there as a conservative upper bound), never loosens them.
 """
 
 from dataclasses import dataclass, field
@@ -43,6 +49,11 @@ class SafeBorrowingInput:
     min_monthly_minimum_balance: int | None = None
     dominant_income_day: int | None = None
     dominant_income_frequency: FreqEnum | None = None
+    #: PLAN §5.6 `ShockCapacity` input (ADR-016) -- `CashFlowTwinEngine`'s
+    #: `savings_buffer = max(0, minimum_balance)` (non-negative by
+    #: construction, unlike `min_monthly_minimum_balance` above, which the
+    #: `TemporalLiquidityCapacity` term deliberately leaves signed).
+    savings_buffer: int = 0
 
 
 @dataclass(frozen=True)
@@ -57,6 +68,7 @@ class SafeBorrowingConfig:
     due_date_offset_min_days: int
     due_date_offset_max_days: int
     default_due_date_window: tuple[int, int]
+    moderate_shock_income_drop_pct: Decimal
 
 
 @dataclass(frozen=True)
@@ -66,6 +78,7 @@ class RecommendationResult:
     dsti_capacity: int
     weakest_month_capacity: int
     temporal_liquidity_capacity: int
+    shock_capacity: int
     maximum_safe_instalment: int
     safe_loan_amount: int
     recommended_tenor_months: int
@@ -89,6 +102,7 @@ def default_config() -> SafeBorrowingConfig:
         due_date_offset_min_days=raw["due_date_offset_min_days"],
         due_date_offset_max_days=raw["due_date_offset_max_days"],
         default_due_date_window=raw["default_due_date_window"],
+        moderate_shock_income_drop_pct=raw["moderate_shock_income_drop_pct"],
     )
 
 
@@ -114,12 +128,19 @@ def run(
         if inputs.min_monthly_minimum_balance is not None
         else base_capacity
     )
+    shock_capacity = max(
+        0,
+        inputs.savings_buffer
+        + inputs.average_free_cash_flow
+        - _to_money(Decimal(inputs.median_income) * config.moderate_shock_income_drop_pct),
+    )
 
     capacities = {
         "base": base_capacity,
         "dsti": dsti_capacity,
         "weakest_month": weakest_month_capacity,
         "temporal_liquidity": temporal_liquidity_capacity,
+        "shock": shock_capacity,
     }
     maximum_safe_instalment = min(capacities.values())
     binding = min(capacities, key=lambda k: capacities[k])
@@ -143,6 +164,7 @@ def run(
             dsti_capacity=dsti_capacity,
             weakest_month_capacity=weakest_month_capacity,
             temporal_liquidity_capacity=temporal_liquidity_capacity,
+            shock_capacity=shock_capacity,
             maximum_safe_instalment=0,
             safe_loan_amount=0,
             recommended_tenor_months=config.tenor_candidates[0],
@@ -168,6 +190,7 @@ def run(
         dsti_capacity=dsti_capacity,
         weakest_month_capacity=weakest_month_capacity,
         temporal_liquidity_capacity=temporal_liquidity_capacity,
+        shock_capacity=shock_capacity,
         maximum_safe_instalment=maximum_safe_instalment,
         safe_loan_amount=principal,
         recommended_tenor_months=tenor,

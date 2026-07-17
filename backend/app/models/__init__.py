@@ -16,11 +16,15 @@ from app.models.financial_account import FinancialAccount
 from app.models.financial_profile import FinancialProfile
 from app.models.financing_need import FinancingNeed
 from app.models.income_source import IncomeSource
+from app.models.lender import Lender
+from app.models.lender_offer import LenderOffer
 from app.models.model_version import ModelVersion
 from app.models.monthly_cash_flow_snapshot import MonthlyCashFlowSnapshot
+from app.models.offer_assessment import OfferAssessment
 from app.models.pipeline_stage_run import PipelineStageRun
 from app.models.recurring_series import RecurringSeries
 from app.models.refresh_token import RefreshToken
+from app.models.shock_scenario import ShockScenario
 from app.models.source_document import SourceDocument
 from app.models.transaction import Transaction
 from app.models.user import User, UserIdentity, UserProfile
@@ -40,11 +44,15 @@ __all__ = [
     "FinancialProfile",
     "FinancingNeed",
     "IncomeSource",
+    "Lender",
+    "LenderOffer",
     "ModelVersion",
     "MonthlyCashFlowSnapshot",
+    "OfferAssessment",
     "PipelineStageRun",
     "RecurringSeries",
     "RefreshToken",
+    "ShockScenario",
     "SourceDocument",
     "Transaction",
     "User",

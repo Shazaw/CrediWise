@@ -12,12 +12,12 @@ from collections.abc import Callable
 from sqlalchemy.orm import Session
 
 from app.core.logging import configure_logging
-from app.db.seeds import model_versions
+from app.db.seeds import lenders, model_versions
 from app.db.session import SessionLocal
 
 logger = logging.getLogger(__name__)
 
-SEED_MODULES: list[Callable[[Session], None]] = [model_versions.run]
+SEED_MODULES: list[Callable[[Session], None]] = [model_versions.run, lenders.run]
 
 
 def run_all() -> None:
