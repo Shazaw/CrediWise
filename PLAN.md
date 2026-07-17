@@ -427,12 +427,16 @@ MVP defaults live in model config and are assumptions, not universal financial a
 Every loan calculation must store and expose: principal, **net amount received**, nominal/flat rate if supplied, effective annual rate where computable, amortisation method (`FLAT | REDUCING_BALANCE | FIXED_SCHEDULE`), payment frequency, payment schedule, scheduled interest, upfront fees, financed fees, total scheduled repayment, and penalty terms.
 
 - Whole-rupiah rounding is half-up at each scheduled payment only when required by the contract; internal calculations retain Decimal precision.
+- Unfinanced upfront, service, and administration fees reduce `net amount received`. Financed fees are added to the financed balance, accrue the disclosed scheduled financing cost, and are included in scheduled repayments. A fee must never be counted in both treatments.
+- Effective annual cost is the deterministic annualized monthly IRR over actual net proceeds at disbursement and every complete scheduled payment cash flow. It is `NULL` only when those cash flows do not admit a computable result; no float arithmetic or flat-rate approximation is used.
 - Late penalties are disclosed but excluded from normal scheduled instalments.
 - The MVP reference assumption may remain 24%/year, but output must read: **“Illustrative principal under configured reference cost; not a guaranteed borrowing limit.”**
 
 ### 5.8 Shock Resilience Score
 
 The Shock Engine operates on both monthly aggregates and a dated/day-of-month liquidity timeline. Default scenarios:
+
+The aggregate score scope is always the versioned seven-scenario canonical battery and is exposed as `resilience_score_scope: CANONICAL_BATTERY`. Custom income-drop and emergency parameters produce a standalone `CUSTOM` status with zero aggregate contribution; they do not receive an invented weight or silently replace a canonical scenario. A custom proposed instalment is applied when rerunning the complete canonical battery as well as the standalone custom scenario.
 
 | Scenario | Default weight |
 |----------|:-------------:|
@@ -995,20 +999,20 @@ Index: `(user_id, created_at DESC)`, `(status)`.
 Index: `(assessment_id, reason_type)`.
 
 **`shock_scenarios`** — one row per simulation.
-`assessment_id FK`, `scenario_type shock_type_enum`, `scenario_parameters_json JSONB`, `projected_cash_flow BIGINT`, `deficit_amount BIGINT`, `affordability_status afford_enum`, `resilience_score_contribution NUMERIC(6,2)`.
+`assessment_id FK`, `scenario_type shock_type_enum`, `scenario_parameters_json JSONB`, `projected_cash_flow BIGINT`, `minimum_projected_balance BIGINT`, `deficit_amount BIGINT`, `affordability_status afford_enum`, `resilience_score_contribution NUMERIC(6,2)`, `projection_points_json JSONB NULL`, `required_buffer_breached BOOL NULL`. The last two fields are nullable only for rows predating migration `0010`; new engine output always populates them and legacy absence is never replaced with fabricated evidence.
 Index: `(assessment_id, scenario_type)`.
 
 **`lenders`** — seeded lender catalog.
-`name TEXT`, `regulatory_status reg_status_enum` (`REGULATED, UNLISTED`), `logo_url TEXT`, `is_active BOOL DEFAULT true`.
+`name TEXT`, `regulatory_status reg_status_enum` (`REGULATED, UNLISTED, SIMULATED_REGULATED_PROVIDER`), `logo_url TEXT`, `is_active BOOL DEFAULT true`. Every MVP seed uses `SIMULATED_REGULATED_PROVIDER`; other members are retained only for future non-MVP sources.
 
 **`lender_offers`** — offers attached to an assessment.
-`assessment_id FK`, `lender_id FK`, `offer_source offer_source_enum` (`SIMULATED, LENDER_API, MANUAL_LENDER_ENTRY`), `principal_amount BIGINT`, `net_disbursed_amount BIGINT`, `instalment_amount BIGINT`, `tenor_months INT`, `amortization_method amortization_enum`, `nominal_rate NUMERIC NULL`, `effective_annual_rate NUMERIC NULL`, `interest_amount BIGINT`, `upfront_fee BIGINT`, `financed_fee BIGINT`, `service_fee BIGINT`, `admin_fee BIGINT`, `total_repayment BIGINT`, `late_penalty_terms_json JSONB`, `payment_schedule_json JSONB`, `due_date INT`, `frequency freq_enum`, `received_at TIMESTAMPTZ`.
+`assessment_id FK`, `lender_id FK`, `offer_source offer_source_enum` (`SIMULATED, LENDER_API, MANUAL_LENDER_ENTRY`), `canonical_template_key TEXT NULL`, `principal_amount BIGINT`, `net_disbursed_amount BIGINT`, `instalment_amount BIGINT`, `tenor_months INT`, `amortization_method amortization_enum`, `nominal_rate NUMERIC NULL`, `effective_annual_rate NUMERIC NULL`, `interest_amount BIGINT`, `upfront_fee BIGINT`, `financed_fee BIGINT`, `service_fee BIGINT`, `admin_fee BIGINT`, `total_repayment BIGINT`, `late_penalty_terms_json JSONB`, `payment_schedule_json JSONB`, `due_date INT`, `frequency freq_enum`, `received_at TIMESTAMPTZ`. `canonical_template_key` is the exact versioned template identity for newly generated canonical rows; legacy rows remain `NULL`.
 Index: `(assessment_id)`.
 
 **`offer_assessments`** — 1:1 Safe Offer Score.
-`lender_offer_id FK UNIQUE`, `safe_offer_score NUMERIC(6,2)`, `affordability_status afford_enum`, `shock_resilience_status band_enum`, `total_cost_status status_enum`, `timing_status status_enum`, `warning_flags_json JSONB`, `explanation TEXT`, `rank INT`.
+`lender_offer_id FK UNIQUE`, `safe_offer_score NUMERIC(6,2)`, `affordability_status afford_enum`, `shock_resilience_status band_enum`, `total_cost_status status_enum`, `timing_status status_enum`, `warning_flags_json JSONB`, `explanation TEXT`, `rank INT`, `remaining_essential_expense_coverage BIGINT NULL`, `remaining_essential_expense_coverage_ratio NUMERIC(8,2) NULL`, `refinancing_dependency BOOL NULL`, `reason_codes_json JSONB NULL`. Nullable Cycle 6 evidence fields preserve pre-`0010` rows without invented defaults; new rows always populate them.
 
-Sprint 5/T5.1-T5.4 implements `shock_scenarios`, `lenders`, `lender_offers`, and `offer_assessments` (migration `0009`) exactly per their column lists above, plus these gap-fills (§24.11, ADR-016): `shock_type_enum`, `afford_enum` (shared by both `shock_scenarios.affordability_status` and `offer_assessments.affordability_status`), `offer_source_enum`, `amortization_enum`, and `status_enum` (implemented as `offer_rating_enum`, `GOOD/FAIR/POOR`) member sets are not enumerated in Appendix A. `reg_status_enum` extends this section's documented `(REGULATED, UNLISTED)` with a third member, `SIMULATED_REGULATED_PROVIDER`, required by FR-11 AC5. `shock_scenarios` gains one column beyond this section's list, `minimum_projected_balance BIGINT` — FR-10 AC1 requires exposing "monthly and minimum-temporal projected balance," which this section's compact listing names only via `projected_cash_flow`/`deficit_amount`. `shock_resilience_status`/`total_cost_status`/`timing_status` on `offer_assessments` and §5.8's own Shock Resilience Score band (`STRONG/MODERATE/FRAGILE`) and §5.9's Safe Offer Score band (`SAFE/CAUTION/UNSAFE`) are computed on read from their `NUMERIC` scores, not stored as separate columns — the same pattern `band_from_score` already uses for Data Confidence (§5.2).
+Sprint 5/T5.1-T5.5 implements `shock_scenarios`, `lenders`, `lender_offers`, and `offer_assessments` (migrations `0009` and additive `0010`) plus these gap-fills (§24.11, ADR-016): `shock_type_enum`, `afford_enum`, `offer_source_enum`, `amortization_enum`, `offer_rating_enum`, and `SIMULATED_REGULATED_PROVIDER`. Migration `0010` adds nullable evidence columns and a nullable canonical template identity without backfilling financial evidence. Its partial unique index is `(assessment_id, canonical_template_key)` only where the active row is simulated and the key is non-null, so duplicate historical 0009 batches remain valid. A reusable canonical set must contain exactly every configured template key once; keyless legacy rows are preserved but excluded, and partial keyed sets return stable `REASSESSMENT_REQUIRED` rather than masquerading as complete. Score bands remain computed on read from stored numeric scores.
 
 **`consents`** — data-sharing grants.
 `user_id FK`, `consent_type consent_type_enum`, `recipient_type recipient_enum` (`LENDER, INTERNAL`), `recipient_id UUID NULL`, `purpose TEXT`, `data_scope_json JSONB`, `granted_at`, `expires_at`, `revoked_at`, `status consent_status_enum`.
@@ -1051,7 +1055,7 @@ Constraint: only one `ACTIVE` per `model_name` (partial unique index).
 - **Format:** JSON only; `snake_case` fields; `application/json` (multipart only for uploads).
 - **Auth:** `Authorization: Bearer <access_token>` on all non-public routes.
 - **IDs:** UUID strings.
-- **Errors:** standard envelope (§10.3) with stable `code` values.
+- **Errors:** standard envelope (§10.3) with stable `code` values. Runtime framework/domain/validation errors and every generated OpenAPI operation use the same `ErrorEnvelope`; this is applied centrally, not repeated per route.
 - **Pagination:** cursor-based — `?limit=&cursor=`; responses include `next_cursor`.
 - **Idempotency:** `Idempotency-Key` header honoured on `POST /assessments` and `POST /documents`.
 - **Rate limiting:** per-user + per-IP token bucket in Redis; defaults: auth `10/min`, uploads `20/hour`, general `120/min`. `429` with `Retry-After`.
@@ -1123,10 +1127,18 @@ is now populated (score/band/reasons, ADR-016) — the full 4-headline-card
 dashboard (§7.11) is complete as of this cycle. `POST /assessments/{id}/simulate`
 is a synchronous, non-persisted preview (200, not 202/`Idempotency-Key`) —
 it never writes to `shock_scenarios` or the immutable
-`assessment_input_snapshots` row. `POST /assessments/{id}/offers` seeds
-three deterministic simulated offers against the seeded `lenders` catalog;
-re-calling it is non-idempotent (ADR-016) — each call adds a fresh offer
-batch rather than replacing the prior one.
+`assessment_input_snapshots` row. `POST /assessments/{id}/offers` seeds three
+deterministic simulated offers against the seeded `lenders` catalog. It is
+idempotent for that canonical MVP set: repeated or serialized concurrent calls
+return the same offer IDs and do not add rows (ADR-016). Only an exact configured
+template-key set is reusable. Legacy keyless offers are preserved and excluded;
+partial keyed sets or historical model/config lineage return `409 REASSESSMENT_REQUIRED`.
+Shock responses expose
+the proposed instalment, required buffer, ordered dated projection points,
+structured reasons, and model/config lineage. Offer responses expose typed
+penalty terms, nominal-rate basis, essential-expense coverage, refinancing
+dependency, structured reasons, lineage, and a source-conditional simulated/no-
+endorsement notice (`null` for future non-simulated persisted sources).
 
 ### 12.3 Representative Payloads
 
@@ -1350,6 +1362,7 @@ Each engine exposes: `def run(inputs, config: ModelConfig) -> Result`. Interface
 
 - Given an identical immutable `assessment_input_snapshot` plus identical parser/categorizer/engine/model versions, all engines return **bit-identical** numeric outputs.
 - The snapshot hash, parser versions, categorizer version, `model_version`, and `config_hash` are stamped on every assessment. Any weight/threshold change → new `model_version` (§19.2).
+- Current completed configuration is `crediwise-core` v2. Seed logic activates only the exact v2/config-hash pair, retires older ACTIVE rows without mutating their version/hash, and new assessments select that exact active row. Historical assessments/results retain v1 lineage and cannot be used to generate offers under v2 rules.
 - **Golden-file tests** (§21.3) lock engine outputs against synthetic fixtures; a diff = an intentional, reviewed model change.
 
 ### 15.5 Explanation AI Boundary
@@ -1685,7 +1698,7 @@ Every PR body includes: **What/Why**, **PLAN sections & FR/NFR touched**, **How 
 | **ADR-013** | **File-security stage runs synchronously in `POST /documents`**, not in the `documents` worker | Passwords must never cross the Celery/Redis boundary (§24.10); dedup must gate the HTTP response before any row/storage write (FR-3 AC3). |
 | **ADR-014** | **Extraction auto-provisions `financial_accounts`** when a `source_document` has none | `transactions.financial_account_id` is `NOT NULL` per §11.3, but no create-account route ships in MVP (T2.1); server-side inference from `source_type` keeps the golden path (§1.6) a single upload step. |
 | **ADR-015** | **`SafeBorrowingEngine` ships without `ShockCapacity`**; document→assessment pipeline splits into document-scoped `NORMALIZATION` and assessment-scoped `ANALYSIS` stages | `ShockEngine` doesn't exist until Sprint 5, so §5.6's fifth `min(...)` term can't be computed yet — the other four terms are a documented conservative upper bound. `pipeline_stage_runs.assessment_id` (§11.3) only makes sense if an assessment-scoped stage exists alongside the document-scoped ones. |
-| **ADR-016** | **`ShockCapacity` computed in closed form inside `SafeBorrowingEngine`** (no `ShockEngine` call); `ShockEngine` runs after `SafeBorrowingEngine` using its final instalment; `OfferEngine` composes with `ShockEngine` only via the service layer; `RegStatusEnum` gains `SIMULATED_REGULATED_PROVIDER`; offer re-seeding is non-idempotent (documented) | A shock scenario's projected balance is linear in the proposed instalment, so "the highest instalment that stays >=0 under the moderate shock" has an exact algebraic solution — no engine-to-engine dependency (§10.1) or search needed. `OfferEngine`'s shock-survivability factor needs a resilience score computed against *each offer's own* instalment, so the service layer reruns `ShockEngine` per offer, mirroring the Twin→Risk→SafeBorrowing composition pattern. §11.3's two-member `reg_status_enum` can't express FR-11 AC5's exact required label for simulated providers. |
+| **ADR-016** | **`ShockCapacity` is closed-form; offer-specific shocks compose in the service; v2 loan/offer configuration uses complete cash-flow math; canonical offers use nullable template identity; every MVP provider is simulated** | Deterministic Decimal IRR uses net proceeds and full schedules. Historical 0009/v1 evidence remains immutable and keyless; only exact v2 template sets are reusable. Assessment locking plus a conditional template-key index prevents new duplicates without invalidating historical duplicate batches. |
 
 ---
 
@@ -1889,12 +1902,12 @@ Follow the sprint plan (§25). Within a feature, build **inside-out**: model/mig
 - [x] T4.8 Tests: engine golden tests (`normalization.py` 97%, `cash_flow_twin.py` 99%, `risk.py` 96%, `safe_borrowing.py` 100% — all ≥90% coverage gate) + assessment integration tests (full upload→confirm→assessment→dashboard pipeline, zero-cash-flow safe-amount case, ownership/validation edge cases) run against a real Postgres 16
 
 ### 26.6 Sprint 5 — Shocks, Offers & Full Dashboard
-- [x] T5.1 `ShockEngine` + resilience score (§5.8) (ADR-016). **Gap:** the temporal liquidity model is monthly-aggregate scenario cash-flow adjustments (documented per-scenario formula in `app/engines/shock.py`'s module docstring), not a full day-by-day dated liquidity timeline — `DELAYED_INCOME` approximates same-month timing risk via essential-expense-only charge rather than simulating exact income-arrival dates against `cash_flow_events`.
+- [x] T5.1 `ShockEngine` + resilience score (§5.8) (ADR-016). Uses stored Twin `cash_flow_events`, conservative same-day debit-before-credit ordering, an explicit repayment event, delayed dominant-income timing, and deterministic ordered projection points. Monthly projected cash flow and minimum temporal balance remain separate outputs.
 - [x] T5.2 `POST /assessments/{id}/simulate` (synchronous, not persisted) + `GET /assessments/{id}/shocks` (persisted default battery)
 - [x] T5.3 Simulated `lenders` (3 seeded) + complete loan mathematics (`app/engines/loan_math.py`: FLAT + REDUCING_BALANCE) + refinancing-dependency risk + `OfferEngine` + Safe Offer Score (§5.7, §5.9)
 - [x] T5.4 `POST/GET /assessments/{id}/offers`, `GET /offers/{id}/safety`
-- [ ] T5.5 `ExplainerPort` (provider-neutral/local) + deterministic template fallback + `ai_explanations` flag — **not started this cycle.** `OfferAssessment.explanation` uses a minimal deterministic template string (`offer_service._explanation`, warning-flag-driven) satisfying the `NOT NULL` column, not the full pluggable `ExplainerPort`/flag/LLM-adapter architecture §15.5 describes; a future session should build the real adapter rather than assume this stopgap is it.
-- [ ] T5.6 iOS: Shock card + interactive sliders (Swift Charts), Offers list (colour-coded), dangerous-offer detail, DisclaimerFooter everywhere (FRONTEND workstream — out of scope for this BACKEND session, CLAUDE.md §2.2/§2.3)
+- [x] T5.5 `ExplainerPort` (provider-neutral/local) + deterministic reason-code template fallback + `ai_explanations` flag. Provider output is strictly validated and accepted only when it cites exactly the supplied reason codes; unavailable/malformed output cannot change scores or reasons.
+- [x] T5.6 iOS: authenticated Shock card + interactive simulation controls and temporal Swift Charts; safety-ordered Offers list and complete dangerous-offer detail; Indonesian/English localization, VoiceOver summaries, and DisclaimerFooter throughout
 - [x] T5.7 Golden-path e2e test (`tests/integration/api/test_shocks_offers.py`: full upload→confirm→assessment→shocks→simulate→offers→safety pipeline, ranked/dangerous-offer assertions). No live demo rehearsal performed (that is a human/product activity, not a code artifact).
 - [x] T5.8 Tests: engine golden tests (`shock.py` 100%, `offer.py` 100%, `loan_math.py` 100%, `safe_borrowing.py` 100% — all ≥90% coverage gate) + shock/offer integration tests
 
