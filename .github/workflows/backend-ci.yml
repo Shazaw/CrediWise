@@ -7,7 +7,7 @@ on:
       - "infra/docker-compose.yml"
       - ".github/workflows/backend-ci.yml"
   push:
-    branches: [main, "integration/**"]
+    branches: [main, "integration/**", "model/**"]
     paths:
       - "backend/**"
       - "infra/docker-compose.yml"
@@ -43,8 +43,8 @@ jobs:
       - run: uv python install 3.12
       - run: uv venv --python 3.12 .venv
       - run: uv pip install -e ".[dev]" --python .venv/bin/python
-      - run: .venv/bin/ruff check app tests
-      - run: .venv/bin/black --check app tests
+      - run: .venv/bin/ruff check app tests ml
+      - run: .venv/bin/black --check app tests ml
       - run: .venv/bin/mypy app tests
 
   test:
