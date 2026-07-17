@@ -31,6 +31,26 @@ given inline in §11.3 prose rather than in Appendix A. `PipelineStageEnum`
 gains `NORMALIZATION`/`ANALYSIS` members. All of these are the Sprint 4
 implementation choice (PLAN §24.11 gap-filling, documented in PLAN.md in the
 same PR — see §11.3).
+
+`ShockTypeEnum`, `AffordEnum`, `OfferSourceEnum`, `AmortizationEnum`, and
+`OfferRatingEnum` (`status_enum` in §11.3's `offer_assessments` row) are
+referenced by PLAN §11.3's `shock_scenarios`/`lender_offers`/`offer_assessments`
+table definitions but their member sets are not enumerated in Appendix A.
+`ShockResilienceBandEnum` (§5.8: "STRONG >= 75, MODERATE 50-74, FRAGILE < 50")
+and `OfferSafetyBandEnum` (§5.9: "SAFE >= 75, CAUTION 50-74, UNSAFE < 50") are
+named only in §5.8/§5.9 prose, not as a table column — both are computed on
+read from a stored `NUMERIC` score, the same pattern `band_from_score` already
+uses for Data Confidence (`assessment_service.py`), so neither is a new DB
+column. `RegStatusEnum` extends PLAN §11.3's documented two-member set
+(`REGULATED, UNLISTED`) with a third, `SIMULATED_REGULATED_PROVIDER`, because
+FR-11 AC5 explicitly requires that exact label for MVP seeded providers
+("simulated providers use SIMULATED_REGULATED_PROVIDER, never an implied real
+endorsement") — §11.3's compact list and FR-11 AC5 both bind this table, and
+the AC's more specific requirement wins per §24.11's gap-filling process. All
+of these are the Sprint 5 implementation choice (PLAN §24.11 gap-filling,
+documented in PLAN.md in the same PR — see §11.3), except `PipelineStageEnum`
+which is unchanged this sprint (Shock/Analysis remain the same `ANALYSIS`
+stage — no new pipeline stage needed).
 """
 
 from enum import StrEnum
@@ -355,3 +375,109 @@ class DocStatusEnum(StrEnum):
     ANALYZING = "ANALYZING"
     HUMAN_REVIEW = "HUMAN_REVIEW"
     COMPLETE = "COMPLETE"
+
+
+class ShockTypeEnum(StrEnum):
+    """Gap-fill (PLAN §24.11): `shock_scenarios.scenario_type` — not
+    enumerated in Appendix A. Member set is PLAN §5.8's documented default
+    scenario battery (income-drop tiers, delayed dominant income, a fixed
+    emergency expense, largest-income-source loss, weakest-month replay) plus
+    `CUSTOM` for `POST /assessments/{id}/simulate`'s user-adjustable inputs
+    (PLAN §12.2/§12.3). Added Sprint 5/T5.1.
+    """
+
+    INCOME_DROP_10 = "INCOME_DROP_10"
+    INCOME_DROP_20 = "INCOME_DROP_20"
+    INCOME_DROP_30 = "INCOME_DROP_30"
+    DELAYED_INCOME = "DELAYED_INCOME"
+    EMERGENCY_EXPENSE = "EMERGENCY_EXPENSE"
+    INCOME_SOURCE_LOSS = "INCOME_SOURCE_LOSS"
+    WEAKEST_MONTH_REPLAY = "WEAKEST_MONTH_REPLAY"
+    CUSTOM = "CUSTOM"
+
+
+class AffordEnum(StrEnum):
+    """PLAN §5.8's documented outcome classes ("SURVIVABLE ... STRAINED ...
+    DEFICIT"), used by both `shock_scenarios.affordability_status` and
+    `offer_assessments.affordability_status` (both named `afford_enum` in
+    §11.3 — one shared type, not two). Added Sprint 5/T5.1/T5.3.
+    """
+
+    SURVIVABLE = "SURVIVABLE"
+    STRAINED = "STRAINED"
+    DEFICIT = "DEFICIT"
+
+
+class ShockResilienceBandEnum(StrEnum):
+    """PLAN §5.8: "Bands: STRONG >= 75, MODERATE 50-74, FRAGILE < 50" — named
+    only in prose, not a stored column (`assessments.shock_resilience_score`
+    stores the `NUMERIC` score only; the band is computed on read, the same
+    pattern `band_from_score` already uses for Data Confidence). Added
+    Sprint 5/T5.1.
+    """
+
+    STRONG = "STRONG"
+    MODERATE = "MODERATE"
+    FRAGILE = "FRAGILE"
+
+
+class OfferSourceEnum(StrEnum):
+    """PLAN §11.3 `lender_offers.offer_source` — member set given inline
+    (`SIMULATED, LENDER_API, MANUAL_LENDER_ENTRY`), not in Appendix A. Added
+    Sprint 5/T5.3.
+    """
+
+    SIMULATED = "SIMULATED"
+    LENDER_API = "LENDER_API"
+    MANUAL_LENDER_ENTRY = "MANUAL_LENDER_ENTRY"
+
+
+class AmortizationEnum(StrEnum):
+    """PLAN §5.7 "amortisation method (`FLAT | REDUCING_BALANCE |
+    FIXED_SCHEDULE`)" — not enumerated in Appendix A. `FIXED_SCHEDULE` is
+    reserved for a future lender-supplied schedule that doesn't follow either
+    formula (not produced by `app/engines/loan_math.py` this sprint). Added
+    Sprint 5/T5.3.
+    """
+
+    FLAT = "FLAT"
+    REDUCING_BALANCE = "REDUCING_BALANCE"
+    FIXED_SCHEDULE = "FIXED_SCHEDULE"
+
+
+class RegStatusEnum(StrEnum):
+    """PLAN §11.3 `lenders.regulatory_status` (`reg_status_enum`) documents
+    two members (`REGULATED, UNLISTED`); a third, `SIMULATED_REGULATED_PROVIDER`,
+    is required by FR-11 AC5 for MVP seeded providers so offer copy never
+    implies a real regulated endorsement (PLAN §6.4/§16 non-goals: no real
+    lender integration in MVP). Added Sprint 5/T5.3.
+    """
+
+    REGULATED = "REGULATED"
+    UNLISTED = "UNLISTED"
+    SIMULATED_REGULATED_PROVIDER = "SIMULATED_REGULATED_PROVIDER"
+
+
+class OfferRatingEnum(StrEnum):
+    """Gap-fill (PLAN §24.11): PLAN §11.3's `offer_assessments` row types
+    `total_cost_status`/`timing_status` as a generic `status_enum` without
+    naming its members. A three-tier rating (rather than reusing `band_enum`,
+    which is the Trust-Layer-specific HIGH/MEDIUM/LOW vocabulary) keeps offer
+    copy in its own domain language. Added Sprint 5/T5.3.
+    """
+
+    GOOD = "GOOD"
+    FAIR = "FAIR"
+    POOR = "POOR"
+
+
+class OfferSafetyBandEnum(StrEnum):
+    """PLAN §5.9: "Bands: SAFE >= 75, CAUTION 50-74, UNSAFE < 50" — named
+    only in prose; `offer_assessments` stores `safe_offer_score` (`NUMERIC`)
+    and `rank` (`INT`) but no band column, so this is computed on read (same
+    pattern as `ShockResilienceBandEnum` above). Added Sprint 5/T5.3.
+    """
+
+    SAFE = "SAFE"
+    CAUTION = "CAUTION"
+    UNSAFE = "UNSAFE"

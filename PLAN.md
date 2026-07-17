@@ -3,7 +3,7 @@
 > **Single Source of Truth.** This is the *only* document a coding agent is expected to read before implementing any feature in this repository. It is a hybrid **Product Requirements Document (PRD) + Technical Design Document (TDD)**. If a decision is not written here, it is either (a) not yet decided — raise it and update this file via the process in [§24 Coding Agent Instructions](#24-coding-agent-instructions), or (b) governed by the closest analogous decision already documented. **Do not invent architecture silently.**
 
 - **Product:** CrediWise — *Two-Way Credit Safety Engine, Trust Layer & Open Finance Roadmap*
-- **Document version:** `1.4.1`
+- **Document version:** `1.5.0`
 - **Status:** Approved for Sprint 0
 - **Last updated:** 2026-07-17
 - **Approval note:** Native iOS, the full backend/worker infrastructure, and terminal-agent-driven parallel implementation are confirmed team decisions following mentor review.
@@ -1008,6 +1008,8 @@ Index: `(assessment_id)`.
 **`offer_assessments`** — 1:1 Safe Offer Score.
 `lender_offer_id FK UNIQUE`, `safe_offer_score NUMERIC(6,2)`, `affordability_status afford_enum`, `shock_resilience_status band_enum`, `total_cost_status status_enum`, `timing_status status_enum`, `warning_flags_json JSONB`, `explanation TEXT`, `rank INT`.
 
+Sprint 5/T5.1-T5.4 implements `shock_scenarios`, `lenders`, `lender_offers`, and `offer_assessments` (migration `0009`) exactly per their column lists above, plus these gap-fills (§24.11, ADR-016): `shock_type_enum`, `afford_enum` (shared by both `shock_scenarios.affordability_status` and `offer_assessments.affordability_status`), `offer_source_enum`, `amortization_enum`, and `status_enum` (implemented as `offer_rating_enum`, `GOOD/FAIR/POOR`) member sets are not enumerated in Appendix A. `reg_status_enum` extends this section's documented `(REGULATED, UNLISTED)` with a third member, `SIMULATED_REGULATED_PROVIDER`, required by FR-11 AC5. `shock_scenarios` gains one column beyond this section's list, `minimum_projected_balance BIGINT` — FR-10 AC1 requires exposing "monthly and minimum-temporal projected balance," which this section's compact listing names only via `projected_cash_flow`/`deficit_amount`. `shock_resilience_status`/`total_cost_status`/`timing_status` on `offer_assessments` and §5.8's own Shock Resilience Score band (`STRONG/MODERATE/FRAGILE`) and §5.9's Safe Offer Score band (`SAFE/CAUTION/UNSAFE`) are computed on read from their `NUMERIC` scores, not stored as separate columns — the same pattern `band_from_score` already uses for Data Confidence (§5.2).
+
 **`consents`** — data-sharing grants.
 `user_id FK`, `consent_type consent_type_enum`, `recipient_type recipient_enum` (`LENDER, INTERNAL`), `recipient_id UUID NULL`, `purpose TEXT`, `data_scope_json JSONB`, `granted_at`, `expires_at`, `revoked_at`, `status consent_status_enum`.
 Index: `(user_id, status)`, `(recipient_id, status)`.
@@ -1112,6 +1114,19 @@ Dashboard's `shock_resilience` card and offers remain absent until Sprint 5
 (`assessments.shock_resilience_score` stays `NULL`) — clients should render
 Data Confidence/Risk Band/Safe Borrowing/Twin only, per §7.11's "4 cards
 partial" Sprint 4 scope.
+
+**Cycle 6 additive shock/offer contract (Sprint 5):** implements
+`POST /assessments/{id}/simulate`, `GET /assessments/{id}/shocks`,
+`POST/GET /assessments/{id}/offers`, and `GET /offers/{id}/safety` exactly as
+catalogued above. `GET /assessments/{id}/dashboard`'s `shock_resilience` card
+is now populated (score/band/reasons, ADR-016) — the full 4-headline-card
+dashboard (§7.11) is complete as of this cycle. `POST /assessments/{id}/simulate`
+is a synchronous, non-persisted preview (200, not 202/`Idempotency-Key`) —
+it never writes to `shock_scenarios` or the immutable
+`assessment_input_snapshots` row. `POST /assessments/{id}/offers` seeds
+three deterministic simulated offers against the seeded `lenders` catalog;
+re-calling it is non-idempotent (ADR-016) — each call adds a fresh offer
+batch rather than replacing the prior one.
 
 ### 12.3 Representative Payloads
 
@@ -1670,6 +1685,7 @@ Every PR body includes: **What/Why**, **PLAN sections & FR/NFR touched**, **How 
 | **ADR-013** | **File-security stage runs synchronously in `POST /documents`**, not in the `documents` worker | Passwords must never cross the Celery/Redis boundary (§24.10); dedup must gate the HTTP response before any row/storage write (FR-3 AC3). |
 | **ADR-014** | **Extraction auto-provisions `financial_accounts`** when a `source_document` has none | `transactions.financial_account_id` is `NOT NULL` per §11.3, but no create-account route ships in MVP (T2.1); server-side inference from `source_type` keeps the golden path (§1.6) a single upload step. |
 | **ADR-015** | **`SafeBorrowingEngine` ships without `ShockCapacity`**; document→assessment pipeline splits into document-scoped `NORMALIZATION` and assessment-scoped `ANALYSIS` stages | `ShockEngine` doesn't exist until Sprint 5, so §5.6's fifth `min(...)` term can't be computed yet — the other four terms are a documented conservative upper bound. `pipeline_stage_runs.assessment_id` (§11.3) only makes sense if an assessment-scoped stage exists alongside the document-scoped ones. |
+| **ADR-016** | **`ShockCapacity` computed in closed form inside `SafeBorrowingEngine`** (no `ShockEngine` call); `ShockEngine` runs after `SafeBorrowingEngine` using its final instalment; `OfferEngine` composes with `ShockEngine` only via the service layer; `RegStatusEnum` gains `SIMULATED_REGULATED_PROVIDER`; offer re-seeding is non-idempotent (documented) | A shock scenario's projected balance is linear in the proposed instalment, so "the highest instalment that stays >=0 under the moderate shock" has an exact algebraic solution — no engine-to-engine dependency (§10.1) or search needed. `OfferEngine`'s shock-survivability factor needs a resilience score computed against *each offer's own* instalment, so the service layer reruns `ShockEngine` per offer, mirroring the Twin→Risk→SafeBorrowing composition pattern. §11.3's two-member `reg_status_enum` can't express FR-11 AC5's exact required label for simulated providers. |
 
 ---
 
@@ -1873,14 +1889,14 @@ Follow the sprint plan (§25). Within a feature, build **inside-out**: model/mig
 - [x] T4.8 Tests: engine golden tests (`normalization.py` 97%, `cash_flow_twin.py` 99%, `risk.py` 96%, `safe_borrowing.py` 100% — all ≥90% coverage gate) + assessment integration tests (full upload→confirm→assessment→dashboard pipeline, zero-cash-flow safe-amount case, ownership/validation edge cases) run against a real Postgres 16
 
 ### 26.6 Sprint 5 — Shocks, Offers & Full Dashboard
-- [ ] T5.1 `ShockEngine` + temporal liquidity scenarios/model + resilience score (§5.8)
-- [ ] T5.2 `POST /assessments/{id}/simulate` + `GET /shocks`
-- [ ] T5.3 Simulated `lenders` + complete loan mathematics + refinancing risk + `OfferEngine` + Safe Offer Score (§5.7, §5.9)
-- [ ] T5.4 `POST/GET /assessments/{id}/offers`, `GET /offers/{id}/safety`
-- [ ] T5.5 `ExplainerPort` (provider-neutral/local) + deterministic template fallback + `ai_explanations` flag
-- [ ] T5.6 iOS: Shock card + interactive sliders (Swift Charts), Offers list (colour-coded), dangerous-offer detail, DisclaimerFooter everywhere
-- [ ] T5.7 Golden-path e2e test + demo rehearsal
-- [ ] T5.8 Tests: shock/offer golden tests
+- [x] T5.1 `ShockEngine` + resilience score (§5.8) (ADR-016). **Gap:** the temporal liquidity model is monthly-aggregate scenario cash-flow adjustments (documented per-scenario formula in `app/engines/shock.py`'s module docstring), not a full day-by-day dated liquidity timeline — `DELAYED_INCOME` approximates same-month timing risk via essential-expense-only charge rather than simulating exact income-arrival dates against `cash_flow_events`.
+- [x] T5.2 `POST /assessments/{id}/simulate` (synchronous, not persisted) + `GET /assessments/{id}/shocks` (persisted default battery)
+- [x] T5.3 Simulated `lenders` (3 seeded) + complete loan mathematics (`app/engines/loan_math.py`: FLAT + REDUCING_BALANCE) + refinancing-dependency risk + `OfferEngine` + Safe Offer Score (§5.7, §5.9)
+- [x] T5.4 `POST/GET /assessments/{id}/offers`, `GET /offers/{id}/safety`
+- [ ] T5.5 `ExplainerPort` (provider-neutral/local) + deterministic template fallback + `ai_explanations` flag — **not started this cycle.** `OfferAssessment.explanation` uses a minimal deterministic template string (`offer_service._explanation`, warning-flag-driven) satisfying the `NOT NULL` column, not the full pluggable `ExplainerPort`/flag/LLM-adapter architecture §15.5 describes; a future session should build the real adapter rather than assume this stopgap is it.
+- [ ] T5.6 iOS: Shock card + interactive sliders (Swift Charts), Offers list (colour-coded), dangerous-offer detail, DisclaimerFooter everywhere (FRONTEND workstream — out of scope for this BACKEND session, CLAUDE.md §2.2/§2.3)
+- [x] T5.7 Golden-path e2e test (`tests/integration/api/test_shocks_offers.py`: full upload→confirm→assessment→shocks→simulate→offers→safety pipeline, ranked/dangerous-offer assertions). No live demo rehearsal performed (that is a human/product activity, not a code artifact).
+- [x] T5.8 Tests: engine golden tests (`shock.py` 100%, `offer.py` 100%, `loan_math.py` 100%, `safe_borrowing.py` 100% — all ≥90% coverage gate) + shock/offer integration tests
 
 ### 26.7 Sprint 6 — Consent & Audit UX
 - [ ] T6.1 `consents` model/migration + CRUD + authz enforcement
@@ -1940,14 +1956,14 @@ Where an older sentence conflicts with these additions, the more specific v1.1.0
 
 `amortization_enum`: `FLAT, REDUCING_BALANCE, FIXED_SCHEDULE`
 
-`afford_enum`: `SURVIVABLE, STRAINED, DEFICIT`
+`afford_enum`: `SURVIVABLE, STRAINED, DEFICIT` (this is the single authoritative definition — §5.8's own prose uses these three names verbatim; a stale, contradictory second `afford_enum: SAFE, TIGHT, DEFICIT` placeholder that predated §5.8's full scenario table was removed here Sprint 5/ADR-016, corrected in the same PR per §24.11)
 
 `category_enum`: INCOME, ESSENTIAL_EXPENSE, FINANCIAL_OBLIGATION, DISCRETIONARY, SAVINGS_TRANSFER, INTERNAL_TRANSFER, UNKNOWN
 - `purpose_enum`: MEDICAL, EDUCATION, HOUSEHOLD_EMERGENCY, PRODUCTIVE_BUSINESS, EQUIPMENT, WORKING_CAPITAL, VEHICLE_DEVICE_REPAIR
-- `shock_type_enum`: INCOME_DROP, DELAYED_INCOME, EMERGENCY_EXPENSE, INCOME_SOURCE_LOSS, WEAKEST_MONTH, HOUSEHOLD_COST_INCREASE
-- `afford_enum`: SAFE, TIGHT, DEFICIT
+- `shock_type_enum`: INCOME_DROP_10, INCOME_DROP_20, INCOME_DROP_30, DELAYED_INCOME, EMERGENCY_EXPENSE, INCOME_SOURCE_LOSS, WEAKEST_MONTH_REPLAY, CUSTOM (Sprint 5/T5.1 correction, §24.11: the stale placeholder here — `INCOME_DROP, ..., HOUSEHOLD_COST_INCREASE` — predated §5.8's fully-specified scenario table, which weights three separate income-drop tiers and names no `HOUSEHOLD_COST_INCREASE` scenario; this entry now matches §5.8's table exactly, plus `CUSTOM` for `POST /assessments/{id}/simulate`'s user-adjustable ad-hoc preview)
 - `freq_enum`: MONTHLY, BIWEEKLY, WEEKLY
-- `reg_status_enum`: REGULATED, UNLISTED
+- `reg_status_enum`: REGULATED, UNLISTED, SIMULATED_REGULATED_PROVIDER (third member added Sprint 5/T5.3 — gap-fill, FR-11 AC5, ADR-016; see §11.3 `lenders`)
+- `offer_rating_enum`: GOOD, FAIR, POOR (added Sprint 5/T5.3 — gap-fill for `offer_assessments.total_cost_status`/`.timing_status`, §11.3's generic `status_enum`; see §11.3 `offer_assessments`)
 - `consent_status_enum`: ACTIVE, EXPIRED, REVOKED
 - `source_type_enum`: BANK_API, SIGNED_STATEMENT, ORIGINAL_PDF, EXPORTED_CSV, SCREENSHOT, PHOTO
 - `processing_status_enum`: RUNNING, COMPLETE, FAILED (added Sprint 3/T3.2 — gap-fill, see §11.3 `document_processing_runs`)
