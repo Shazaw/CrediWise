@@ -114,6 +114,37 @@ final class WelcomeFlowUITests: XCTestCase {
         XCTAssertTrue(twin.waitForExistence(timeout: 2))
     }
 
+    func testCycle6FlowExplainsShocksAndDangerousSimulatedOffer() {
+        let app = launchApp(arguments: ["--cycle-6-flow"])
+        signIn(app)
+        startCycle5Upload(app)
+        completeSyntheticAssessment(app)
+
+        let shockCard = app.buttons["dashboard.shock.card"]
+        scrollUntilHittable(shockCard, in: app)
+        shockCard.tap()
+        XCTAssertTrue(app.otherElements["shocks.screen"].waitForExistence(timeout: 3))
+
+        let simulateButton = app.buttons["shocks.simulate"]
+        scrollUntilHittable(simulateButton, in: app)
+        simulateButton.tap()
+        let chart = app.otherElements["shocks.chart"]
+        scrollUntilHittable(chart, in: app, attempts: 8)
+
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        let offersButton = app.buttons["dashboard.offers.action"]
+        scrollUntilHittable(offersButton, in: app)
+        offersButton.tap()
+        XCTAssertTrue(app.otherElements["offers.screen"].waitForExistence(timeout: 3))
+
+        let unsafeOffer = app.buttons["offers.row.offer-unsafe"]
+        scrollUntilHittable(unsafeOffer, in: app)
+        unsafeOffer.tap()
+        XCTAssertTrue(app.otherElements["offers.detail.screen"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.descendants(matching: .any)["offers.simulated"].exists)
+        XCTAssertTrue(app.descendants(matching: .any)["offers.warning.REFINANCING_DEPENDENCY_RISK"].exists)
+    }
+
     private func launchApp(arguments: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing"] + arguments
@@ -151,5 +182,32 @@ final class WelcomeFlowUITests: XCTestCase {
         app.swipeUp()
         app.buttons["financing_need.submit"].tap()
         XCTAssertTrue(app.buttons["upload.choose_file"].waitForExistence(timeout: 3))
+    }
+
+    private func completeSyntheticAssessment(_ app: XCUIApplication) {
+        app.buttons["upload.synthetic_fixture"].tap()
+        app.buttons["upload.submit"].tap()
+        XCTAssertTrue(app.buttons["upload.review"].waitForExistence(timeout: 5))
+        app.buttons["upload.review"].tap()
+        app.swipeUp()
+        XCTAssertTrue(app.switches["review.ownership"].waitForExistence(timeout: 2))
+        app.switches["review.ownership"].tap()
+        app.buttons["review.confirm"].tap()
+        XCTAssertTrue(app.buttons["review.show_confidence"].waitForExistence(timeout: 3))
+        app.buttons["review.show_confidence"].tap()
+        XCTAssertTrue(app.buttons["confidence.continue_dashboard"].waitForExistence(timeout: 3))
+        app.buttons["confidence.continue_dashboard"].tap()
+    }
+
+    private func scrollUntilHittable(
+        _ element: XCUIElement,
+        in app: XCUIApplication,
+        attempts: Int = 5
+    ) {
+        XCTAssertTrue(element.waitForExistence(timeout: 3))
+        for _ in 0..<attempts where !element.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(element.isHittable)
     }
 }

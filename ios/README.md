@@ -78,3 +78,10 @@ uses the authenticated financing-need and assessment contracts, creates an
 assessment from the confirmed document, polls until analysis completes, and
 renders only server-supplied financial outputs. Run the deterministic isolated
 flow with `--ui-testing --cycle-5-flow`.
+
+Cycle 6 adds the fourth Shock Resilience headline card, interactive stress-test
+controls with an accessible Swift Charts summary, and server-ordered simulated
+offer list/detail screens. Until the backend publishes the frozen shock/offer
+OpenAPI contract, production adapters remain unavailable rather than guessing
+wire fields; the isolated deterministic preview runs with `--ui-testing
+--cycle-6-flow`.

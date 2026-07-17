@@ -2,11 +2,25 @@ import SwiftUI
 
 struct AssessmentDashboardView: View {
     @StateObject private var viewModel: AssessmentDashboardViewModel
+    @StateObject private var shockViewModel: ShockViewModel
     @State private var operationTask: Task<Void, Never>?
     @State private var isConfidenceDetailPresented = false
+    private let showsCompleteDashboard: Bool
+    private let onOpenShocks: () -> Void
+    private let onOpenOffers: () -> Void
 
-    init(viewModel: AssessmentDashboardViewModel) {
+    init(
+        viewModel: AssessmentDashboardViewModel,
+        shockViewModel: ShockViewModel,
+        showsCompleteDashboard: Bool = false,
+        onOpenShocks: @escaping () -> Void = {},
+        onOpenOffers: @escaping () -> Void = {}
+    ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        _shockViewModel = StateObject(wrappedValue: shockViewModel)
+        self.showsCompleteDashboard = showsCompleteDashboard
+        self.onOpenShocks = onOpenShocks
+        self.onOpenOffers = onOpenOffers
     }
 
     var body: some View {
@@ -23,7 +37,12 @@ struct AssessmentDashboardView: View {
         }
         .navigationTitle("dashboard.navigation_title")
         .navigationBarTitleDisplayMode(.inline)
-        .task { await viewModel.load() }
+        .task {
+            await viewModel.load()
+            if showsCompleteDashboard {
+                await shockViewModel.load()
+            }
+        }
         .onDisappear { operationTask?.cancel() }
         .navigationDestination(isPresented: $isConfidenceDetailPresented) {
             if case let .loaded(report) = viewModel.state {
@@ -60,6 +79,11 @@ struct AssessmentDashboardView: View {
             }
             RiskBandCard(risk: report.risk)
             SafeBorrowingCard(recommendation: report.safeBorrowing)
+            if showsCompleteDashboard {
+                shockContent
+                CTAButton(title: "dashboard.offers.action", action: onOpenOffers)
+                    .accessibilityIdentifier("dashboard.offers.action")
+            }
             DigitalTwinSummaryView(twin: report.twin)
             FinancialHealthPlanView(recommendations: report.recommendations)
             Text(
@@ -81,6 +105,36 @@ struct AssessmentDashboardView: View {
                 }
             }
             .padding(SpacingTokens.large)
+            .background(CrediWiseColors.surface)
+            .clipShape(RoundedRectangle(cornerRadius: RadiusTokens.card))
+        }
+    }
+
+    @ViewBuilder
+    private var shockContent: some View {
+        switch shockViewModel.state {
+        case .idle, .loading:
+            ProgressView("shocks.loading")
+                .tint(CrediWiseColors.primary)
+                .frame(maxWidth: .infinity)
+                .padding(SpacingTokens.large)
+                .background(CrediWiseColors.surface)
+                .clipShape(RoundedRectangle(cornerRadius: RadiusTokens.card))
+        case let .loaded(report):
+            ShockResilienceCard(report: report, onOpen: onOpenShocks)
+        case let .invalid(errorKey), let .failed(errorKey):
+            VStack(alignment: .leading, spacing: SpacingTokens.small) {
+                Text("shocks.card.title")
+                    .font(TypographyTokens.cardTitle)
+                Text(LocalizedStringKey(errorKey))
+                    .font(TypographyTokens.caption)
+                Button("common.retry") {
+                    operationTask = Task { await shockViewModel.retry() }
+                }
+                .font(TypographyTokens.body.weight(.semibold))
+            }
+            .padding(SpacingTokens.large)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(CrediWiseColors.surface)
             .clipShape(RoundedRectangle(cornerRadius: RadiusTokens.card))
         }
