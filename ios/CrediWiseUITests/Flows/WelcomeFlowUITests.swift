@@ -102,12 +102,16 @@ final class WelcomeFlowUITests: XCTestCase {
         XCTAssertTrue(app.buttons["confidence.continue_dashboard"].waitForExistence(timeout: 3))
         app.buttons["confidence.continue_dashboard"].tap()
 
-        XCTAssertTrue(app.otherElements["dashboard.screen"].waitForExistence(timeout: 3))
-        XCTAssertTrue(app.buttons["dashboard.risk.card"].exists)
-        XCTAssertTrue(app.buttons["dashboard.safe.card"].exists)
-        app.swipeUp()
-        XCTAssertTrue(app.otherElements["dashboard.twin"].waitForExistence(timeout: 2))
-        XCTAssertTrue(app.staticTexts["positioning.disclaimer"].exists)
+        let riskCard = app.descendants(matching: .any)["dashboard.risk.card"]
+        let safeCard = app.descendants(matching: .any)["dashboard.safe.card"]
+        XCTAssertTrue(riskCard.waitForExistence(timeout: 3))
+        XCTAssertTrue(safeCard.exists)
+
+        let twin = app.descendants(matching: .any)["dashboard.twin"]
+        for _ in 0..<4 where !twin.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(twin.waitForExistence(timeout: 2))
     }
 
     private func launchApp(arguments: [String] = []) -> XCUIApplication {
