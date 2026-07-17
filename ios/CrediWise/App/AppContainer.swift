@@ -10,15 +10,18 @@ struct AppContainer {
                 service: Bundle.main.bundleIdentifier ?? "com.crediwise.app"
             )
         let sessionManager = SessionManager(tokenStore: tokenStore)
+        let isCycle5Flow = ProcessInfo.processInfo.arguments.contains("--cycle-5-flow")
         let dependencies = isUITesting
             ? AppDependencies(
                 authenticationRepository: MockAuthenticationRepository(),
                 documentUploadRepository: MockDocumentUploadRepository(
-                    statuses: ProcessInfo.processInfo.arguments.contains("--review-flow")
+                    statuses: ProcessInfo.processInfo.arguments.contains("--review-flow") || isCycle5Flow
                         ? [.reviewPending]
                         : [.securityCheck, .complete]
                 ),
                 documentVerificationRepository: MockDocumentVerificationRepository(),
+                financingNeedRepository: MockFinancingNeedRepository(),
+                assessmentDashboardRepository: MockAssessmentDashboardRepository(),
                 isDocumentUploadAvailable: true
             )
             : makeProductionDependencies(tokenStore: tokenStore, sessionManager: sessionManager)
@@ -28,9 +31,12 @@ struct AppContainer {
             authenticationRepository: dependencies.authenticationRepository,
             documentUploadRepository: dependencies.documentUploadRepository,
             documentVerificationRepository: dependencies.documentVerificationRepository,
+            financingNeedRepository: dependencies.financingNeedRepository,
+            assessmentDashboardRepository: dependencies.assessmentDashboardRepository,
             uploadPollingPolicy: DocumentUploadPollingPolicy(),
             allowsSyntheticUpload: isUITesting,
-            isDocumentUploadAvailable: dependencies.isDocumentUploadAvailable
+            isDocumentUploadAvailable: dependencies.isDocumentUploadAvailable,
+            allowsSyntheticAssessment: isUITesting && isCycle5Flow
         )
     }
 
@@ -44,6 +50,8 @@ struct AppContainer {
                 authenticationRepository: UnavailableAuthenticationRepository(),
                 documentUploadRepository: UnavailableDocumentUploadRepository(),
                 documentVerificationRepository: UnavailableVerificationRepository(),
+                financingNeedRepository: UnavailableFinancingNeedRepository(),
+                assessmentDashboardRepository: UnavailableAssessmentDashboardRepository(),
                 isDocumentUploadAvailable: false
             )
         }
@@ -71,6 +79,8 @@ struct AppContainer {
                 baseURL: baseURL,
                 authInterceptor: authInterceptor
             ),
+            financingNeedRepository: UnavailableFinancingNeedRepository(),
+            assessmentDashboardRepository: UnavailableAssessmentDashboardRepository(),
             isDocumentUploadAvailable: true
         )
     }
@@ -92,5 +102,7 @@ private struct AppDependencies {
     let authenticationRepository: any AuthenticationRepository
     let documentUploadRepository: any DocumentUploadRepository
     let documentVerificationRepository: any DocumentVerificationRepository
+    let financingNeedRepository: any FinancingNeedRepository
+    let assessmentDashboardRepository: any AssessmentDashboardRepository
     let isDocumentUploadAvailable: Bool
 }
