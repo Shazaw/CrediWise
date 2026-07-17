@@ -2,6 +2,7 @@ actor MockAssessmentDashboardRepository: AssessmentDashboardRepository {
     private let report: AssessmentDashboard
     private let error: AssessmentDashboardRepositoryError?
     private var requestedAssessmentIDs: [String] = []
+    private var creationRequests: [(String, String)] = []
 
     init(
         report: AssessmentDashboard = MockAssessmentDashboardRepository.makeDashboard(),
@@ -9,6 +10,14 @@ actor MockAssessmentDashboardRepository: AssessmentDashboardRepository {
     ) {
         self.report = report
         self.error = error
+    }
+
+    func create(financingNeedID: String, documentID: String) async throws -> String {
+        if let error {
+            throw error
+        }
+        creationRequests.append((financingNeedID, documentID))
+        return report.assessmentID
     }
 
     func dashboard(assessmentID: String) async throws -> AssessmentDashboard {
@@ -21,6 +30,10 @@ actor MockAssessmentDashboardRepository: AssessmentDashboardRepository {
 
     func requests() -> [String] {
         requestedAssessmentIDs
+    }
+
+    func creations() -> [(String, String)] {
+        creationRequests
     }
 
     static func makeDashboard() -> AssessmentDashboard {

@@ -3,7 +3,7 @@
 > **Single Source of Truth.** This is the *only* document a coding agent is expected to read before implementing any feature in this repository. It is a hybrid **Product Requirements Document (PRD) + Technical Design Document (TDD)**. If a decision is not written here, it is either (a) not yet decided — raise it and update this file via the process in [§24 Coding Agent Instructions](#24-coding-agent-instructions), or (b) governed by the closest analogous decision already documented. **Do not invent architecture silently.**
 
 - **Product:** CrediWise — *Two-Way Credit Safety Engine, Trust Layer & Open Finance Roadmap*
-- **Document version:** `1.4.0`
+- **Document version:** `1.4.1`
 - **Status:** Approved for Sprint 0
 - **Last updated:** 2026-07-17
 - **Approval note:** Native iOS, the full backend/worker infrastructure, and terminal-agent-driven parallel implementation are confirmed team decisions following mentor review.
@@ -986,7 +986,8 @@ Sprint 3's migration (`0004`) omits the `assessment_id` column — `assessments`
 Sprint 4/T4.5 implements `financing_needs`, `assessments`, `assessment_documents`, `assessment_transactions`, `assessment_input_snapshots`, `financial_profiles`, `monthly_cash_flow_snapshots`, `income_sources`, `recurring_series`, `cash_flow_events`, and `assessment_reason_codes` (migration `0007`) exactly per their §11.3 column lists above, plus these gap-fills (§24.11): `urgency_enum`, `income_source_enum`, `recurring_type_enum`, `cash_event_enum`, `coverage_enum`, `inclusion_enum`, and `severity_enum` member sets are not enumerated in Appendix A (added below); `reason_type_enum`'s set is the one given inline in this section's `assessment_reason_codes` row. `assessments.data_confidence_score` is a mean across every included document's latest `document_verification_results` row (equal weight) — the simplest deterministic reducer for the single-document golden path; multi-document averaging beyond that is not further validated this sprint (same class of gap as T3.3's cross-document consistency note). The corresponding band is computed on read from that score using §5.2's thresholds (`band_from_score`, `app/services/assessment_service.py`), not stored as a separate column — `assessments` doesn't list one in this section's table.
 
 **`assessments`** — the central aggregate.
-`user_id FK`, `financing_need_id FK`, `model_version_id FK→model_versions`, `data_confidence_score NUMERIC(6,2)`, `indicative_risk_band risk_band_enum`, `model_confidence band_enum`, `shock_resilience_score NUMERIC(6,2)`, `safe_loan_amount BIGINT`, `maximum_safe_instalment BIGINT`, `recommended_tenor_months INT`, `recommended_due_date_start INT`, `recommended_due_date_end INT`, `recommended_frequency freq_enum`, `status assessment_status_enum NOT NULL DEFAULT 'PENDING'`.
+`user_id FK`, `financing_need_id FK`, `model_version_id FK→model_versions`, `data_confidence_score NUMERIC(6,2)`, `indicative_risk_band risk_band_enum`, `model_confidence band_enum`, `shock_resilience_score NUMERIC(6,2)`, `safe_loan_amount BIGINT`, `maximum_safe_instalment BIGINT`, `required_liquidity_buffer BIGINT`, `recommended_tenor_months INT`, `recommended_due_date_start INT`, `recommended_due_date_end INT`, `recommended_frequency freq_enum`, `status assessment_status_enum NOT NULL DEFAULT 'PENDING'`.
+Migration `0008` adds nullable `required_liquidity_buffer` for backward-compatible expansion; every newly completed assessment stores the exact versioned `SafeBorrowingEngine` result so API reads never recalculate it.
 Index: `(user_id, created_at DESC)`, `(status)`.
 
 **`assessment_reason_codes`** — explainability.
@@ -1868,7 +1869,7 @@ Follow the sprint plan (§25). Within a feature, build **inside-out**: model/mig
 - [x] T4.4 `SafeBorrowingEngine` (required buffer/max instalment/illustrative amount/tenor/due-date/frequency) (§5.6–5.7). **Gap:** `ShockCapacity` term omitted pending Sprint 5's `ShockEngine` — see ADR-015. The four implemented terms are a documented conservative upper bound, not silently claimed complete.
 - [x] T4.5 `assessments`, `assessment_documents`, `assessment_transactions`, immutable `assessment_input_snapshots`, reason codes, and financing needs models/migration (migration `0007`)
 - [x] T4.6 `POST /financing-needs`, `POST /assessments`, `GET /assessments/{id}`, `/twin`, `/recommendation`, `/dashboard` — also added `GET /assessments/{id}/lineage` (FR-18/NFR-17, cheap addition once `assessment_input_snapshots` exists)
-- [ ] T4.7 iOS: Financing-need form, Dashboard + Twin summary + Financial Health Improvement Plan (FRONTEND workstream — out of scope for this BACKEND session, CLAUDE.md §2.2/§2.3)
+- [x] T4.7 iOS: Financing-need form, authenticated assessment creation/polling, Dashboard + Twin summary + Financial Health Improvement Plan
 - [x] T4.8 Tests: engine golden tests (`normalization.py` 97%, `cash_flow_twin.py` 99%, `risk.py` 96%, `safe_borrowing.py` 100% — all ≥90% coverage gate) + assessment integration tests (full upload→confirm→assessment→dashboard pipeline, zero-cash-flow safe-amount case, ownership/validation edge cases) run against a real Postgres 16
 
 ### 26.6 Sprint 5 — Shocks, Offers & Full Dashboard

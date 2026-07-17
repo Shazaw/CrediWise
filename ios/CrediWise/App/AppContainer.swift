@@ -79,8 +79,18 @@ struct AppContainer {
                 baseURL: baseURL,
                 authInterceptor: authInterceptor
             ),
-            financingNeedRepository: UnavailableFinancingNeedRepository(),
-            assessmentDashboardRepository: UnavailableAssessmentDashboardRepository(),
+            financingNeedRepository: APIFinancingNeedRepository(
+                baseURL: baseURL,
+                authInterceptor: authInterceptor
+            ),
+            assessmentDashboardRepository: APIAssessmentDashboardRepository(
+                baseURL: baseURL,
+                authInterceptor: authInterceptor,
+                verificationRepository: APIDocumentVerificationRepository(
+                    baseURL: baseURL,
+                    authInterceptor: authInterceptor
+                )
+            ),
             isDocumentUploadAvailable: true
         )
     }

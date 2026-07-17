@@ -44,7 +44,7 @@ struct AssessmentDashboard: Equatable, Sendable {
         let dueDateStart: Int
         let dueDateEnd: Int
         let frequency: RepaymentFrequency
-        let requiredLiquidityBuffer: Int64
+        let requiredLiquidityBuffer: Int64?
         let reasons: [Reason]
     }
 

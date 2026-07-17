@@ -127,6 +127,17 @@
             ],
             "title": "Recommended Tenor Months"
           },
+          "required_liquidity_buffer": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Required Liquidity Buffer"
+          },
           "safe_loan_amount": {
             "anyOf": [
               {
@@ -164,6 +175,7 @@
           "shock_resilience_score",
           "safe_loan_amount",
           "maximum_safe_instalment",
+          "required_liquidity_buffer",
           "recommended_tenor_months",
           "recommended_due_date_start",
           "recommended_due_date_end",
@@ -501,6 +513,11 @@
           "data_confidence": {
             "$ref": "#/components/schemas/DataConfidenceSummary"
           },
+          "model_version_id": {
+            "format": "uuid",
+            "title": "Model Version Id",
+            "type": "string"
+          },
           "positioning_notice": {
             "default": "Estimated financial-risk, affordability, and credit-readiness assessment \u2014 not an official credit score.",
             "title": "Positioning Notice",
@@ -529,6 +546,7 @@
         "required": [
           "assessment_id",
           "status",
+          "model_version_id",
           "data_confidence",
           "risk_band",
           "safe_borrowing",
@@ -548,6 +566,13 @@
                 "type": "null"
               }
             ]
+          },
+          "reason_codes": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCodeResponse"
+            },
+            "title": "Reason Codes",
+            "type": "array"
           },
           "reasons": {
             "items": {
@@ -572,7 +597,8 @@
         "required": [
           "score",
           "band",
-          "reasons"
+          "reasons",
+          "reason_codes"
         ],
         "title": "DataConfidenceSummary",
         "type": "object"
@@ -1338,6 +1364,17 @@
             ],
             "title": "Recommended Tenor Months"
           },
+          "required_liquidity_buffer": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Required Liquidity Buffer"
+          },
           "safe_loan_amount": {
             "anyOf": [
               {
@@ -1354,6 +1391,7 @@
           "assessment_id",
           "safe_loan_amount",
           "maximum_safe_instalment",
+          "required_liquidity_buffer",
           "recommended_tenor_months",
           "recommended_due_date_start",
           "recommended_due_date_end",
@@ -1474,11 +1512,25 @@
             "title": "Positive",
             "type": "array"
           },
+          "positive_reason_codes": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCodeResponse"
+            },
+            "title": "Positive Reason Codes",
+            "type": "array"
+          },
           "risk": {
             "items": {
               "type": "string"
             },
             "title": "Risk",
+            "type": "array"
+          },
+          "risk_reason_codes": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCodeResponse"
+            },
+            "title": "Risk Reason Codes",
             "type": "array"
           }
         },
@@ -1486,7 +1538,9 @@
           "band",
           "model_confidence",
           "positive",
-          "risk"
+          "risk",
+          "positive_reason_codes",
+          "risk_reason_codes"
         ],
         "title": "RiskBandSummary",
         "type": "object"
@@ -1546,6 +1600,17 @@
             ],
             "title": "Max Instalment"
           },
+          "required_liquidity_buffer": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Required Liquidity Buffer"
+          },
           "tenor_months": {
             "anyOf": [
               {
@@ -1561,6 +1626,7 @@
         "required": [
           "amount",
           "max_instalment",
+          "required_liquidity_buffer",
           "tenor_months",
           "due_date_window",
           "frequency"

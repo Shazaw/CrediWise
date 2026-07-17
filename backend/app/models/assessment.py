@@ -47,6 +47,7 @@ class Assessment(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     shock_resilience_score: Mapped[Decimal | None] = mapped_column(_SCORE, nullable=True)
     safe_loan_amount: Mapped[int | None] = mapped_column(BigInteger(), nullable=True)
     maximum_safe_instalment: Mapped[int | None] = mapped_column(BigInteger(), nullable=True)
+    required_liquidity_buffer: Mapped[int | None] = mapped_column(BigInteger(), nullable=True)
     recommended_tenor_months: Mapped[int | None] = mapped_column(Integer(), nullable=True)
     recommended_due_date_start: Mapped[int | None] = mapped_column(Integer(), nullable=True)
     recommended_due_date_end: Mapped[int | None] = mapped_column(Integer(), nullable=True)

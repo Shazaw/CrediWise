@@ -72,9 +72,9 @@ adapter submits structured raw/system/proposed correction lineage and renders
 server-supplied Trust Layer scores without recalculation. `--ui-testing
 --review-flow` continues to use deterministic fixtures for isolated UI coverage.
 
-Cycle 5 adds the financing-need form and the partial assessment dashboard for
-Risk, Safe Borrowing, the Cash-Flow Digital Twin, and the Financial Health plan.
-Run the deterministic preview with `--ui-testing --cycle-5-flow`. Production
-keeps the existing upload entry until the Sprint 4 financing-need and assessment
-contracts are committed to OpenAPI; it does not guess request fields, urgency
-enums, assessment IDs, or dashboard response shapes.
+Cycle 5 adds the financing-need form and assessment dashboard for Risk, Safe
+Borrowing, the Cash-Flow Digital Twin, and the Financial Health plan. Production
+uses the authenticated financing-need and assessment contracts, creates an
+assessment from the confirmed document, polls until analysis completes, and
+renders only server-supplied financial outputs. Run the deterministic isolated
+flow with `--ui-testing --cycle-5-flow`.

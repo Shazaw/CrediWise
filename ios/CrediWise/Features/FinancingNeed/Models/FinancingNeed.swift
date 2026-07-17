@@ -13,9 +13,20 @@ struct FinancingNeed: Equatable, Sendable {
         }
     }
 
+    enum Urgency: String, CaseIterable, Equatable, Sendable {
+        case low
+        case medium
+        case high
+
+        var titleKey: String {
+            "financing_need.urgency.\(rawValue)"
+        }
+    }
+
     let requestedAmount: Int64
     let purpose: Purpose
     let preferredTenorMonths: Int
+    let urgency: Urgency
     let notes: String
 }
 

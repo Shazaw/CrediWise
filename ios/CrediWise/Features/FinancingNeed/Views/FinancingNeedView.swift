@@ -23,6 +23,7 @@ struct FinancingNeedView: View {
                     amountCard
                     purposeCard
                     tenorCard
+                    urgencyCard
                     notesCard
                     submissionContent
                     DisclaimerFooter()
@@ -131,6 +132,20 @@ struct FinancingNeedView: View {
                 .lineLimit(3...6)
                 .textFieldStyle(.roundedBorder)
                 .accessibilityIdentifier("financing_need.notes")
+        }
+    }
+
+    private var urgencyCard: some View {
+        formCard {
+            Text("financing_need.urgency.title")
+                .font(TypographyTokens.cardTitle)
+            Picker("financing_need.urgency.title", selection: $viewModel.urgency) {
+                ForEach(FinancingNeed.Urgency.allCases, id: \.self) { urgency in
+                    Text(LocalizedStringKey(urgency.titleKey)).tag(urgency)
+                }
+            }
+            .pickerStyle(.segmented)
+            .accessibilityIdentifier("financing_need.urgency")
         }
     }
 

@@ -9,7 +9,13 @@ struct SafeBorrowingCard: View {
         DisclosureGroup(isExpanded: $isExpanded) {
             VStack(alignment: .leading, spacing: SpacingTokens.medium) {
                 metric("dashboard.safe.max_instalment", recommendation.maximumSafeInstalment)
-                metric("dashboard.safe.required_buffer", recommendation.requiredLiquidityBuffer)
+                if let requiredLiquidityBuffer = recommendation.requiredLiquidityBuffer {
+                    metric("dashboard.safe.required_buffer", requiredLiquidityBuffer)
+                } else {
+                    LabeledContent("dashboard.safe.required_buffer") {
+                        Text("dashboard.value.unavailable")
+                    }
+                }
                 LabeledContent("dashboard.safe.tenor") {
                     Text(tenorText)
                 }

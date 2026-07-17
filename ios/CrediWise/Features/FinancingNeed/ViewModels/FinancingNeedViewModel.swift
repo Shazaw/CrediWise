@@ -7,6 +7,7 @@ final class FinancingNeedViewModel: ObservableObject {
     @Published private(set) var amountText = ""
     @Published var purpose: FinancingNeed.Purpose?
     @Published var preferredTenorMonths = 12
+    @Published var urgency: FinancingNeed.Urgency = .medium
     @Published var notes = ""
     @Published private(set) var hasAttemptedSubmission = false
 
@@ -56,6 +57,7 @@ final class FinancingNeedViewModel: ObservableObject {
                     requestedAmount: requestedAmount,
                     purpose: purpose,
                     preferredTenorMonths: preferredTenorMonths,
+                    urgency: urgency,
                     notes: notes.trimmingCharacters(in: .whitespacesAndNewlines)
                 )
             )

@@ -86,9 +86,15 @@ final class AppCoordinator: ObservableObject {
         path.append(.assessmentDashboard(assessmentID: assessmentID))
     }
 
-    func showSyntheticAssessmentDashboard() {
-        guard allowsSyntheticAssessment else { return }
-        showAssessmentDashboard(assessmentID: "synthetic-assessment-id")
+    func createAssessment(documentID: String) async throws {
+        guard let financingNeedID else {
+            throw AssessmentDashboardRepositoryError.unavailable
+        }
+        let assessmentID = try await assessmentDashboardRepository.create(
+            financingNeedID: financingNeedID,
+            documentID: documentID
+        )
+        showAssessmentDashboard(assessmentID: assessmentID)
     }
 
     func returnToWelcome() {

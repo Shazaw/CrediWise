@@ -99,6 +99,7 @@ def test_full_pipeline_produces_complete_assessment_with_twin_risk_safe_borrowin
     assert detail["model_confidence"] in {"HIGH", "MEDIUM", "LOW"}
     assert detail["safe_loan_amount"] > 0
     assert detail["maximum_safe_instalment"] > 0
+    assert detail["required_liquidity_buffer"] > 0
     assert detail["recommended_tenor_months"] in {6, 9, 12}
 
     twin = authed_client.get(f"/api/v1/assessments/{assessment_id}/twin", headers=headers).json()
@@ -113,6 +114,7 @@ def test_full_pipeline_produces_complete_assessment_with_twin_risk_safe_borrowin
         f"/api/v1/assessments/{assessment_id}/recommendation", headers=headers
     ).json()
     assert recommendation["safe_loan_amount"] > 0
+    assert recommendation["required_liquidity_buffer"] > 0
     assert any(r["code"].startswith("SAFE_BORROWING_") for r in recommendation["reason_codes"])
 
     dashboard = authed_client.get(
@@ -122,7 +124,16 @@ def test_full_pipeline_produces_complete_assessment_with_twin_risk_safe_borrowin
     assert dashboard["twin"] is not None
     assert dashboard["twin"]["median_income"] == 3_000_000
     assert dashboard["safe_borrowing"]["amount"] > 0
+    assert dashboard["safe_borrowing"]["required_liquidity_buffer"] > 0
     assert dashboard["data_confidence"]["score"] is not None
+    assert dashboard["model_version_id"]
+    dashboard_codes = (
+        dashboard["data_confidence"]["reason_codes"]
+        + dashboard["risk_band"]["positive_reason_codes"]
+        + dashboard["risk_band"]["risk_reason_codes"]
+    )
+    assert any(reason["code"].startswith("RISK_") for reason in dashboard_codes)
+    assert any(reason["code"].startswith("SAFE_BORROWING_") for reason in dashboard_codes)
 
     lineage = authed_client.get(
         f"/api/v1/assessments/{assessment_id}/lineage", headers=headers
@@ -152,6 +163,7 @@ def test_zero_free_cash_flow_yields_zero_safe_loan_amount(authed_client: TestCli
     detail = authed_client.get(f"/api/v1/assessments/{assessment_id}", headers=headers).json()
     assert detail["safe_loan_amount"] == 0
     assert detail["maximum_safe_instalment"] == 0
+    assert detail["required_liquidity_buffer"] > 0
 
 
 def test_create_assessment_rejects_document_not_yet_analyzing(authed_client: TestClient) -> None:

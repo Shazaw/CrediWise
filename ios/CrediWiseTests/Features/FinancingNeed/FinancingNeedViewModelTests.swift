@@ -51,6 +51,7 @@ final class FinancingNeedViewModelTests: XCTestCase {
                     requestedAmount: 3_500_000,
                     purpose: .productiveBusiness,
                     preferredTenorMonths: 18,
+                    urgency: .medium,
                     notes: "Inventory restock"
                 )
             ]

@@ -57,6 +57,7 @@ def _to_assessment_response(assessment: Assessment) -> AssessmentResponse:
         shock_resilience_score=assessment.shock_resilience_score,
         safe_loan_amount=assessment.safe_loan_amount,
         maximum_safe_instalment=assessment.maximum_safe_instalment,
+        required_liquidity_buffer=assessment.required_liquidity_buffer,
         recommended_tenor_months=assessment.recommended_tenor_months,
         recommended_due_date_start=assessment.recommended_due_date_start,
         recommended_due_date_end=assessment.recommended_due_date_end,
@@ -210,6 +211,7 @@ def get_assessment_recommendation(
         assessment_id=assessment.id,
         safe_loan_amount=assessment.safe_loan_amount,
         maximum_safe_instalment=assessment.maximum_safe_instalment,
+        required_liquidity_buffer=assessment.required_liquidity_buffer,
         recommended_tenor_months=assessment.recommended_tenor_months,
         recommended_due_date_start=assessment.recommended_due_date_start,
         recommended_due_date_end=assessment.recommended_due_date_end,
@@ -264,6 +266,7 @@ def get_assessment_dashboard(
     return DashboardResponse(
         assessment_id=assessment.id,
         status=assessment.status,
+        model_version_id=assessment.model_version_id,
         data_confidence=DataConfidenceSummary(
             score=assessment.data_confidence_score,
             band=(
@@ -272,16 +275,26 @@ def get_assessment_dashboard(
                 else None
             ),
             reasons=data_quality_reasons,
+            reason_codes=_to_reason_code_responses(
+                [c for c in reason_codes if c.reason_type is ReasonTypeEnum.DATA_QUALITY]
+            ),
         ),
         risk_band=RiskBandSummary(
             band=assessment.indicative_risk_band,
             model_confidence=assessment.model_confidence,
             positive=positive,
             risk=risk_reasons,
+            positive_reason_codes=_to_reason_code_responses(
+                [c for c in reason_codes if c.reason_type is ReasonTypeEnum.POSITIVE]
+            ),
+            risk_reason_codes=_to_reason_code_responses(
+                [c for c in reason_codes if c.reason_type is ReasonTypeEnum.RISK]
+            ),
         ),
         safe_borrowing=SafeBorrowingSummary(
             amount=assessment.safe_loan_amount,
             max_instalment=assessment.maximum_safe_instalment,
+            required_liquidity_buffer=assessment.required_liquidity_buffer,
             tenor_months=assessment.recommended_tenor_months,
             due_date_window=due_date_window,
             frequency=assessment.recommended_frequency,

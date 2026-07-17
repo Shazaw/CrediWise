@@ -51,6 +51,7 @@ class AssessmentResponse(BaseModel):
     shock_resilience_score: Decimal | None
     safe_loan_amount: int | None
     maximum_safe_instalment: int | None
+    required_liquidity_buffer: int | None
     recommended_tenor_months: int | None
     recommended_due_date_start: int | None
     recommended_due_date_end: int | None
@@ -114,6 +115,7 @@ class RecommendationResponse(BaseModel):
     assessment_id: uuid.UUID
     safe_loan_amount: int | None
     maximum_safe_instalment: int | None
+    required_liquidity_buffer: int | None
     recommended_tenor_months: int | None
     recommended_due_date_start: int | None
     recommended_due_date_end: int | None
@@ -125,6 +127,7 @@ class DataConfidenceSummary(BaseModel):
     score: Decimal | None
     band: BandEnum | None
     reasons: list[str]
+    reason_codes: list[ReasonCodeResponse]
 
 
 class RiskBandSummary(BaseModel):
@@ -132,11 +135,14 @@ class RiskBandSummary(BaseModel):
     model_confidence: BandEnum | None
     positive: list[str]
     risk: list[str]
+    positive_reason_codes: list[ReasonCodeResponse]
+    risk_reason_codes: list[ReasonCodeResponse]
 
 
 class SafeBorrowingSummary(BaseModel):
     amount: int | None
     max_instalment: int | None
+    required_liquidity_buffer: int | None
     tenor_months: int | None
     due_date_window: tuple[int, int] | None
     frequency: FreqEnum | None
@@ -153,6 +159,7 @@ class TwinSummary(BaseModel):
 class DashboardResponse(BaseModel):
     assessment_id: uuid.UUID
     status: AssessmentStatusEnum
+    model_version_id: uuid.UUID
     positioning_notice: str = POSITIONING_NOTICE
     data_confidence: DataConfidenceSummary
     risk_band: RiskBandSummary

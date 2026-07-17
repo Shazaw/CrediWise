@@ -109,7 +109,9 @@ struct AppRootView: View {
         case let .dataConfidence(documentID):
             DataConfidenceView(
                 viewModel: coordinator.makeDataConfidenceViewModel(documentID: documentID),
-                onContinueToDashboard: dashboardContinuation
+                onContinueToDashboard: {
+                    try await coordinator.createAssessment(documentID: documentID)
+                }
             )
         case let .assessmentDashboard(assessmentID):
             AssessmentDashboardView(
@@ -119,14 +121,9 @@ struct AppRootView: View {
     }
 
     private var startAuthenticatedFlow: () -> Void {
-        if coordinator.shouldOfferSyntheticAssessment {
-            return { coordinator.showFinancingNeed() }
+        if coordinator.shouldOfferSyntheticUpload && !coordinator.shouldOfferSyntheticAssessment {
+            return { coordinator.showUpload() }
         }
-        return { coordinator.showUpload() }
-    }
-
-    private var dashboardContinuation: (() -> Void)? {
-        guard coordinator.shouldOfferSyntheticAssessment else { return nil }
-        return { coordinator.showSyntheticAssessmentDashboard() }
+        return { coordinator.showFinancingNeed() }
     }
 }

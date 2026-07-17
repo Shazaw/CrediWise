@@ -69,6 +69,29 @@ final class AppCoordinatorTests: XCTestCase {
         XCTAssertEqual(coordinator.path, [.assessmentDashboard(assessmentID: "assessment-123")])
     }
 
+    func testCreatesAssessmentFromStoredNeedAndConfirmedDocument() async throws {
+        let repository = MockAssessmentDashboardRepository()
+        let coordinator = AppCoordinator(
+            sessionManager: SessionManager(tokenStore: VolatileTokenStore()),
+            authenticationRepository: MockAuthenticationRepository(),
+            documentUploadRepository: MockDocumentUploadRepository(),
+            documentVerificationRepository: MockDocumentVerificationRepository(),
+            financingNeedRepository: MockFinancingNeedRepository(),
+            assessmentDashboardRepository: repository
+        )
+        coordinator.completeFinancingNeed(FinancingNeedReceipt(financingNeedID: "need-123"))
+
+        try await coordinator.createAssessment(documentID: "document-123")
+
+        let creations = await repository.creations()
+        XCTAssertEqual(creations.first?.0, "need-123")
+        XCTAssertEqual(creations.first?.1, "document-123")
+        XCTAssertEqual(
+            coordinator.path.last,
+            .assessmentDashboard(assessmentID: "synthetic-assessment-id")
+        )
+    }
+
     func testReturnsToWelcomeFromNestedRoute() {
         let coordinator = AppCoordinator()
         coordinator.showRegistration()

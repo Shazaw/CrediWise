@@ -44,7 +44,7 @@ final class AssessmentDashboardViewModelTests: XCTestCase {
                 dueDateStart: 20,
                 dueDateEnd: 25,
                 frequency: .monthly,
-                requiredLiquidityBuffer: 1_250_000,
+                requiredLiquidityBuffer: nil,
                 reasons: base.safeBorrowing.reasons
             ),
             twin: .init(

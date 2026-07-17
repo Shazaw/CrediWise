@@ -329,6 +329,7 @@ def run_assessment_analysis(db: Session, assessment_id: uuid.UUID) -> None:
         assessment.model_confidence = risk_result.model_confidence
         assessment.safe_loan_amount = safe_borrowing_result.safe_loan_amount
         assessment.maximum_safe_instalment = safe_borrowing_result.maximum_safe_instalment
+        assessment.required_liquidity_buffer = safe_borrowing_result.required_liquidity_buffer
         assessment.recommended_tenor_months = safe_borrowing_result.recommended_tenor_months
         assessment.recommended_due_date_start = safe_borrowing_result.recommended_due_date_start
         assessment.recommended_due_date_end = safe_borrowing_result.recommended_due_date_end
