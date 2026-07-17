@@ -1,6 +1,189 @@
 {
   "components": {
     "schemas": {
+      "AssessmentCreateResponse": {
+        "properties": {
+          "assessment_id": {
+            "format": "uuid",
+            "title": "Assessment Id",
+            "type": "string"
+          },
+          "poll": {
+            "title": "Poll",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AssessmentStatusEnum"
+          }
+        },
+        "required": [
+          "assessment_id",
+          "status",
+          "poll"
+        ],
+        "title": "AssessmentCreateResponse",
+        "type": "object"
+      },
+      "AssessmentResponse": {
+        "properties": {
+          "assessment_id": {
+            "format": "uuid",
+            "title": "Assessment Id",
+            "type": "string"
+          },
+          "data_confidence_band": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BandEnum"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "data_confidence_score": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Confidence Score"
+          },
+          "indicative_risk_band": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskBandEnum"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "maximum_safe_instalment": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maximum Safe Instalment"
+          },
+          "model_confidence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BandEnum"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recommended_due_date_end": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommended Due Date End"
+          },
+          "recommended_due_date_start": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommended Due Date Start"
+          },
+          "recommended_frequency": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FreqEnum"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recommended_tenor_months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommended Tenor Months"
+          },
+          "safe_loan_amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Safe Loan Amount"
+          },
+          "shock_resilience_score": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shock Resilience Score"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AssessmentStatusEnum"
+          }
+        },
+        "required": [
+          "assessment_id",
+          "status",
+          "data_confidence_score",
+          "data_confidence_band",
+          "indicative_risk_band",
+          "model_confidence",
+          "shock_resilience_score",
+          "safe_loan_amount",
+          "maximum_safe_instalment",
+          "recommended_tenor_months",
+          "recommended_due_date_start",
+          "recommended_due_date_end",
+          "recommended_frequency"
+        ],
+        "title": "AssessmentResponse",
+        "type": "object"
+      },
+      "AssessmentStatusEnum": {
+        "description": "PLAN Appendix A `assessment_status_enum`.",
+        "enum": [
+          "PENDING",
+          "ANALYZING",
+          "COMPLETE",
+          "FAILED",
+          "HUMAN_REVIEW"
+        ],
+        "title": "AssessmentStatusEnum",
+        "type": "string"
+      },
       "BandEnum": {
         "description": "PLAN Appendix A `band_enum` \u2014 used by `document_verification_results\n.confidence_band` (\u00a75.2: `HIGH >= 80`, `MEDIUM 50-79`, `LOW < 50`).",
         "enum": [
@@ -50,6 +233,54 @@
           "source_type"
         ],
         "title": "Body_upload_document_api_v1_documents_post",
+        "type": "object"
+      },
+      "CashEventEnum": {
+        "description": "Gap-fill (PLAN \u00a724.11): `cash_flow_events.event_type` \u2014 not\nenumerated in Appendix A. Scoped to the two event classes Sprint 4's\n`CashFlowTwinEngine` actually produces (dominant income arrival,\nessential-expense due dates); Sprint 5's `ShockEngine` extends this set\nif a distinct shock-scenario event class is needed.",
+        "enum": [
+          "INCOME",
+          "ESSENTIAL_EXPENSE"
+        ],
+        "title": "CashEventEnum",
+        "type": "string"
+      },
+      "CashFlowEventResponse": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "confidence": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Confidence",
+            "type": "string"
+          },
+          "direction": {
+            "$ref": "#/components/schemas/DirEnum"
+          },
+          "event_type": {
+            "$ref": "#/components/schemas/CashEventEnum"
+          },
+          "expected_day_of_month": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Day Of Month"
+          }
+        },
+        "required": [
+          "expected_day_of_month",
+          "amount",
+          "direction",
+          "event_type",
+          "confidence"
+        ],
+        "title": "CashFlowEventResponse",
         "type": "object"
       },
       "CategoryEnum": {
@@ -184,6 +415,167 @@
         ],
         "title": "CorrectionTypeEnum",
         "type": "string"
+      },
+      "CoverageEnum": {
+        "description": "Gap-fill (PLAN \u00a724.11): `financial_profiles.coverage_flag` \u2014 not\nenumerated in Appendix A. PLAN \u00a77.6/FR-7 EC names the `LOW_COVERAGE`\nflag explicitly (<2 months of data); `SUFFICIENT` is the complement.",
+        "enum": [
+          "SUFFICIENT",
+          "LOW_COVERAGE"
+        ],
+        "title": "CoverageEnum",
+        "type": "string"
+      },
+      "CreateAssessmentRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "financing_need_id": {
+            "format": "uuid",
+            "title": "Financing Need Id",
+            "type": "string"
+          },
+          "source_document_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Source Document Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "financing_need_id",
+          "source_document_ids"
+        ],
+        "title": "CreateAssessmentRequest",
+        "type": "object"
+      },
+      "CreateFinancingNeedRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "preferred_tenor_months": {
+            "maximum": 36.0,
+            "minimum": 1.0,
+            "title": "Preferred Tenor Months",
+            "type": "integer"
+          },
+          "purpose": {
+            "$ref": "#/components/schemas/PurposeEnum"
+          },
+          "requested_amount": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 1000000000.0,
+            "title": "Requested Amount",
+            "type": "integer"
+          },
+          "urgency": {
+            "$ref": "#/components/schemas/UrgencyEnum"
+          }
+        },
+        "required": [
+          "requested_amount",
+          "purpose",
+          "preferred_tenor_months",
+          "urgency"
+        ],
+        "title": "CreateFinancingNeedRequest",
+        "type": "object"
+      },
+      "DashboardResponse": {
+        "properties": {
+          "assessment_id": {
+            "format": "uuid",
+            "title": "Assessment Id",
+            "type": "string"
+          },
+          "data_confidence": {
+            "$ref": "#/components/schemas/DataConfidenceSummary"
+          },
+          "positioning_notice": {
+            "default": "Estimated financial-risk, affordability, and credit-readiness assessment \u2014 not an official credit score.",
+            "title": "Positioning Notice",
+            "type": "string"
+          },
+          "risk_band": {
+            "$ref": "#/components/schemas/RiskBandSummary"
+          },
+          "safe_borrowing": {
+            "$ref": "#/components/schemas/SafeBorrowingSummary"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AssessmentStatusEnum"
+          },
+          "twin": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TwinSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "assessment_id",
+          "status",
+          "data_confidence",
+          "risk_band",
+          "safe_borrowing",
+          "twin"
+        ],
+        "title": "DashboardResponse",
+        "type": "object"
+      },
+      "DataConfidenceSummary": {
+        "properties": {
+          "band": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BandEnum"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          }
+        },
+        "required": [
+          "score",
+          "band",
+          "reasons"
+        ],
+        "title": "DataConfidenceSummary",
+        "type": "object"
       },
       "DirEnum": {
         "description": "`transactions.direction` \u2014 named inline in PLAN \u00a711.3 (`dir_enum`\n(`CREDIT, DEBIT`)) but not listed in Appendix A. Added Sprint 3/T3.2.",
@@ -447,6 +839,82 @@
         "title": "EmploymentTypeEnum",
         "type": "string"
       },
+      "FinancingNeedListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FinancingNeedResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "FinancingNeedListResponse",
+        "type": "object"
+      },
+      "FinancingNeedResponse": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "financing_need_id": {
+            "format": "uuid",
+            "title": "Financing Need Id",
+            "type": "string"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "preferred_tenor_months": {
+            "title": "Preferred Tenor Months",
+            "type": "integer"
+          },
+          "purpose": {
+            "$ref": "#/components/schemas/PurposeEnum"
+          },
+          "requested_amount": {
+            "title": "Requested Amount",
+            "type": "integer"
+          },
+          "urgency": {
+            "$ref": "#/components/schemas/UrgencyEnum"
+          }
+        },
+        "required": [
+          "financing_need_id",
+          "requested_amount",
+          "purpose",
+          "preferred_tenor_months",
+          "urgency",
+          "notes",
+          "created_at"
+        ],
+        "title": "FinancingNeedResponse",
+        "type": "object"
+      },
+      "FreqEnum": {
+        "description": "PLAN Appendix A `freq_enum`.",
+        "enum": [
+          "MONTHLY",
+          "BIWEEKLY",
+          "WEEKLY"
+        ],
+        "title": "FreqEnum",
+        "type": "string"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -458,6 +926,130 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "IncomeSourceEnum": {
+        "description": "Gap-fill (PLAN \u00a724.11): `income_sources.source_type` is named in\n\u00a711.3 but its member set isn't enumerated in Appendix A. Added\nSprint 4/T4.2, mirrors the UMKM/gig-worker income categories FR-6 AC4\nnames for `transaction_context`/category enrichment.",
+        "enum": [
+          "SALARY",
+          "BUSINESS_REVENUE",
+          "FREELANCE",
+          "QRIS_SETTLEMENT",
+          "MARKETPLACE_SETTLEMENT",
+          "OTHER"
+        ],
+        "title": "IncomeSourceEnum",
+        "type": "string"
+      },
+      "IncomeSourceResponse": {
+        "properties": {
+          "average_amount": {
+            "title": "Average Amount",
+            "type": "integer"
+          },
+          "concentration_ratio": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Concentration Ratio",
+            "type": "string"
+          },
+          "confidence": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Confidence",
+            "type": "string"
+          },
+          "dominant_arrival_day": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dominant Arrival Day"
+          },
+          "frequency": {
+            "$ref": "#/components/schemas/FreqEnum"
+          },
+          "source_name": {
+            "title": "Source Name",
+            "type": "string"
+          },
+          "source_type": {
+            "$ref": "#/components/schemas/IncomeSourceEnum"
+          },
+          "volatility": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Volatility",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_name",
+          "source_type",
+          "average_amount",
+          "frequency",
+          "volatility",
+          "concentration_ratio",
+          "dominant_arrival_day",
+          "confidence"
+        ],
+        "title": "IncomeSourceResponse",
+        "type": "object"
+      },
+      "LineageResponse": {
+        "properties": {
+          "assessment_id": {
+            "format": "uuid",
+            "title": "Assessment Id",
+            "type": "string"
+          },
+          "categorizer_version": {
+            "title": "Categorizer Version",
+            "type": "string"
+          },
+          "document_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Document Ids",
+            "type": "array"
+          },
+          "engine_config_hash": {
+            "title": "Engine Config Hash",
+            "type": "string"
+          },
+          "parser_versions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Parser Versions",
+            "type": "object"
+          },
+          "snapshot_hash": {
+            "title": "Snapshot Hash",
+            "type": "string"
+          },
+          "transaction_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Transaction Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "assessment_id",
+          "snapshot_hash",
+          "document_ids",
+          "transaction_ids",
+          "parser_versions",
+          "categorizer_version",
+          "engine_config_hash"
+        ],
+        "title": "LineageResponse",
         "type": "object"
       },
       "LoginRequest": {
@@ -534,6 +1126,70 @@
         "title": "MeResponse",
         "type": "object"
       },
+      "MonthlySnapshotResponse": {
+        "properties": {
+          "business_expenses": {
+            "title": "Business Expenses",
+            "type": "integer"
+          },
+          "business_income": {
+            "title": "Business Income",
+            "type": "integer"
+          },
+          "closing_balance": {
+            "title": "Closing Balance",
+            "type": "integer"
+          },
+          "debt_service": {
+            "title": "Debt Service",
+            "type": "integer"
+          },
+          "discretionary_expenses": {
+            "title": "Discretionary Expenses",
+            "type": "integer"
+          },
+          "essential_expenses": {
+            "title": "Essential Expenses",
+            "type": "integer"
+          },
+          "minimum_balance": {
+            "title": "Minimum Balance",
+            "type": "integer"
+          },
+          "net_cash_flow": {
+            "title": "Net Cash Flow",
+            "type": "integer"
+          },
+          "opening_balance": {
+            "title": "Opening Balance",
+            "type": "integer"
+          },
+          "personal_income": {
+            "title": "Personal Income",
+            "type": "integer"
+          },
+          "year_month": {
+            "format": "date",
+            "title": "Year Month",
+            "type": "string"
+          }
+        },
+        "required": [
+          "year_month",
+          "personal_income",
+          "business_income",
+          "essential_expenses",
+          "discretionary_expenses",
+          "business_expenses",
+          "debt_service",
+          "opening_balance",
+          "minimum_balance",
+          "closing_balance",
+          "net_cash_flow"
+        ],
+        "title": "MonthlySnapshotResponse",
+        "type": "object"
+      },
       "ProfileResponse": {
         "properties": {
           "business_type": {
@@ -582,6 +1238,20 @@
         "title": "ProfileResponse",
         "type": "object"
       },
+      "PurposeEnum": {
+        "description": "PLAN Appendix A `purpose_enum` (`financing_needs.purpose`, FR-2 AC2).",
+        "enum": [
+          "MEDICAL",
+          "EDUCATION",
+          "HOUSEHOLD_EMERGENCY",
+          "PRODUCTIVE_BUSINESS",
+          "EQUIPMENT",
+          "WORKING_CAPITAL",
+          "VEHICLE_DEVICE_REPAIR"
+        ],
+        "title": "PurposeEnum",
+        "type": "string"
+      },
       "ReasonCodeResponse": {
         "properties": {
           "code": {
@@ -598,6 +1268,99 @@
           "description"
         ],
         "title": "ReasonCodeResponse",
+        "type": "object"
+      },
+      "RecommendationResponse": {
+        "properties": {
+          "assessment_id": {
+            "format": "uuid",
+            "title": "Assessment Id",
+            "type": "string"
+          },
+          "maximum_safe_instalment": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maximum Safe Instalment"
+          },
+          "reason_codes": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCodeResponse"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "recommended_due_date_end": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommended Due Date End"
+          },
+          "recommended_due_date_start": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommended Due Date Start"
+          },
+          "recommended_frequency": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FreqEnum"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recommended_tenor_months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommended Tenor Months"
+          },
+          "safe_loan_amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Safe Loan Amount"
+          }
+        },
+        "required": [
+          "assessment_id",
+          "safe_loan_amount",
+          "maximum_safe_instalment",
+          "recommended_tenor_months",
+          "recommended_due_date_start",
+          "recommended_due_date_end",
+          "recommended_frequency",
+          "reason_codes"
+        ],
+        "title": "RecommendationResponse",
         "type": "object"
       },
       "RefreshRequest": {
@@ -668,6 +1431,141 @@
           "corrections_recorded"
         ],
         "title": "ReviewResponse",
+        "type": "object"
+      },
+      "RiskBandEnum": {
+        "description": "PLAN Appendix A `risk_band_enum` (\u00a75.3).",
+        "enum": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "INSUFFICIENT_DATA"
+        ],
+        "title": "RiskBandEnum",
+        "type": "string"
+      },
+      "RiskBandSummary": {
+        "properties": {
+          "band": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskBandEnum"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "model_confidence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BandEnum"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "positive": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Positive",
+            "type": "array"
+          },
+          "risk": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Risk",
+            "type": "array"
+          }
+        },
+        "required": [
+          "band",
+          "model_confidence",
+          "positive",
+          "risk"
+        ],
+        "title": "RiskBandSummary",
+        "type": "object"
+      },
+      "SafeBorrowingSummary": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "due_date_window": {
+            "anyOf": [
+              {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date Window"
+          },
+          "frequency": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FreqEnum"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "max_instalment": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Instalment"
+          },
+          "tenor_months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tenor Months"
+          }
+        },
+        "required": [
+          "amount",
+          "max_instalment",
+          "tenor_months",
+          "due_date_window",
+          "frequency"
+        ],
+        "title": "SafeBorrowingSummary",
         "type": "object"
       },
       "SourceTypeEnum": {
@@ -843,6 +1741,143 @@
         "title": "TransactionResponse",
         "type": "object"
       },
+      "TwinResponse": {
+        "properties": {
+          "assessment_id": {
+            "format": "uuid",
+            "title": "Assessment Id",
+            "type": "string"
+          },
+          "average_free_cash_flow": {
+            "title": "Average Free Cash Flow",
+            "type": "integer"
+          },
+          "average_income": {
+            "title": "Average Income",
+            "type": "integer"
+          },
+          "cash_flow_events": {
+            "items": {
+              "$ref": "#/components/schemas/CashFlowEventResponse"
+            },
+            "title": "Cash Flow Events",
+            "type": "array"
+          },
+          "coverage_flag": {
+            "$ref": "#/components/schemas/CoverageEnum"
+          },
+          "discretionary_expenses": {
+            "title": "Discretionary Expenses",
+            "type": "integer"
+          },
+          "essential_expenses": {
+            "title": "Essential Expenses",
+            "type": "integer"
+          },
+          "existing_debt": {
+            "title": "Existing Debt",
+            "type": "integer"
+          },
+          "income_sources": {
+            "items": {
+              "$ref": "#/components/schemas/IncomeSourceResponse"
+            },
+            "title": "Income Sources",
+            "type": "array"
+          },
+          "income_volatility": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Income Volatility",
+            "type": "string"
+          },
+          "median_income": {
+            "title": "Median Income",
+            "type": "integer"
+          },
+          "minimum_balance": {
+            "title": "Minimum Balance",
+            "type": "integer"
+          },
+          "monthly_snapshots": {
+            "items": {
+              "$ref": "#/components/schemas/MonthlySnapshotResponse"
+            },
+            "title": "Monthly Snapshots",
+            "type": "array"
+          },
+          "months_covered": {
+            "title": "Months Covered",
+            "type": "integer"
+          },
+          "positive_cash_flow_ratio": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Positive Cash Flow Ratio",
+            "type": "string"
+          },
+          "savings_buffer": {
+            "title": "Savings Buffer",
+            "type": "integer"
+          },
+          "weakest_month_cash_flow": {
+            "title": "Weakest Month Cash Flow",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "assessment_id",
+          "average_income",
+          "median_income",
+          "income_volatility",
+          "essential_expenses",
+          "discretionary_expenses",
+          "existing_debt",
+          "average_free_cash_flow",
+          "minimum_balance",
+          "positive_cash_flow_ratio",
+          "weakest_month_cash_flow",
+          "savings_buffer",
+          "months_covered",
+          "coverage_flag",
+          "monthly_snapshots",
+          "income_sources",
+          "cash_flow_events"
+        ],
+        "title": "TwinResponse",
+        "type": "object"
+      },
+      "TwinSummary": {
+        "properties": {
+          "average_free_cash_flow": {
+            "title": "Average Free Cash Flow",
+            "type": "integer"
+          },
+          "essential_expenses": {
+            "title": "Essential Expenses",
+            "type": "integer"
+          },
+          "existing_debt": {
+            "title": "Existing Debt",
+            "type": "integer"
+          },
+          "median_income": {
+            "title": "Median Income",
+            "type": "integer"
+          },
+          "weakest_month_cash_flow": {
+            "title": "Weakest Month Cash Flow",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "median_income",
+          "essential_expenses",
+          "existing_debt",
+          "average_free_cash_flow",
+          "weakest_month_cash_flow"
+        ],
+        "title": "TwinSummary",
+        "type": "object"
+      },
       "UpdateProfileRequest": {
         "additionalProperties": false,
         "properties": {
@@ -892,6 +1927,16 @@
         },
         "title": "UpdateProfileRequest",
         "type": "object"
+      },
+      "UrgencyEnum": {
+        "description": "Gap-fill (PLAN \u00a724.11): `financing_needs.urgency` is named in \u00a711.3\nbut its member set isn't enumerated in Appendix A. Added Sprint 4/T4.5.",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH"
+        ],
+        "title": "UrgencyEnum",
+        "type": "string"
       },
       "UserResponse": {
         "properties": {
@@ -970,6 +2015,361 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/assessments": {
+      "post": {
+        "operationId": "create_assessment_api_v1_assessments_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAssessmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentCreateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Assessment",
+        "tags": [
+          "assessments"
+        ]
+      }
+    },
+    "/api/v1/assessments/{assessment_id}": {
+      "get": {
+        "operationId": "get_assessment_api_v1_assessments__assessment_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assessment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Assessment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Assessment",
+        "tags": [
+          "assessments"
+        ]
+      }
+    },
+    "/api/v1/assessments/{assessment_id}/dashboard": {
+      "get": {
+        "description": "FR-12: composite read for the 4-headline-card dashboard (\u00a77.11).\n`twin` is `None` until the async analysis stage completes (PLAN \u00a78.3).",
+        "operationId": "get_assessment_dashboard_api_v1_assessments__assessment_id__dashboard_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assessment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Assessment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Assessment Dashboard",
+        "tags": [
+          "assessments"
+        ]
+      }
+    },
+    "/api/v1/assessments/{assessment_id}/lineage": {
+      "get": {
+        "operationId": "get_assessment_lineage_api_v1_assessments__assessment_id__lineage_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assessment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Assessment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LineageResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Assessment Lineage",
+        "tags": [
+          "assessments"
+        ]
+      }
+    },
+    "/api/v1/assessments/{assessment_id}/recommendation": {
+      "get": {
+        "operationId": "get_assessment_recommendation_api_v1_assessments__assessment_id__recommendation_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assessment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Assessment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecommendationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Assessment Recommendation",
+        "tags": [
+          "assessments"
+        ]
+      }
+    },
+    "/api/v1/assessments/{assessment_id}/twin": {
+      "get": {
+        "operationId": "get_assessment_twin_api_v1_assessments__assessment_id__twin_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assessment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Assessment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwinResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Assessment Twin",
+        "tags": [
+          "assessments"
+        ]
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "operationId": "login_api_v1_auth_login_post",
@@ -1535,6 +2935,112 @@
         "summary": "Get Document Verification",
         "tags": [
           "documents"
+        ]
+      }
+    },
+    "/api/v1/financing-needs": {
+      "get": {
+        "operationId": "list_financing_needs_api_v1_financing_needs_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancingNeedListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Financing Needs",
+        "tags": [
+          "financing-needs"
+        ]
+      },
+      "post": {
+        "operationId": "create_financing_need_api_v1_financing_needs_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFinancingNeedRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancingNeedResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Financing Need",
+        "tags": [
+          "financing-needs"
         ]
       }
     },

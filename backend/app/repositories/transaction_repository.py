@@ -56,3 +56,29 @@ class TransactionRepository:
             Transaction.deleted_at.is_(None),
         )
         return list(self._db.execute(stmt).scalars().all())
+
+    def list_for_user(self, user_id: uuid.UUID) -> list[Transaction]:
+        """Every active transaction across the user's accounts/documents --
+        `NormalizationEngine`'s cross-account internal-transfer detection
+        (FR-6 AC5) and `CashFlowTwinEngine` both need the whole picture, not
+        one document's rows (see `app/services/normalization_service.py`)."""
+        stmt = select(Transaction).where(
+            Transaction.user_id == user_id, Transaction.deleted_at.is_(None)
+        )
+        return list(self._db.execute(stmt).scalars().all())
+
+    def get_by_ids(self, transaction_ids: list[uuid.UUID]) -> list[Transaction]:
+        stmt = select(Transaction).where(
+            Transaction.id.in_(transaction_ids), Transaction.deleted_at.is_(None)
+        )
+        return list(self._db.execute(stmt).scalars().all())
+
+    def list_for_documents(self, source_document_ids: list[uuid.UUID]) -> list[Transaction]:
+        """`AssessmentService.create` scopes a new assessment's transactions
+        to exactly the documents the caller included (FR-18 lineage), not
+        every transaction the user has ever had normalized."""
+        stmt = select(Transaction).where(
+            Transaction.source_document_id.in_(source_document_ids),
+            Transaction.deleted_at.is_(None),
+        )
+        return list(self._db.execute(stmt).scalars().all())
