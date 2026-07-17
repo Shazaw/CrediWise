@@ -244,7 +244,9 @@ def _detect_recurring(
             (b.transaction_date - a.transaction_date).days
             for a, b in zip(ordered_members, ordered_members[1:], strict=False)
         ]
-        interval_stddev = Decimal(str(statistics.pstdev(intervals))) if len(intervals) > 1 else Decimal(0)
+        interval_stddev = (
+            Decimal(str(statistics.pstdev(intervals))) if len(intervals) > 1 else Decimal(0)
+        )
         if interval_stddev > config.recurring_interval_stddev_days_max:
             continue
 
@@ -252,7 +254,8 @@ def _detect_recurring(
         day_of_month = _mode_day_of_month(ordered_members) if mean_interval >= 25 else None
         regularity_score = max(
             Decimal(0),
-            Decimal(1) - (interval_stddev / Decimal(config.recurring_interval_stddev_days_max or 1)),
+            Decimal(1)
+            - (interval_stddev / Decimal(config.recurring_interval_stddev_days_max or 1)),
         ).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
         confidence = min(
             Decimal(1), Decimal(len(members)) / Decimal(config.recurring_min_occurrences * 2)

@@ -28,15 +28,21 @@ class AssessmentInputSnapshot(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         unique=True,
     )
     snapshot_hash: Mapped[str] = mapped_column(CHAR(64), nullable=False)
-    normalized_input_json: Mapped[dict[str, Any]] = mapped_column(JSONB(), nullable=False, default=dict)
-    document_refs_json: Mapped[dict[str, Any]] = mapped_column(JSONB(), nullable=False, default=dict)
+    normalized_input_json: Mapped[dict[str, Any]] = mapped_column(
+        JSONB(), nullable=False, default=dict
+    )
+    document_refs_json: Mapped[dict[str, Any]] = mapped_column(
+        JSONB(), nullable=False, default=dict
+    )
     transaction_refs_json: Mapped[dict[str, Any]] = mapped_column(
         JSONB(), nullable=False, default=dict
     )
     accepted_corrections_json: Mapped[dict[str, Any]] = mapped_column(
         JSONB(), nullable=False, default=dict
     )
-    parser_versions_json: Mapped[dict[str, Any]] = mapped_column(JSONB(), nullable=False, default=dict)
+    parser_versions_json: Mapped[dict[str, Any]] = mapped_column(
+        JSONB(), nullable=False, default=dict
+    )
     categorizer_version: Mapped[str] = mapped_column(Text(), nullable=False)
     engine_config_hash: Mapped[str] = mapped_column(CHAR(64), nullable=False)
     simulation_parameters_json: Mapped[dict[str, Any]] = mapped_column(

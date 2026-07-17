@@ -314,9 +314,9 @@ def run_assessment_analysis(db: Session, assessment_id: uuid.UUID) -> None:
                 average_free_cash_flow=twin_result.average_free_cash_flow,
                 requested_amount=financing_need.requested_amount,
                 min_monthly_minimum_balance=min_minimum_balance,
-                dominant_income_day=dominant_source.dominant_arrival_day
-                if dominant_source
-                else None,
+                dominant_income_day=(
+                    dominant_source.dominant_arrival_day if dominant_source else None
+                ),
                 dominant_income_frequency=dominant_source.frequency if dominant_source else None,
             )
         )

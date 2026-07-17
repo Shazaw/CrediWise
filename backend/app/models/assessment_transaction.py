@@ -19,7 +19,9 @@ class AssessmentTransaction(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "assessment_transactions"
     __table_args__ = (
         UniqueConstraint(
-            "assessment_id", "transaction_id", name="uq_assessment_transactions_assessment_transaction"
+            "assessment_id",
+            "transaction_id",
+            name="uq_assessment_transactions_assessment_transaction",
         ),
     )
 

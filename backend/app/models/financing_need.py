@@ -24,7 +24,11 @@ class FinancingNeed(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
     )
     requested_amount: Mapped[int] = mapped_column(BigInteger(), nullable=False)
-    purpose: Mapped[PurposeEnum] = mapped_column(sa_enum(PurposeEnum, "purpose_enum"), nullable=False)
+    purpose: Mapped[PurposeEnum] = mapped_column(
+        sa_enum(PurposeEnum, "purpose_enum"), nullable=False
+    )
     preferred_tenor_months: Mapped[int] = mapped_column(Integer(), nullable=False)
-    urgency: Mapped[UrgencyEnum] = mapped_column(sa_enum(UrgencyEnum, "urgency_enum"), nullable=False)
+    urgency: Mapped[UrgencyEnum] = mapped_column(
+        sa_enum(UrgencyEnum, "urgency_enum"), nullable=False
+    )
     notes: Mapped[str | None] = mapped_column(Text(), nullable=True)
