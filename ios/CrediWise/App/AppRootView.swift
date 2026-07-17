@@ -3,6 +3,7 @@ import SwiftUI
 struct AppRootView: View {
     @ObservedObject var coordinator: AppCoordinator
     @ObservedObject private var sessionManager: SessionManager
+    @State private var selectedTab = AuthenticatedTab.home
 
     init(coordinator: AppCoordinator) {
         self.coordinator = coordinator
@@ -26,6 +27,11 @@ struct AppRootView: View {
         .tint(CrediWiseColors.primary)
         .task {
             await sessionManager.restore()
+        }
+        .onChange(of: sessionManager.state) { state in
+            if state != .signedIn {
+                selectedTab = .home
+            }
         }
     }
 
@@ -60,16 +66,147 @@ struct AppRootView: View {
     }
 
     private var authenticatedFlow: some View {
-        NavigationStack(path: $coordinator.path) {
-            AuthenticatedHomeView(
-                onStart: startAuthenticatedFlow,
-                showsCycle5Preview: coordinator.shouldOfferSyntheticAssessment,
-                onSignOut: coordinator.signOut
+        TabView(selection: $selectedTab) {
+            NavigationStack(path: $coordinator.path) {
+                AuthenticatedHomeView(
+                    onStart: startAuthenticatedFlow,
+                    showsCycle5Preview: coordinator.shouldOfferSyntheticAssessment
+                )
+                .navigationDestination(for: AppRoute.self) { route in
+                    destination(for: route)
+                }
+            }
+            .tabItem { Label("shell.tab.home", systemImage: "house.fill") }
+            .tag(AuthenticatedTab.home)
+
+            shellPlaceholder(
+                icon: "doc.text.magnifyingglass",
+                eyebrow: "shell.records.eyebrow",
+                title: "shell.records.title",
+                detail: "shell.records.detail",
+                identifier: "shell.records"
             )
-            .navigationDestination(for: AppRoute.self) { route in
-                destination(for: route)
+            .tabItem { Label("shell.tab.records", systemImage: "folder.fill") }
+            .tag(AuthenticatedTab.records)
+
+            shellPlaceholder(
+                icon: "chart.bar.xaxis",
+                eyebrow: "shell.assessment.eyebrow",
+                title: "shell.assessment.title",
+                detail: "shell.assessment.detail",
+                identifier: "shell.assessment"
+            )
+            .tabItem { Label("shell.tab.assessment", systemImage: "chart.bar.fill") }
+            .tag(AuthenticatedTab.assessment)
+
+            shellPlaceholder(
+                icon: "arrow.left.arrow.right.circle.fill",
+                eyebrow: "shell.offers.eyebrow",
+                title: "shell.offers.title",
+                detail: "shell.offers.detail",
+                identifier: "shell.offers"
+            )
+            .tabItem { Label("shell.tab.offers", systemImage: "rectangle.stack.fill") }
+            .tag(AuthenticatedTab.offers)
+
+            profileTab
+                .tabItem { Label("shell.tab.profile", systemImage: "person.crop.circle.fill") }
+                .tag(AuthenticatedTab.profile)
+        }
+        .toolbarBackground(CrediWiseColors.surface, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
+    }
+
+    private var profileTab: some View {
+        ZStack {
+            CrediWiseColors.surfaceAlt.ignoresSafeArea()
+            ScrollView {
+                VStack(alignment: .leading, spacing: SpacingTokens.large) {
+                    shellPlaceholderCard(
+                        icon: "person.crop.circle.fill",
+                        eyebrow: "shell.profile.eyebrow",
+                        title: "shell.profile.title",
+                        detail: "shell.profile.detail"
+                    )
+
+                    PrimaryButton(title: "session.sign_out") {
+                        Task {
+                            selectedTab = .home
+                            await coordinator.signOut()
+                        }
+                    }
+                    .accessibilityIdentifier("session.sign_out")
+
+                    DisclaimerFooter()
+                }
+                .padding(SpacingTokens.large)
             }
         }
+        .accessibilityIdentifier("shell.profile")
+    }
+
+    private func shellPlaceholder(
+        icon: String,
+        eyebrow: LocalizedStringKey,
+        title: LocalizedStringKey,
+        detail: LocalizedStringKey,
+        identifier: String
+    ) -> some View {
+        ZStack {
+            CrediWiseColors.surfaceAlt.ignoresSafeArea()
+            ScrollView {
+                VStack(spacing: SpacingTokens.large) {
+                    shellPlaceholderCard(
+                        icon: icon,
+                        eyebrow: eyebrow,
+                        title: title,
+                        detail: detail
+                    )
+                    DisclaimerFooter()
+                }
+                .padding(SpacingTokens.large)
+            }
+        }
+        .accessibilityIdentifier(identifier)
+    }
+
+    private func shellPlaceholderCard(
+        icon: String,
+        eyebrow: LocalizedStringKey,
+        title: LocalizedStringKey,
+        detail: LocalizedStringKey
+    ) -> some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.large) {
+            ZStack {
+                RoundedRectangle(cornerRadius: RadiusTokens.button)
+                    .fill(CrediWiseColors.primaryTint)
+                    .frame(width: 56, height: 56)
+
+                Image(systemName: icon)
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundStyle(CrediWiseColors.primary)
+            }
+            .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: SpacingTokens.small) {
+                Text(eyebrow)
+                    .font(TypographyTokens.caption.weight(.bold))
+                    .foregroundStyle(CrediWiseColors.primary)
+                Text(title)
+                    .font(TypographyTokens.title)
+                    .foregroundStyle(CrediWiseColors.textPrimary)
+                Text(detail)
+                    .font(TypographyTokens.body)
+                    .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(SpacingTokens.xLarge)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(CrediWiseColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: RadiusTokens.card))
+        .shadow(color: .black.opacity(0.06), radius: 20, y: 8)
+        .accessibilityElement(children: .combine)
     }
 
     @ViewBuilder
@@ -178,4 +315,12 @@ struct AppRootView: View {
         }
         return { coordinator.showFinancingNeed() }
     }
+}
+
+private enum AuthenticatedTab: Hashable {
+    case home
+    case records
+    case assessment
+    case offers
+    case profile
 }

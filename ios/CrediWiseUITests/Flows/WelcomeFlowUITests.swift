@@ -40,7 +40,30 @@ final class WelcomeFlowUITests: XCTestCase {
 
         XCTAssertTrue(app.staticTexts["session.authenticated.title"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.buttons["session.start_upload"].exists)
+        XCTAssertTrue(app.descendants(matching: .any)["home.journey"].exists)
+        XCTAssertTrue(app.descendants(matching: .any)["home.journey.step.need"].exists)
+        XCTAssertTrue(app.descendants(matching: .any)["home.journey.step.verify"].exists)
+        XCTAssertTrue(app.descendants(matching: .any)["home.journey.step.compare"].exists)
+        XCTAssertTrue(app.descendants(matching: .any)["home.privacy"].exists)
+        XCTAssertEqual(app.tabBars.buttons.count, 5)
+
+        app.tabBars.buttons.element(boundBy: 4).tap()
         XCTAssertTrue(app.buttons["session.sign_out"].exists)
+    }
+
+    func testAuthenticatedShellDestinationsRemainAccessible() {
+        let app = launchApp()
+        signIn(app)
+
+        app.tabBars.buttons.element(boundBy: 1).tap()
+        XCTAssertTrue(app.descendants(matching: .any)["shell.records"].waitForExistence(timeout: 2))
+
+        app.tabBars.buttons.element(boundBy: 2).tap()
+        XCTAssertTrue(app.descendants(matching: .any)["shell.assessment"].waitForExistence(timeout: 2))
+
+        app.tabBars.buttons.element(boundBy: 3).tap()
+        XCTAssertTrue(app.descendants(matching: .any)["shell.offers"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["positioning.disclaimer"].exists)
     }
 
     func testSyntheticUploadCompletesAccessibleProcessingFlow() {
