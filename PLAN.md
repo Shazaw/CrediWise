@@ -3,7 +3,7 @@
 > **Single Source of Truth.** This is the *only* document a coding agent is expected to read before implementing any feature in this repository. It is a hybrid **Product Requirements Document (PRD) + Technical Design Document (TDD)**. If a decision is not written here, it is either (a) not yet decided — raise it and update this file via the process in [§24 Coding Agent Instructions](#24-coding-agent-instructions), or (b) governed by the closest analogous decision already documented. **Do not invent architecture silently.**
 
 - **Product:** CrediWise — *Two-Way Credit Safety Engine, Trust Layer & Open Finance Roadmap*
-- **Document version:** `1.5.0`
+- **Document version:** `1.6.0`
 - **Status:** Approved for Sprint 0
 - **Last updated:** 2026-07-17
 - **Approval note:** Native iOS, the full backend/worker infrastructure, and terminal-agent-driven parallel implementation are confirmed team decisions following mentor review.
@@ -87,14 +87,14 @@ These are **reasonable engineering assumptions** made where the brief left gaps.
 - **A2 — Currency & locale:** Single currency **IDR (Rp)**, locale `id-ID`, all monetary values stored as **integer minor units is NOT used** — IDR has no commonly used subunit in practice; we store amounts as **`BIGINT` whole rupiah**. Timezone **Asia/Jakarta (WIB, UTC+7)**. See ADR-010.
 - **A3 — MVP data source:** Uploaded documents only. Direct bank/e-wallet APIs and Open Finance are **simulated** (mock provider) in MVP. See §16.
 - **A4 — Lenders:** Lender offers are **seeded/simulated** in MVP (no live lender integration). The lender dashboard is a **post-MVP web console**; in the MVP demo, lender-facing output is shown as a screen inside the app or a read-only web page.
-- **A5 — Scoring models:** All borrower, affordability, resilience, and offer scores in MVP are **deterministic rule-based engines** with version-controlled weights, *not* trained ML models. Generative AI never invents or directly outputs these scores. A locally hosted Kimi-class vision-language model may produce a versioned **document anomaly signal** for fraud-assistance; it is evidence only and may affect Data Confidence only through an explicitly enabled, auditable model configuration (§15.3, §15.6, §19).
+- **A5 — Scoring models:** All authoritative borrower, affordability, resilience, and offer scores in MVP are **deterministic rule-based engines** with version-controlled weights. A separately versioned trained repayment model may run in `SHADOW_RESEARCH` mode and expose explicitly experimental evidence, but it cannot alter those scores, safe borrowing, offers, pricing, or approval. Generative AI never invents or directly outputs these scores. A locally hosted Kimi-class vision-language model may produce a versioned **document anomaly signal** for fraud-assistance; it is evidence only and may affect Data Confidence only through an explicitly enabled, auditable model configuration (§15.3, §15.6, §19).
 - **A6 — Identity/KYC:** Production KYC (liveness, e-KTP OCR, Dukcapil match) is **simulated**. MVP does name-matching against a self-declared profile.
 - **A7 — Positioning:** MVP language is *“estimated financial-risk, affordability, and credit-readiness assessment”* — **never** “official credit score.” Enforced in copy constants (§14.6) and reviewed in every PR touching user-facing strings.
 - **A8 — Compliance:** No real PII of real third parties is used in demos; only synthetic fixtures. Data-protection posture targets Indonesia's **UU PDP** principles (consent, minimisation, retention) as design guidance, not certified compliance.
 
 ### 1.5 Non-Goals (explicitly out of scope for the hackathon)
 
-- We are **not** building a trained default-prediction ML model, a production fraud model, or a licensed PKA score.
+- We are **not** shipping a trained model as an Indonesian-calibrated decision model, a production fraud model, or a licensed PKA score. The attributed public-data repayment model in ADR-017 is research evidence only.
 - We are **not** integrating real bank/Open Finance production APIs, real lender APIs, or real disbursement/payments.
 - We are **not** claiming regulatory recognition, PKA licensing, or bank acceptance.
 - We are **not** shipping Android or a full multi-tenant lender SaaS console in MVP.
@@ -299,6 +299,14 @@ The system generates deterministic, evidence-backed recommendations selected fro
 Each completed assessment is tied to exact documents, processing runs, verification results, normalized transaction hashes, accepted corrections, model configs, simulation parameters, and offer terms.
 - **AC1:** re-running the same frozen snapshot with the same engine versions produces bit-identical outputs.
 - **AC2:** later recategorization or parser upgrades cannot change a historical assessment; they require a new processing run/snapshot/assessment.
+
+#### FR-19 — Experimental Repayment Model Evidence
+The system may attach a separately versioned, internally trained repayment-risk research signal to a completed assessment without changing any deterministic output.
+- **AC1:** training uses a documented target, source attribution, pre-index features only, account/entity-safe splits, calibration, an immutable model card, and a non-executable hash-validated artifact.
+- **AC2:** each prediction stores the assessment, model version, artifact hash, feature schema/version, exact feature hash/vector, probability, confidence, reason contributions, and out-of-domain evidence.
+- **AC3:** model failure or ineligibility never fails the assessment and never fabricates a probability.
+- **AC4:** public-data output is labelled `SHADOW_RESEARCH`, LOW confidence, experimental, and not Indonesian-calibrated until representative prospective outcomes pass governance gates.
+- **AC5:** the model cannot alter Data Confidence, Indicative Risk Band, Safe Borrowing Capacity, Shock Resilience, Safe Offer Score, pricing, approval, or raw evidence.
 
 ### 4.2 Non-Functional Requirements
 
@@ -1699,6 +1707,7 @@ Every PR body includes: **What/Why**, **PLAN sections & FR/NFR touched**, **How 
 | **ADR-014** | **Extraction auto-provisions `financial_accounts`** when a `source_document` has none | `transactions.financial_account_id` is `NOT NULL` per §11.3, but no create-account route ships in MVP (T2.1); server-side inference from `source_type` keeps the golden path (§1.6) a single upload step. |
 | **ADR-015** | **`SafeBorrowingEngine` ships without `ShockCapacity`**; document→assessment pipeline splits into document-scoped `NORMALIZATION` and assessment-scoped `ANALYSIS` stages | `ShockEngine` doesn't exist until Sprint 5, so §5.6's fifth `min(...)` term can't be computed yet — the other four terms are a documented conservative upper bound. `pipeline_stage_runs.assessment_id` (§11.3) only makes sense if an assessment-scoped stage exists alongside the document-scoped ones. |
 | **ADR-016** | **`ShockCapacity` is closed-form; offer-specific shocks compose in the service; v2 loan/offer configuration uses complete cash-flow math; canonical offers use nullable template identity; every MVP provider is simulated** | Deterministic Decimal IRR uses net proceeds and full schedules. Historical 0009/v1 evidence remains immutable and keyless; only exact v2 template sets are reusable. Assessment locking plus a conditional template-key index prevents new duplicates without invalidating historical duplicate batches. |
+| **ADR-017** | **CrediWise may run an internally trained public-data repayment model only as append-only `SHADOW_RESEARCH` evidence** | Demonstrates owned modeling, calibration, explainability, and artifact governance without replacing deterministic safety outputs or claiming Indonesian validity from historical foreign datasets. |
 
 ---
 
@@ -1910,6 +1919,11 @@ Follow the sprint plan (§25). Within a feature, build **inside-out**: model/mig
 - [x] T5.6 iOS: authenticated Shock card + interactive simulation controls and temporal Swift Charts; safety-ordered Offers list and complete dangerous-offer detail; Indonesian/English localization, VoiceOver summaries, and DisclaimerFooter throughout
 - [x] T5.7 Golden-path e2e test (`tests/integration/api/test_shocks_offers.py`: full upload→confirm→assessment→shocks→simulate→offers→safety pipeline, ranked/dangerous-offer assertions). No live demo rehearsal performed (that is a human/product activity, not a code artifact).
 - [x] T5.8 Tests: engine golden tests (`shock.py` 100%, `offer.py` 100%, `loan_math.py` 100%, `safe_borrowing.py` 100% — all ≥90% coverage gate) + shock/offer integration tests
+- [x] T5.9 Public-data acquisition manifests, attribution, leakage-safe Berka A/B feature pipeline, separate UCI benchmark downloads, and raw-data Git exclusion (FR-19)
+- [x] T5.10 `crediwise-cashflow-risk:v1-research`: deterministic L2 logistic training, chronological calibration/test split, safe JSON export, model card, metrics, and SHA-256 artifact identity
+- [x] T5.11 Append-only `repayment_model_predictions`, additive model registry metadata, shadow inference/fallback, and `GET /assessments/{id}/repayment-model`
+- [x] T5.12 iOS experimental ML evidence card with Indonesian/English limitations and positioning guardrails
+- [x] T5.13 Repayment feature, artifact validation, determinism, migration, API ownership, ineligible, and UI contract tests
 
 ### 26.7 Sprint 6 — Consent & Audit UX
 - [ ] T6.1 `consents` model/migration + CRUD + authz enforcement

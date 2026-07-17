@@ -16,6 +16,8 @@ from app.models.enums import (
     DirEnum,
     FreqEnum,
     IncomeSourceEnum,
+    RepaymentModelModeEnum,
+    RepaymentPredictionStatusEnum,
     RiskBandEnum,
     ShockResilienceBandEnum,
 )
@@ -164,6 +166,28 @@ class ShockResilienceSummary(BaseModel):
     reason_codes: list[ReasonCodeResponse]
 
 
+class RepaymentModelReasonResponse(BaseModel):
+    code: str
+    feature: str | None = None
+    contribution: Decimal | None = None
+    direction: str | None = None
+
+
+class RepaymentModelSummary(BaseModel):
+    status: RepaymentPredictionStatusEnum
+    mode: RepaymentModelModeEnum
+    estimated_adverse_outcome_probability: Decimal | None
+    model_confidence: BandEnum | None
+    model_name: str
+    model_version: str
+    feature_schema_version: str
+    target_definition: str
+    reason_codes: list[RepaymentModelReasonResponse]
+    out_of_domain_features: list[str]
+    limitations: list[str]
+    positioning_notice: str
+
+
 class DashboardResponse(BaseModel):
     assessment_id: uuid.UUID
     status: AssessmentStatusEnum
@@ -174,6 +198,7 @@ class DashboardResponse(BaseModel):
     shock_resilience: ShockResilienceSummary
     safe_borrowing: SafeBorrowingSummary
     twin: TwinSummary | None
+    repayment_model: RepaymentModelSummary | None = None
 
 
 class LineageResponse(BaseModel):

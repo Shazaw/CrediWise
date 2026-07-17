@@ -24,6 +24,7 @@ from app.models.offer_assessment import OfferAssessment
 from app.models.pipeline_stage_run import PipelineStageRun
 from app.models.recurring_series import RecurringSeries
 from app.models.refresh_token import RefreshToken
+from app.models.repayment_model_prediction import RepaymentModelPrediction
 from app.models.shock_scenario import ShockScenario
 from app.models.source_document import SourceDocument
 from app.models.transaction import Transaction
@@ -52,6 +53,7 @@ __all__ = [
     "PipelineStageRun",
     "RecurringSeries",
     "RefreshToken",
+    "RepaymentModelPrediction",
     "ShockScenario",
     "SourceDocument",
     "Transaction",

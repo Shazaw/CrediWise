@@ -26,6 +26,7 @@ struct AssessmentDashboardResponse: Decodable {
     let riskBand: AssessmentRiskResponse
     let safeBorrowing: AssessmentSafeBorrowingResponse
     let twin: AssessmentTwinSummaryResponse?
+    let repaymentModel: AssessmentRepaymentModelResponse?
 
     enum CodingKeys: String, CodingKey {
         case assessmentID = "assessment_id"
@@ -35,6 +36,7 @@ struct AssessmentDashboardResponse: Decodable {
         case riskBand = "risk_band"
         case safeBorrowing = "safe_borrowing"
         case twin
+        case repaymentModel = "repayment_model"
     }
 }
 
@@ -87,6 +89,36 @@ struct AssessmentTwinSummaryResponse: Decodable {}
 struct AssessmentReasonResponse: Decodable {
     let code: String
     let description: String
+}
+
+struct AssessmentRepaymentModelResponse: Decodable {
+    let status: String
+    let mode: String
+    let estimatedAdverseOutcomeProbability: String?
+    let modelConfidence: String?
+    let modelName: String
+    let modelVersion: String
+    let featureSchemaVersion: String
+    let reasonCodes: [AssessmentRepaymentModelReasonResponse]
+    let outOfDomainFeatures: [String]
+
+    enum CodingKeys: String, CodingKey {
+        case status
+        case mode
+        case estimatedAdverseOutcomeProbability = "estimated_adverse_outcome_probability"
+        case modelConfidence = "model_confidence"
+        case modelName = "model_name"
+        case modelVersion = "model_version"
+        case featureSchemaVersion = "feature_schema_version"
+        case reasonCodes = "reason_codes"
+        case outOfDomainFeatures = "out_of_domain_features"
+    }
+}
+
+struct AssessmentRepaymentModelReasonResponse: Decodable {
+    let code: String
+    let feature: String?
+    let direction: String?
 }
 
 struct AssessmentTwinResponse: Decodable {

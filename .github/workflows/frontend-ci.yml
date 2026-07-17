@@ -6,7 +6,7 @@ on:
       - "ios/**"
       - ".github/workflows/frontend-ci.yml"
   push:
-    branches: [main, "integration/**", "frontend/**"]
+    branches: [main, "integration/**", "frontend/**", "model/**"]
     paths:
       - "ios/**"
       - ".github/workflows/frontend-ci.yml"

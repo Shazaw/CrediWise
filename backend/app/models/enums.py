@@ -104,6 +104,16 @@ class ModelStatusEnum(StrEnum):
     RETIRED = "RETIRED"
 
 
+class RepaymentPredictionStatusEnum(StrEnum):
+    COMPLETE = "COMPLETE"
+    INELIGIBLE = "INELIGIBLE"
+    UNAVAILABLE = "UNAVAILABLE"
+
+
+class RepaymentModelModeEnum(StrEnum):
+    SHADOW_RESEARCH = "SHADOW_RESEARCH"
+
+
 class AccountTypeEnum(StrEnum):
     BANK = "BANK"
     EWALLET = "EWALLET"

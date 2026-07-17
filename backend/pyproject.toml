@@ -29,6 +29,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+ml = [
+  "PyMySQL>=1.1,<2",
+  "xlrd>=2,<3",
+]
 dev = [
   "pytest>=9.0.3,<10",
   "pytest-cov>=5.0.0,<6",

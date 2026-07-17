@@ -1,0 +1,144 @@
+{
+  "artifact_format": "crediwise.linear_probability.v1",
+  "calibration": {
+    "intercept": "-1.9842920886680067",
+    "method": "PLATT",
+    "slope": "0.49290765514799773"
+  },
+  "deployment_mode": "SHADOW_RESEARCH",
+  "feature_schema_sha256": "7130cce7e28893428d5305f0080de6a67e78634b6e6f5a7a1ddc5cb8f7ec5823",
+  "feature_schema_version": "crediwise-cashflow-v1",
+  "linear_model": {
+    "coefficients": [
+      "-1.0818277018986227",
+      "0.73218889888766159",
+      "-0.74490004050639935",
+      "0",
+      "0.18155166545436388",
+      "1.1133282161400575",
+      "0.235371829424245",
+      "0.26680012760479749",
+      "-0.98516593563625443",
+      "1.6907074766241035",
+      "-1.0098860597819368",
+      "0.83004370822536333"
+    ],
+    "intercept": "-0.80117145371834164",
+    "l2_penalty": "1"
+  },
+  "metrics": {
+    "calibration": {
+      "adverse_events": 3,
+      "average_precision": 0.4284221525600836,
+      "brier_score": 0.07457249710223086,
+      "log_loss": 0.2765727107675047,
+      "prevalence": 0.08571428571428572,
+      "roc_auc": 0.6354166666666666,
+      "rows": 35
+    },
+    "test": {
+      "adverse_events": 3,
+      "average_precision": 0.6960784313725491,
+      "brier_score": 0.040600874482911685,
+      "log_loss": 0.20459317067186042,
+      "prevalence": 0.08333333333333333,
+      "roc_auc": 0.6868686868686869,
+      "rows": 36
+    },
+    "training": {
+      "adverse_events": 25,
+      "average_precision": 0.7346756373501643,
+      "brier_score": 0.08903392424446688,
+      "log_loss": 0.2969742190859835,
+      "prevalence": 0.15337423312883436,
+      "roc_auc": 0.8828985507246376,
+      "rows": 163
+    }
+  },
+  "model_name": "crediwise-cashflow-risk",
+  "model_version": "v1-research",
+  "preprocessing": {
+    "centers": [
+      "12.564417177914111",
+      "0.59241233559041684",
+      "0.64979065504275735",
+      "0",
+      "0.45032287284743799",
+      "-2.5597254389377051",
+      "0.080418603716176248",
+      "0.082732691062100697",
+      "4.2033891716909482",
+      "0.003297800479323387",
+      "2.1661474621107821",
+      "0.41719251459740825"
+    ],
+    "clip_lower": [
+      "4.6200000000000001",
+      "0.14299244331081351",
+      "0.33333333333333331",
+      "0",
+      "0.024512246331930623",
+      "-63.4746183876141",
+      "-0.12192791399759906",
+      "0",
+      "0.82300182752589657",
+      "0",
+      "0.30812859894215361",
+      "-0.50649735879948721"
+    ],
+    "clip_upper": [
+      "23.379999999999995",
+      "1.6009773422343025",
+      "1",
+      "0",
+      "8.5571571186219479",
+      "0.24649253787200012",
+      "1.4077284557170628",
+      "1.4077284557170628",
+      "91.629300957677501",
+      "0.13935897435897371",
+      "50.952299725128434",
+      "9.9285906303014464"
+    ],
+    "feature_order": [
+      "months_observed",
+      "income_cv",
+      "positive_net_flow_ratio",
+      "debt_service_ratio",
+      "free_cash_flow_margin",
+      "weakest_month_margin",
+      "minimum_balance_ratio",
+      "balance_buffer_ratio",
+      "average_closing_balance_ratio",
+      "negative_balance_month_ratio",
+      "net_flow_volatility_ratio",
+      "monthly_balance_trend_ratio"
+    ],
+    "scales": [
+      "5.2764154148099038",
+      "0.34820389237479243",
+      "0.15452631808127451",
+      "1",
+      "1.294424492460251",
+      "8.6358965707428919",
+      "0.21951857758334639",
+      "0.21814216173106152",
+      "12.718677297752643",
+      "0.018271678346737798",
+      "7.4780767417178851",
+      "1.4430468849319757"
+    ]
+  },
+  "support": {
+    "calibration_rows": 35,
+    "earliest_index_date": "1993-07-05",
+    "geographic_scope": "Historical Czech banking benchmark; not Indonesian-calibrated",
+    "latest_index_date": "1997-12-28",
+    "minimum_months": 2,
+    "test_rows": 36,
+    "training_rows": 163
+  },
+  "target_version": "berka-finished-loan-a-vs-b-v1",
+  "training_dataset_sha256": "ea1f25f075fbeb51f85b167893c6965db40419eb04f64ebba121ae8b8af55596",
+  "training_source": "Berka/PKDD'99 Financial via CTU Relational Repository"
+}

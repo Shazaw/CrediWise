@@ -46,7 +46,9 @@ from app.models.enums import (
 )
 from app.models.financial_profile import FinancialProfile
 from app.models.income_source import IncomeSource
+from app.models.model_version import ModelVersion
 from app.models.monthly_cash_flow_snapshot import MonthlyCashFlowSnapshot
+from app.models.repayment_model_prediction import RepaymentModelPrediction
 from app.models.shock_scenario import ShockScenario
 from app.models.transaction import Transaction
 from app.models.user import User
@@ -60,11 +62,15 @@ from app.repositories.document_verification_result_repository import (
 from app.repositories.financial_profile_repository import FinancialProfileRepository
 from app.repositories.financing_need_repository import FinancingNeedRepository
 from app.repositories.model_version_repository import ModelVersionRepository
+from app.repositories.repayment_model_prediction_repository import (
+    RepaymentModelPredictionRepository,
+)
 from app.repositories.shock_scenario_repository import ShockScenarioRepository
 from app.repositories.source_document_repository import SourceDocumentRepository
 from app.repositories.transaction_repository import TransactionRepository
 from app.services import audit_service
 from app.services.pipeline_stage_tracking import track_assessment_stage
+from app.services.repayment_model_service import run_shadow_prediction
 
 
 @dataclass(frozen=True)
@@ -86,6 +92,12 @@ class ShockScenariosView:
     config_hash: str
 
 
+@dataclass(frozen=True)
+class RepaymentModelView:
+    prediction: RepaymentModelPrediction
+    model_version: ModelVersion
+
+
 class AssessmentService:
     def __init__(self, db: Session) -> None:
         self._db = db
@@ -99,6 +111,7 @@ class AssessmentService:
         self._profiles = FinancialProfileRepository(db)
         self._reason_codes = AssessmentReasonCodeRepository(db)
         self._shock_scenarios = ShockScenarioRepository(db)
+        self._repayment_predictions = RepaymentModelPredictionRepository(db)
 
     def create(
         self,
@@ -236,6 +249,15 @@ class AssessmentService:
         if snapshot is None:
             raise NotFoundError("Lineage not available yet")
         return snapshot
+
+    def get_repayment_model(self, user: User, assessment_id: uuid.UUID) -> RepaymentModelView:
+        assessment = self._get_owned(user, assessment_id)
+        prediction = self._repayment_predictions.get_for_assessment(assessment.id)
+        if prediction is None:
+            raise NotFoundError("Repayment model evidence not available yet")
+        model_version = self._model_versions.get_by_id(prediction.model_version_id)
+        assert model_version is not None  # noqa: S101 - prediction FK guarantees existence
+        return RepaymentModelView(prediction=prediction, model_version=model_version)
 
     def get_model_lineage(self, user: User, assessment_id: uuid.UUID) -> tuple[str, str]:
         assessment = self._get_owned(user, assessment_id)
@@ -471,6 +493,7 @@ def run_assessment_analysis(db: Session, assessment_id: uuid.UUID) -> None:
         )
 
         _persist_twin(db, assessment, twin_result)
+        repayment_prediction = run_shadow_prediction(db, assessment, twin_result)
         _persist_shock_scenarios(db, assessment.id, shock_result)
         _persist_reason_codes(
             db, assessment.id, twin_result, risk_result, safe_borrowing_result, shock_result
@@ -504,7 +527,15 @@ def run_assessment_analysis(db: Session, assessment_id: uuid.UUID) -> None:
             action="assessment.analysis_completed",
             entity_type="assessment",
             entity_id=assessment.id,
-            metadata={"risk_band": risk_result.band.value, "status": assessment.status.value},
+            metadata={
+                "risk_band": risk_result.band.value,
+                "status": assessment.status.value,
+                "repayment_model_status": (
+                    repayment_prediction.status.value
+                    if repayment_prediction is not None
+                    else "NOT_SEEDED"
+                ),
+            },
         )
         db.commit()
 

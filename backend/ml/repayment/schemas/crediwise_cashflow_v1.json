@@ -1,0 +1,29 @@
+{
+  "schema_version": "crediwise-cashflow-v1",
+  "index_time_rule": "Only observations strictly before the loan or assessment index date are eligible.",
+  "features": [
+    {"name": "months_observed", "unit": "months", "description": "Calendar months containing eligible observations."},
+    {"name": "income_cv", "unit": "ratio", "description": "Population standard deviation of monthly inflows divided by mean monthly inflows."},
+    {"name": "positive_net_flow_ratio", "unit": "ratio", "description": "Share of observed months with positive net cash flow."},
+    {"name": "debt_service_ratio", "unit": "ratio", "description": "Average identified monthly debt payments divided by median monthly inflows."},
+    {"name": "free_cash_flow_margin", "unit": "ratio", "description": "Average monthly net cash flow divided by median monthly inflows."},
+    {"name": "weakest_month_margin", "unit": "ratio", "description": "Weakest monthly net cash flow divided by median monthly inflows."},
+    {"name": "minimum_balance_ratio", "unit": "ratio", "description": "Minimum observed balance divided by median monthly inflows."},
+    {"name": "balance_buffer_ratio", "unit": "ratio", "description": "Non-negative minimum balance divided by median monthly inflows."},
+    {"name": "average_closing_balance_ratio", "unit": "ratio", "description": "Average month-end balance divided by median monthly inflows."},
+    {"name": "negative_balance_month_ratio", "unit": "ratio", "description": "Share of observed months whose minimum balance is negative."},
+    {"name": "net_flow_volatility_ratio", "unit": "ratio", "description": "Population standard deviation of monthly net cash flow divided by median monthly inflows."},
+    {"name": "monthly_balance_trend_ratio", "unit": "ratio", "description": "Average monthly change from first to last closing balance divided by median monthly inflows."}
+  ],
+  "prohibited_features": [
+    "name",
+    "account_identifier",
+    "sex",
+    "age",
+    "marital_status",
+    "education",
+    "location",
+    "post_index_transaction",
+    "data_confidence_as_behavior"
+  ]
+}

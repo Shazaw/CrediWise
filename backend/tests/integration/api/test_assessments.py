@@ -127,6 +127,13 @@ def test_full_pipeline_produces_complete_assessment_with_twin_risk_safe_borrowin
     assert dashboard["safe_borrowing"]["required_liquidity_buffer"] > 0
     assert dashboard["data_confidence"]["score"] is not None
     assert dashboard["model_version_id"]
+    assert dashboard["repayment_model"]["status"] == "COMPLETE"
+    assert dashboard["repayment_model"]["mode"] == "SHADOW_RESEARCH"
+    assert dashboard["repayment_model"]["model_confidence"] == "LOW"
+    assert dashboard["repayment_model"]["estimated_adverse_outcome_probability"] is not None
+    assert (
+        "not an Indonesian default probability" in dashboard["repayment_model"]["target_definition"]
+    )
     dashboard_codes = (
         dashboard["data_confidence"]["reason_codes"]
         + dashboard["risk_band"]["positive_reason_codes"]
@@ -134,6 +141,12 @@ def test_full_pipeline_produces_complete_assessment_with_twin_risk_safe_borrowin
     )
     assert any(reason["code"].startswith("RISK_") for reason in dashboard_codes)
     assert any(reason["code"].startswith("SAFE_BORROWING_") for reason in dashboard_codes)
+
+    repayment_model = authed_client.get(
+        f"/api/v1/assessments/{assessment_id}/repayment-model", headers=headers
+    )
+    assert repayment_model.status_code == 200
+    assert repayment_model.json() == dashboard["repayment_model"]
 
     lineage = authed_client.get(
         f"/api/v1/assessments/{assessment_id}/lineage", headers=headers
@@ -164,6 +177,12 @@ def test_zero_free_cash_flow_yields_zero_safe_loan_amount(authed_client: TestCli
     assert detail["safe_loan_amount"] == 0
     assert detail["maximum_safe_instalment"] == 0
     assert detail["required_liquidity_buffer"] > 0
+
+    repayment_model = authed_client.get(
+        f"/api/v1/assessments/{assessment_id}/repayment-model", headers=headers
+    ).json()
+    assert repayment_model["status"] == "INELIGIBLE"
+    assert repayment_model["estimated_adverse_outcome_probability"] is None
 
 
 def test_create_assessment_rejects_document_not_yet_analyzing(authed_client: TestClient) -> None:

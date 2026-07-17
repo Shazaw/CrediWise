@@ -543,6 +543,16 @@
             "title": "Positioning Notice",
             "type": "string"
           },
+          "repayment_model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RepaymentModelSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "risk_band": {
             "$ref": "#/components/schemas/RiskBandSummary"
           },
@@ -1952,6 +1962,158 @@
         ],
         "title": "RegisterRequest",
         "type": "object"
+      },
+      "RepaymentModelModeEnum": {
+        "enum": [
+          "SHADOW_RESEARCH"
+        ],
+        "title": "RepaymentModelModeEnum",
+        "type": "string"
+      },
+      "RepaymentModelReasonResponse": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "contribution": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contribution"
+          },
+          "direction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Direction"
+          },
+          "feature": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feature"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "title": "RepaymentModelReasonResponse",
+        "type": "object"
+      },
+      "RepaymentModelSummary": {
+        "properties": {
+          "estimated_adverse_outcome_probability": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Adverse Outcome Probability"
+          },
+          "feature_schema_version": {
+            "title": "Feature Schema Version",
+            "type": "string"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Limitations",
+            "type": "array"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/RepaymentModelModeEnum"
+          },
+          "model_confidence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BandEnum"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "model_name": {
+            "title": "Model Name",
+            "type": "string"
+          },
+          "model_version": {
+            "title": "Model Version",
+            "type": "string"
+          },
+          "out_of_domain_features": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Out Of Domain Features",
+            "type": "array"
+          },
+          "positioning_notice": {
+            "title": "Positioning Notice",
+            "type": "string"
+          },
+          "reason_codes": {
+            "items": {
+              "$ref": "#/components/schemas/RepaymentModelReasonResponse"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RepaymentPredictionStatusEnum"
+          },
+          "target_definition": {
+            "title": "Target Definition",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "mode",
+          "estimated_adverse_outcome_probability",
+          "model_confidence",
+          "model_name",
+          "model_version",
+          "feature_schema_version",
+          "target_definition",
+          "reason_codes",
+          "out_of_domain_features",
+          "limitations",
+          "positioning_notice"
+        ],
+        "title": "RepaymentModelSummary",
+        "type": "object"
+      },
+      "RepaymentPredictionStatusEnum": {
+        "enum": [
+          "COMPLETE",
+          "INELIGIBLE",
+          "UNAVAILABLE"
+        ],
+        "title": "RepaymentPredictionStatusEnum",
+        "type": "string"
       },
       "ResilienceScoreScope": {
         "enum": [
@@ -3625,6 +3787,115 @@
           }
         },
         "summary": "Get Assessment Recommendation",
+        "tags": [
+          "assessments"
+        ]
+      }
+    },
+    "/api/v1/assessments/{assessment_id}/repayment-model": {
+      "get": {
+        "operationId": "get_assessment_repayment_model_api_v1_assessments__assessment_id__repayment_model_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assessment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Assessment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepaymentModelSummary"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required or invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict or reassessment required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Stable validation error envelope"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          }
+        },
+        "summary": "Get Assessment Repayment Model",
         "tags": [
           "assessments"
         ]

@@ -1,0 +1,63 @@
+{
+  "uci_default_credit_card_clients": {
+    "calibration": {
+      "adverse_events": 995,
+      "average_precision": 0.5217509877420504,
+      "brier_score": 0.13832085240890027,
+      "log_loss": 0.44026040120382637,
+      "prevalence": 0.22116025783507445,
+      "roc_auc": 0.765296803652968,
+      "rows": 4499
+    },
+    "split": "deterministic stratified 70/15/15; source has no usable entity/time split",
+    "test": {
+      "adverse_events": 996,
+      "average_precision": 0.46062595310798443,
+      "brier_score": 0.14865279683241833,
+      "log_loss": 0.4673132523458926,
+      "prevalence": 0.22123500666370502,
+      "roc_auc": 0.7260294744293775,
+      "rows": 4502
+    },
+    "training": {
+      "adverse_events": 4645,
+      "average_precision": 0.48059046894814267,
+      "brier_score": 0.14398610307561557,
+      "log_loss": 0.45376897627302243,
+      "prevalence": 0.22120100957188438,
+      "roc_auc": 0.7478044366349311,
+      "rows": 20999
+    }
+  },
+  "uci_south_german_credit": {
+    "calibration": {
+      "adverse_events": 45,
+      "average_precision": 0.5060712717783322,
+      "brier_score": 0.18490443477438057,
+      "log_loss": 0.5502560031139468,
+      "prevalence": 0.3,
+      "roc_auc": 0.7113227513227514,
+      "rows": 150
+    },
+    "split": "deterministic stratified 70/15/15; source has no usable entity/time split",
+    "test": {
+      "adverse_events": 45,
+      "average_precision": 0.5630757200624685,
+      "brier_score": 0.1800952240840038,
+      "log_loss": 0.5350237791349299,
+      "prevalence": 0.2980132450331126,
+      "roc_auc": 0.7354297693920335,
+      "rows": 151
+    },
+    "training": {
+      "adverse_events": 210,
+      "average_precision": 0.6440282674839488,
+      "brier_score": 0.15932743707126282,
+      "log_loss": 0.48799214767614857,
+      "prevalence": 0.30042918454935624,
+      "roc_auc": 0.8114616807868341,
+      "rows": 699
+    }
+  },
+  "warning": "Separate native-feature benchmarks only; not pooled, not external validation, and not used by production inference."
+}

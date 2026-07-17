@@ -325,6 +325,14 @@
 "dashboard.reason.safe_limit.detail" = "The safer amount is constrained by a deterministic affordability or liquidity limit.";
 "dashboard.reason.server.title" = "Assessment evidence";
 "dashboard.model_version" = "Model version: %@";
+"dashboard.ml.title" = "ML repayment signal";
+"dashboard.ml.badge" = "EXPERIMENTAL RESEARCH";
+"dashboard.ml.probability" = "%d%% estimated risk signal";
+"dashboard.ml.low_confidence" = "Model confidence: low";
+"dashboard.ml.ineligible" = "There is not enough cash-flow history for the research model signal.";
+"dashboard.ml.unavailable" = "The research model signal is currently unavailable.";
+"dashboard.ml.scope" = "Trained on a historical Czech benchmark and not calibrated for Indonesian users.";
+"dashboard.ml.notice" = "Supplementary research evidence only. Deterministic CrediWise outputs remain authoritative. It is not an official credit score and does not affect approval decisions.";
 "dashboard.error.title" = "Summary unavailable";
 "dashboard.error.unavailable" = "The assessment summary is not available. Try again; the app will not invent or calculate a substitute result.";
 "dashboard.offers.action" = "Compare simulated offers by safety";

@@ -10,6 +10,8 @@ coverage.xml
 .coverage
 .coverage.*
 htmlcov/
+backend/ml/data/
+backend/ml/repayment/.work/
 
 # --- Secrets & local env -----------------------------------------------------
 .env
@@ -33,3 +35,4 @@ ios/**/.swiftpm/
 .idea/
 .vscode/
 *.swp
+*:Zone.Identifier
