@@ -166,11 +166,7 @@ actor MockOfferRepository: OfferRepository {
             isSafest: fixture.isSafest,
             score: fixture.score,
             band: fixture.band,
-            provider: .init(
-                id: "simulated-provider-\(fixture.rank)",
-                nameKey: "offers.provider.simulated_\(fixture.rank)",
-                status: .simulatedRegulatedProvider
-            ),
+            provider: provider(rank: fixture.rank),
             principal: fixture.principal,
             netAmountReceived: fixture.netAmountReceived,
             instalment: fixture.instalment,
@@ -180,39 +176,57 @@ actor MockOfferRepository: OfferRepository {
             nominalAnnualRatePercentage: fixture.nominalAnnualRatePercentage,
             rateBasis: .annualFlat,
             dueDayOfMonth: 22,
-            scheduledPayments: (1...12).map {
-                .init(id: $0, amount: fixture.instalment)
-            },
-            costs: .init(
-                scheduledInterest: fixture.scheduledInterest,
-                upfrontFees: fixture.upfrontFees,
-                financedFees: 0,
-                effectiveAnnualCostPercentage: fixture.effectiveAnnualCostPercentage,
-                totalScheduledRepayment: fixture.totalScheduledRepayment,
-                penaltyTermsKey: "offers.penalty.simulated_standard"
-            ),
+            scheduledPayments: payments(instalment: fixture.instalment),
+            costs: costs(fixture: fixture),
             remainingEssentialCoverage: fixture.remainingEssentialCoverage,
             refinancingDependency: fixture.refinancingDependency,
             warnings: fixture.warnings,
-            reasons: [
-                .init(
-                    id: "supplied-safety-result-\(fixture.rank)",
-                    titleKey: "offers.reason.safety_result.title",
-                    detailKey: "offers.reason.safety_result.detail"
-                ),
-                .init(
-                    id: "cost-transparency-\(fixture.rank)",
-                    titleKey: "offers.reason.cost_transparency.title",
-                    detailKey: "offers.reason.cost_transparency.detail"
-                ),
-                .init(
-                    id: "essential-coverage-\(fixture.rank)",
-                    titleKey: "offers.reason.essential_coverage.title",
-                    detailKey: "offers.reason.essential_coverage.detail"
-                )
-            ],
+            reasons: reasons(rank: fixture.rank),
             modelVersion: "safe-offer-v1"
         )
+    }
+
+    private static func provider(rank: Int) -> SafeOffer.Provider {
+        .init(
+            id: "simulated-provider-\(rank)",
+            nameKey: "offers.provider.simulated_\(rank)",
+            status: .simulatedRegulatedProvider
+        )
+    }
+
+    private static func payments(instalment: Int64) -> [SafeOffer.ScheduledPayment] {
+        (1...12).map { .init(id: $0, amount: instalment) }
+    }
+
+    private static func costs(fixture: Fixture) -> SafeOffer.CostBreakdown {
+        .init(
+            scheduledInterest: fixture.scheduledInterest,
+            upfrontFees: fixture.upfrontFees,
+            financedFees: 0,
+            effectiveAnnualCostPercentage: fixture.effectiveAnnualCostPercentage,
+            totalScheduledRepayment: fixture.totalScheduledRepayment,
+            penaltyTermsKey: "offers.penalty.simulated_standard"
+        )
+    }
+
+    private static func reasons(rank: Int) -> [SafeOffer.Reason] {
+        [
+            .init(
+                id: "supplied-safety-result-\(rank)",
+                titleKey: "offers.reason.safety_result.title",
+                detailKey: "offers.reason.safety_result.detail"
+            ),
+            .init(
+                id: "cost-transparency-\(rank)",
+                titleKey: "offers.reason.cost_transparency.title",
+                detailKey: "offers.reason.cost_transparency.detail"
+            ),
+            .init(
+                id: "essential-coverage-\(rank)",
+                titleKey: "offers.reason.essential_coverage.title",
+                detailKey: "offers.reason.essential_coverage.detail"
+            )
+        ]
     }
 
     private func offer(_ source: SafeOffer, assessmentID: String) -> SafeOffer {

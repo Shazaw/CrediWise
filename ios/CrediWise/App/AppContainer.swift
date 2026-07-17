@@ -80,16 +80,17 @@ struct AppContainer {
                 await sessionManager.signOut()
             }
         )
+        let verificationRepository = APIDocumentVerificationRepository(
+            baseURL: baseURL,
+            authInterceptor: authInterceptor
+        )
         return AppDependencies(
             authenticationRepository: authenticationRepository,
             documentUploadRepository: APIDocumentUploadRepository(
                 baseURL: baseURL,
                 authInterceptor: authInterceptor
             ),
-            documentVerificationRepository: APIDocumentVerificationRepository(
-                baseURL: baseURL,
-                authInterceptor: authInterceptor
-            ),
+            documentVerificationRepository: verificationRepository,
             financingNeedRepository: APIFinancingNeedRepository(
                 baseURL: baseURL,
                 authInterceptor: authInterceptor
@@ -97,10 +98,7 @@ struct AppContainer {
             assessmentDashboardRepository: APIAssessmentDashboardRepository(
                 baseURL: baseURL,
                 authInterceptor: authInterceptor,
-                verificationRepository: APIDocumentVerificationRepository(
-                    baseURL: baseURL,
-                    authInterceptor: authInterceptor
-                )
+                verificationRepository: verificationRepository
             ),
             shockRepository: UnavailableShockRepository(),
             offerRepository: UnavailableOfferRepository(),

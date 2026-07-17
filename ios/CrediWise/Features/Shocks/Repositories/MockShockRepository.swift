@@ -91,6 +91,10 @@ actor MockShockRepository: ShockRepository {
     }
 
     private static func makeScenarios() -> [ShockAssessment.Scenario] {
+        incomeDropScenarios() + timingScenarios() + lossScenarios()
+    }
+
+    private static func incomeDropScenarios() -> [ShockAssessment.Scenario] {
         [
             .init(
                 id: "income-drop-10",
@@ -127,7 +131,12 @@ actor MockShockRepository: ShockRepository {
                 status: .strained,
                 scoreContribution: 5,
                 chartPoints: makeChart(prefix: "income-30", balances: [2_100_000, 200_000, 600_000])
-            ),
+            )
+        ]
+    }
+
+    private static func timingScenarios() -> [ShockAssessment.Scenario] {
+        [
             .init(
                 id: "delayed-income",
                 kind: .delayedIncome,
@@ -151,7 +160,12 @@ actor MockShockRepository: ShockRepository {
                 status: .strained,
                 scoreContribution: 7.5,
                 chartPoints: makeChart(prefix: "strained", balances: [1_900_000, 250_000, 900_000])
-            ),
+            )
+        ]
+    }
+
+    private static func lossScenarios() -> [ShockAssessment.Scenario] {
+        [
             .init(
                 id: "income-source-loss",
                 kind: .incomeSourceLoss,
