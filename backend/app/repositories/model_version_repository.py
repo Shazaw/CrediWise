@@ -1,5 +1,7 @@
 """Persistence for `model_versions` (PLAN §10.1 — no business rules; §19.2)."""
 
+import uuid
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -16,5 +18,23 @@ class ModelVersionRepository:
             ModelVersion.model_name == model_name,
             ModelVersion.status == ModelStatusEnum.ACTIVE,
             ModelVersion.deleted_at.is_(None),
+        )
+        return self._db.execute(stmt).scalar_one_or_none()
+
+    def get_active_exact(
+        self, model_name: str, version: str, config_hash: str
+    ) -> ModelVersion | None:
+        stmt = select(ModelVersion).where(
+            ModelVersion.model_name == model_name,
+            ModelVersion.version == version,
+            ModelVersion.config_hash == config_hash,
+            ModelVersion.status == ModelStatusEnum.ACTIVE,
+            ModelVersion.deleted_at.is_(None),
+        )
+        return self._db.execute(stmt).scalar_one_or_none()
+
+    def get_by_id(self, model_version_id: uuid.UUID) -> ModelVersion | None:
+        stmt = select(ModelVersion).where(
+            ModelVersion.id == model_version_id, ModelVersion.deleted_at.is_(None)
         )
         return self._db.execute(stmt).scalar_one_or_none()

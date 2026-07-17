@@ -27,6 +27,7 @@ from app.models.enums import (
     BandEnum,
     OfferRatingEnum,
     OfferSafetyBandEnum,
+    OfferSourceEnum,
     RegStatusEnum,
 )
 
@@ -48,15 +49,20 @@ class ReasonCode:
 class OfferInput:
     instalment_amount: int
     principal_amount: int
+    net_disbursed_amount: int
     effective_annual_rate: Decimal | None
+    reference_effective_annual_rate: Decimal | None
     late_penalty_terms_present: bool
     due_date: int
     maximum_safe_instalment: int
-    safe_loan_amount: int
+    actual_safe_principal: int
+    actual_terms_description: str
     average_free_cash_flow: int
+    essential_expenses: int
     required_liquidity_buffer: int
     shock_resilience_score_for_offer: Decimal
     regulatory_status: RegStatusEnum
+    offer_source: OfferSourceEnum = OfferSourceEnum.SIMULATED
     recommended_due_date_start: int | None = None
     recommended_due_date_end: int | None = None
 
@@ -89,6 +95,9 @@ class OfferScoreResult:
     shock_resilience_status: BandEnum
     total_cost_status: OfferRatingEnum
     timing_status: OfferRatingEnum
+    remaining_essential_expense_coverage: int
+    remaining_essential_expense_coverage_ratio: Decimal
+    refinancing_dependency: bool
     warning_flags: list[str] = field(default_factory=list)
     reason_codes: list[ReasonCode] = field(default_factory=list)
 
@@ -131,14 +140,17 @@ def run(inputs: OfferInput, config: OfferConfig = DEFAULT_CONFIG) -> OfferScoreR
         )
 
     principal_score, exceeds_principal = _ratio_score(
-        inputs.principal_amount, inputs.safe_loan_amount, config.affordability_penalty_scale
+        inputs.principal_amount, inputs.actual_safe_principal, config.affordability_penalty_scale
     )
     if exceeds_principal:
         warnings.append("EXCEEDS_SAFE_PRINCIPAL")
         reason_codes.append(
             ReasonCode(
                 code="OFFER_EXCEEDS_SAFE_PRINCIPAL",
-                description="Principal amount exceeds the illustrative safe loan amount",
+                description=(
+                    "Principal exceeds the safe ceiling calculated from actual terms: "
+                    f"{inputs.actual_terms_description}"
+                ),
             )
         )
 
@@ -187,6 +199,17 @@ def run(inputs: OfferInput, config: OfferConfig = DEFAULT_CONFIG) -> OfferScoreR
         config.provider_verification_scores.get(inputs.regulatory_status.value, 40)
     )
 
+    remaining_essential_coverage = max(
+        0, inputs.essential_expenses + inputs.average_free_cash_flow - inputs.instalment_amount
+    )
+    coverage_ratio = (
+        Decimal(0)
+        if inputs.essential_expenses <= 0
+        else (Decimal(remaining_essential_coverage) / Decimal(inputs.essential_expenses)).quantize(
+            _SCORE_Q, rounding=ROUND_HALF_UP
+        )
+    )
+
     sub_scores = {
         "instalment_affordability": instalment_score,
         "within_safe_principal": principal_score,
@@ -200,6 +223,30 @@ def run(inputs: OfferInput, config: OfferConfig = DEFAULT_CONFIG) -> OfferScoreR
     safe_offer_score = sum(
         (config.weights[name] * score for name, score in sub_scores.items()), start=Decimal("0")
     ).quantize(_SCORE_Q, rounding=ROUND_HALF_UP)
+
+    # Every offer returns a stable minimum explanation set, including positive
+    # evidence when no warning path fired (PLAN explainability coverage).
+    reason_codes.extend(
+        [
+            ReasonCode(
+                code="OFFER_ESSENTIAL_COVERAGE",
+                description=(
+                    f"Remaining cash covers {coverage_ratio} times monthly essential expenses"
+                ),
+            ),
+            ReasonCode(
+                code="OFFER_SHOCK_SURVIVABILITY",
+                description=f"Offer-specific shock resilience score is {shock_score}",
+            ),
+        ]
+    )
+    if inputs.offer_source is OfferSourceEnum.SIMULATED:
+        reason_codes.append(
+            ReasonCode(
+                code="OFFER_SIMULATED_PROVIDER",
+                description="This is a simulated offer and is not a real provider endorsement",
+            )
+        )
 
     if remaining_free_cash_flow < 0:
         affordability_status = AffordEnum.DEFICIT
@@ -222,6 +269,9 @@ def run(inputs: OfferInput, config: OfferConfig = DEFAULT_CONFIG) -> OfferScoreR
         shock_resilience_status=_trust_layer_band(shock_score, config),
         total_cost_status=_rating_for(total_cost_score, config),
         timing_status=_rating_for(timing_score, config),
+        remaining_essential_expense_coverage=remaining_essential_coverage,
+        remaining_essential_expense_coverage_ratio=coverage_ratio,
+        refinancing_dependency=refinancing_risk,
         warning_flags=warnings,
         reason_codes=reason_codes,
     )
@@ -243,16 +293,25 @@ def _ratio_score(actual: int, ceiling: int, penalty_scale: Decimal) -> tuple[Dec
 
 
 def _total_cost_score(inputs: OfferInput, config: OfferConfig) -> Decimal:
-    if inputs.effective_annual_rate is None:
-        return Decimal(50)
-    if inputs.effective_annual_rate <= config.reference_annual_flat_rate:
-        return Decimal(100)
-    excess_ratio = (
-        inputs.effective_annual_rate - config.reference_annual_flat_rate
-    ) / config.reference_annual_flat_rate
-    return max(Decimal(0), Decimal(100) - excess_ratio * config.cost_penalty_scale).quantize(
-        _SCORE_Q, rounding=ROUND_HALF_UP
+    if inputs.effective_annual_rate is None or inputs.reference_effective_annual_rate is None:
+        rate_score = Decimal(50)
+    elif inputs.effective_annual_rate <= inputs.reference_effective_annual_rate:
+        rate_score = Decimal(100)
+    else:
+        excess_ratio = (
+            inputs.effective_annual_rate - inputs.reference_effective_annual_rate
+        ) / inputs.reference_effective_annual_rate
+        rate_score = max(Decimal(0), Decimal(100) - excess_ratio * config.cost_penalty_scale)
+    proceeds_ratio = (
+        Decimal(0)
+        if inputs.principal_amount <= 0
+        else min(
+            Decimal(1),
+            max(Decimal(0), Decimal(inputs.net_disbursed_amount) / inputs.principal_amount),
+        )
     )
+    proceeds_score = proceeds_ratio * Decimal(100)
+    return ((rate_score + proceeds_score) / Decimal(2)).quantize(_SCORE_Q, rounding=ROUND_HALF_UP)
 
 
 def _timing_fit_score(inputs: OfferInput, config: OfferConfig) -> Decimal:

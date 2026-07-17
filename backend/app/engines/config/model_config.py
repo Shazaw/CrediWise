@@ -1,33 +1,24 @@
 """Versioned deterministic-engine weights/thresholds (PLAN §19.2, T1.7).
 
 `CONFIG` is the hashable source of truth stamped on `model_versions.config_hash`
-(§19.2: "changing any number here = a new model version"). Sprint 1-2 left
-this empty as a bootstrap placeholder ("Real deterministic-engine weights
-land starting Sprint 3+ as each engine in PLAN §15 ships" — this file's
-prior docstring); Sprint 3 is the first engine (`TrustLayerEngine`) to
-populate it, so this remains `MODEL_VERSION = "v1"` rather than a bump — an
-empty placeholder becoming real for the first time is not "mutating a
-released version's meaning." Any future change to a number already defined
-here requires a new `MODEL_VERSION`.
+(§19.2: "changing any number here = a new model version"). Cycle 6 completes
+fee treatment, temporal shocks, and offer configuration under v2. Historical
+v1 rows remain immutable and must never be evaluated using this configuration.
 
 Numeric values not explicitly given by PLAN §5.2/§15.3 (e.g. the exact
 metadata/visual-forensics penalty sizes) are Sprint 3 gap-fills (§24.11),
 called out inline — PLAN documents *which signals* feed each sub-score, not
 their exact point values.
 
-Sprint 4 adds `normalization`/`cash_flow_twin`/`risk`/`safe_borrowing` keys
-under the *same* `MODEL_VERSION = "v1"` — net-new keys, not a change to any
-number `trust_layer` already shipped under v1, so this is the same
-"empty/undefined becoming real for the first time" case the paragraph above
-already covers, not a version bump. PLAN §5.3/§5.6/§5.7 name the required
+Sprint 4 added `normalization`/`cash_flow_twin`/`risk`/`safe_borrowing` keys.
+PLAN §5.3/§5.6/§5.7 name the required
 signals and several concrete thresholds (DSTI bands, cash-flow-ratio bands,
 weight splits, tenor candidate set, 24%/year reference rate); numbers PLAN
 leaves unspecified (volatility scaling, behaviour-score signal, buffer
 ratios, due-date offsets) are Sprint 4 gap-fills, called out inline below.
 
-Sprint 5 adds `shock`/`offer` keys under the same `MODEL_VERSION = "v1"` (same
-"net-new, not a mutation" reasoning) plus `safe_borrowing.moderate_shock_income_drop_pct`
-(ADR-016). PLAN §5.8/§5.9 name the required scenario battery, scenario
+Sprint 5 added `shock`/`offer` keys plus
+`safe_borrowing.moderate_shock_income_drop_pct` (ADR-016). PLAN §5.8/§5.9 name the required scenario battery, scenario
 weights, and Safe Offer Score factor weights exactly; numbers PLAN leaves
 unspecified (scenario point values, band-adjacent scaling constants, offer
 templates) are Sprint 5 gap-fills, called out inline below.
@@ -38,7 +29,7 @@ import json
 from decimal import Decimal
 
 MODEL_NAME = "crediwise-core"
-MODEL_VERSION = "v1"
+MODEL_VERSION = "v2"
 
 # PLAN §5.2 weighted model (must sum to 1.00).
 TRUST_LAYER_WEIGHTS: dict[str, Decimal] = {
@@ -323,6 +314,11 @@ SHOCK_SCENARIO_WEIGHTS: dict[str, Decimal] = {
 }
 SHOCK_RESILIENCE_BAND_THRESHOLDS: dict[str, int] = {"strong": 75, "moderate": 50}
 SHOCK_SCENARIO_POINTS: dict[str, int] = {"survivable": 100, "strained": 50, "deficit": 0}
+# Cycle 6 gap closure: delayed income is shifted seven days and emergency
+# expense is placed before the common repayment window. These are new v1
+# temporal-model values on the unshipped integration branch.
+SHOCK_DELAYED_INCOME_DAYS = 7
+SHOCK_EMERGENCY_EXPENSE_DAY = 10
 
 # --- Sprint 5: OfferEngine (PLAN §5.9, §15.1, FR-11) ------------------------
 #
@@ -357,38 +353,51 @@ OFFER_AFFORDABILITY_PENALTY_SCALE = Decimal("100")
 OFFER_TEMPLATES: list[dict[str, object]] = [
     {
         "key": "SAFE_ALIGNED",
+        "lender_name": "Bank Amanah Digital (Simulated)",
         "principal_ratio": Decimal("1.0"),
         "tenor_months": None,
         "nominal_rate": Decimal("0.24"),
         "upfront_fee_ratio": Decimal("0.0"),
+        "financed_fee": 0,
+        "service_fee": 0,
         "admin_fee": 0,
         "amortization_method": "FLAT",
         "due_date_offset_days": 0,
         "late_penalty_terms": {
-            "rate_pct": 2,
-            "description": "2% of the overdue instalment per month late",
+            "trigger_days": 1,
+            "rate": "0.02",
+            "amount": None,
+            "basis": "OVERDUE_INSTALMENT_PER_MONTH",
         },
     },
     {
         "key": "FAST_CASH",
+        "lender_name": "KilatDana Fintech (Simulated)",
         "principal_ratio": Decimal("1.0"),
         "tenor_months": 6,
         "nominal_rate": Decimal("0.36"),
         "upfront_fee_ratio": Decimal("0.02"),
+        "financed_fee": 25_000,
+        "service_fee": 20_000,
         "admin_fee": 50_000,
         "amortization_method": "REDUCING_BALANCE",
         "due_date_offset_days": 10,
         "late_penalty_terms": {
-            "rate_pct": 5,
-            "description": "5% of the overdue instalment per month late",
+            "trigger_days": 1,
+            "rate": "0.05",
+            "amount": None,
+            "basis": "OVERDUE_INSTALMENT_PER_MONTH",
         },
     },
     {
         "key": "EXTENDED_TENOR",
+        "lender_name": "Cepat Cair Lending (Simulated)",
         "principal_ratio": Decimal("1.2"),
         "tenor_months": 12,
         "nominal_rate": Decimal("0.30"),
         "upfront_fee_ratio": Decimal("0.03"),
+        "financed_fee": 0,
+        "service_fee": 35_000,
         "admin_fee": 0,
         "amortization_method": "FLAT",
         "due_date_offset_days": -5,
@@ -435,6 +444,8 @@ CONFIG: dict[str, object] = {
         "scenario_weights": SHOCK_SCENARIO_WEIGHTS,
         "resilience_band_thresholds": SHOCK_RESILIENCE_BAND_THRESHOLDS,
         "scenario_points": SHOCK_SCENARIO_POINTS,
+        "delayed_income_days": SHOCK_DELAYED_INCOME_DAYS,
+        "emergency_expense_day": SHOCK_EMERGENCY_EXPENSE_DAY,
     },
     "offer": {
         "weights": OFFER_WEIGHTS,

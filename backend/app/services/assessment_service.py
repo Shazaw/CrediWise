@@ -22,13 +22,13 @@ from typing import Protocol, cast
 
 from sqlalchemy.orm import Session
 
-from app.core.errors import NotFoundError, ValidationError
+from app.core.errors import NotFoundError, ReassessmentRequiredError, ValidationError
 from app.engines import cash_flow_twin, risk, safe_borrowing, shock
 from app.engines.cash_flow_twin import TwinTransactionInput
 from app.engines.config import model_config as cfg
 from app.engines.risk import RiskInput
 from app.engines.safe_borrowing import SafeBorrowingInput
-from app.engines.shock import ShockInput
+from app.engines.shock import CashFlowEventInput, ShockInput
 from app.models.assessment import Assessment
 from app.models.assessment_document import AssessmentDocument
 from app.models.assessment_input_snapshot import AssessmentInputSnapshot
@@ -79,6 +79,11 @@ class TwinView:
 class ShockScenariosView:
     resilience_score: Decimal | None
     scenarios: list[ShockScenario]
+    reason_codes: list[AssessmentReasonCode]
+    proposed_instalment: int
+    required_liquidity_buffer: int
+    model_version: str
+    config_hash: str
 
 
 class AssessmentService:
@@ -124,8 +129,13 @@ class AssessmentService:
                 )
             documents.append(document)
 
-        model_version = self._model_versions.get_active(cfg.MODEL_NAME)
-        assert model_version is not None  # noqa: S101 - seeded at bootstrap (T1.7)
+        model_version = self._model_versions.get_active_exact(
+            cfg.MODEL_NAME, cfg.MODEL_VERSION, cfg.config_hash()
+        )
+        if model_version is None:
+            raise ValidationError(
+                "Current model configuration is not active; run the model-version seed"
+            )
 
         assessment = Assessment(
             id=uuid.uuid4(),
@@ -227,13 +237,31 @@ class AssessmentService:
             raise NotFoundError("Lineage not available yet")
         return snapshot
 
+    def get_model_lineage(self, user: User, assessment_id: uuid.UUID) -> tuple[str, str]:
+        assessment = self._get_owned(user, assessment_id)
+        model = self._model_versions.get_by_id(assessment.model_version_id)
+        assert model is not None  # noqa: S101 - assessment FK guarantees existence
+        return model.version, model.config_hash
+
     def get_shock_scenarios(self, user: User, assessment_id: uuid.UUID) -> ShockScenariosView:
         """PLAN §12.2 `GET /assessments/{id}/shocks` -- the canonical default
         battery persisted by `run_assessment_analysis` (FR-10 AC1/AC2)."""
         assessment = self._get_owned(user, assessment_id)
+        _require_current_model_lineage(self._model_versions, assessment)
+        model = self._model_versions.get_by_id(assessment.model_version_id)
+        assert model is not None  # noqa: S101 - assessment FK guarantees existence
         return ShockScenariosView(
             resilience_score=assessment.shock_resilience_score,
             scenarios=self._shock_scenarios.list_for_assessment(assessment.id),
+            reason_codes=[
+                reason
+                for reason in self._reason_codes.list_for_assessment(assessment.id)
+                if reason.reason_code.startswith("SHOCK_")
+            ],
+            proposed_instalment=assessment.maximum_safe_instalment or 0,
+            required_liquidity_buffer=assessment.required_liquidity_buffer or 0,
+            model_version=model.version,
+            config_hash=model.config_hash,
         )
 
     def simulate_shock(
@@ -253,6 +281,7 @@ class AssessmentService:
         creating a new assessment (PLAN §11.3 `assessment_input_snapshots`
         stays immutable; this never writes to it)."""
         assessment = self._get_owned(user, assessment_id)
+        _require_current_model_lineage(self._model_versions, assessment)
         profile = self._profiles.get_profile_for_assessment(assessment.id)
         if profile is None:
             raise NotFoundError("Twin not available yet")
@@ -264,6 +293,7 @@ class AssessmentService:
             raise ValidationError("proposed_instalment must be non-negative")
 
         income_sources = self._profiles.get_income_sources_for_assessment(assessment.id)
+        cash_flow_events = self._profiles.get_cash_flow_events_for_assessment(assessment.id)
         dominant_source = max(income_sources, key=lambda s: s.concentration_ratio, default=None)
         required_liquidity_buffer = assessment.required_liquidity_buffer or 0
 
@@ -287,6 +317,13 @@ class AssessmentService:
                     income_drop_pct / Decimal(100) if income_drop_pct is not None else None
                 ),
                 custom_emergency_expense=emergency_expense,
+                include_custom_scenario=(
+                    income_drop_pct is not None
+                    or emergency_expense is not None
+                    or proposed_instalment is not None
+                ),
+                cash_flow_events=_to_shock_events(cash_flow_events),
+                proposed_instalment_day=assessment.recommended_due_date_start or 20,
             )
         )
 
@@ -324,6 +361,8 @@ def run_assessment_analysis(db: Session, assessment_id: uuid.UUID) -> None:
     assessment = assessments.get_by_id(assessment_id)
     if assessment is None or assessment.status != AssessmentStatusEnum.PENDING:
         return
+
+    _require_current_model_lineage(ModelVersionRepository(db), assessment)
 
     with track_assessment_stage(db, assessment.id, PipelineStageEnum.ANALYSIS):
         financing_need = FinancingNeedRepository(db).get_by_id(assessment.financing_need_id)
@@ -417,6 +456,17 @@ def run_assessment_analysis(db: Session, assessment_id: uuid.UUID) -> None:
                 largest_income_source_amount=(
                     dominant_source.average_amount if dominant_source else None
                 ),
+                cash_flow_events=tuple(
+                    CashFlowEventInput(
+                        day_of_month=e.expected_day_of_month,
+                        amount=e.amount,
+                        direction=e.direction,
+                        event_type=e.event_type,
+                    )
+                    for e in twin_result.cash_flow_events
+                    if e.expected_day_of_month is not None
+                ),
+                proposed_instalment_day=safe_borrowing_result.recommended_due_date_start or 20,
             )
         )
 
@@ -488,6 +538,22 @@ def band_from_score(score: Decimal) -> BandEnum:
     if score >= thresholds["medium"]:
         return BandEnum.MEDIUM
     return BandEnum.LOW
+
+
+def _require_current_model_lineage(
+    model_versions: ModelVersionRepository, assessment: Assessment
+) -> None:
+    model = model_versions.get_by_id(assessment.model_version_id)
+    if (
+        model is None
+        or model.version != cfg.MODEL_VERSION
+        or model.config_hash != cfg.config_hash()
+    ):
+        raise ReassessmentRequiredError(
+            "Assessment model does not match the current calculation configuration; "
+            "create a new assessment",
+            details={"assessment_id": str(assessment.id)},
+        )
 
 
 def _persist_twin(
@@ -624,6 +690,17 @@ def _persist_shock_scenarios(
             deficit_amount=s.deficit_amount,
             affordability_status=s.affordability_status,
             resilience_score_contribution=s.resilience_score_contribution,
+            projection_points_json=[
+                {
+                    "sequence": point.sequence,
+                    "day_of_month": point.day_of_month,
+                    "event_type": point.event_type,
+                    "amount": point.amount,
+                    "projected_balance": point.projected_balance,
+                }
+                for point in s.projection_points
+            ],
+            required_buffer_breached=s.required_buffer_breached,
         )
         for s in shock_result.scenarios
     ]
@@ -662,3 +739,16 @@ def _persist_reason_codes(
             )
         )
     AssessmentReasonCodeRepository(db).add_all(rows)
+
+
+def _to_shock_events(events: list[CashFlowEvent]) -> tuple[CashFlowEventInput, ...]:
+    return tuple(
+        CashFlowEventInput(
+            day_of_month=event.expected_day_of_month,
+            amount=event.amount,
+            direction=event.direction,
+            event_type=event.event_type,
+        )
+        for event in events
+        if event.expected_day_of_month is not None
+    )

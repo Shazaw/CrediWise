@@ -28,7 +28,7 @@ SEEDED_LENDERS: list[dict[str, object]] = [
     },
     {
         "name": "Cepat Cair Lending (Simulated)",
-        "regulatory_status": RegStatusEnum.UNLISTED,
+        "regulatory_status": RegStatusEnum.SIMULATED_REGULATED_PROVIDER,
         "logo_url": None,
     },
 ]
@@ -39,7 +39,10 @@ def run(session: Session) -> None:
     for entry in SEEDED_LENDERS:
         name = entry["name"]
         assert isinstance(name, str)  # noqa: S101 - internal invariant, not user input
-        if repo.get_by_name(name) is not None:
+        existing = repo.get_by_name(name)
+        if existing is not None:
+            existing.regulatory_status = RegStatusEnum.SIMULATED_REGULATED_PROVIDER
+            existing.is_active = True
             continue
         repo.add(
             Lender(

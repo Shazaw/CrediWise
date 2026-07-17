@@ -1,8 +1,4 @@
-"""Seeds the initial ACTIVE `model_versions` row (PLAN §19.2, T1.7).
-
-Idempotent: re-running does nothing once an ACTIVE row for `MODEL_NAME`
-exists (PLAN §11.4 — seed data must be safe to re-run).
-"""
+"""Idempotently activates the exact current immutable model configuration."""
 
 from datetime import UTC, datetime
 
@@ -15,21 +11,35 @@ from app.models.model_version import ModelVersion
 
 
 def run(session: Session) -> None:
-    exists = session.execute(
-        select(ModelVersion).where(
-            ModelVersion.model_name == MODEL_NAME,
-            ModelVersion.status == ModelStatusEnum.ACTIVE,
-            ModelVersion.deleted_at.is_(None),
-        )
-    ).scalar_one_or_none()
-    if exists is not None:
-        return
-    session.add(
-        ModelVersion(
+    now = datetime.now(UTC)
+    current_hash = config_hash()
+    rows = list(
+        session.execute(
+            select(ModelVersion).where(
+                ModelVersion.model_name == MODEL_NAME,
+                ModelVersion.deleted_at.is_(None),
+            )
+        ).scalars()
+    )
+    exact = next(
+        (row for row in rows if row.version == MODEL_VERSION and row.config_hash == current_hash),
+        None,
+    )
+    for row in rows:
+        if row.status == ModelStatusEnum.ACTIVE and row is not exact:
+            row.status = ModelStatusEnum.RETIRED
+            row.retired_at = now
+    # The partial unique index permits one ACTIVE row per model name. Flush
+    # retirement before inserting/activating the exact current configuration.
+    session.flush()
+    if exact is None:
+        exact = ModelVersion(
             model_name=MODEL_NAME,
             version=MODEL_VERSION,
-            status=ModelStatusEnum.ACTIVE,
-            config_hash=config_hash(),
-            released_at=datetime.now(UTC),
+            status=ModelStatusEnum.DRAFT,
+            config_hash=current_hash,
+            released_at=now,
         )
-    )
+        session.add(exact)
+    exact.status = ModelStatusEnum.ACTIVE
+    exact.retired_at = None

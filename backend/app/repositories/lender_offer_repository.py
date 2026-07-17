@@ -24,7 +24,13 @@ class LenderOfferRepository:
         return self._db.execute(stmt).scalar_one_or_none()
 
     def list_for_assessment(self, assessment_id: uuid.UUID) -> list[LenderOffer]:
-        stmt = select(LenderOffer).where(
-            LenderOffer.assessment_id == assessment_id, LenderOffer.deleted_at.is_(None)
+        stmt = (
+            select(LenderOffer)
+            .where(
+                LenderOffer.assessment_id == assessment_id,
+                LenderOffer.deleted_at.is_(None),
+                LenderOffer.canonical_template_key.is_not(None),
+            )
+            .order_by(LenderOffer.created_at, LenderOffer.id)
         )
         return list(self._db.execute(stmt).scalars().all())

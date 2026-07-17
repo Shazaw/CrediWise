@@ -5,7 +5,10 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.models.enums import ShockTypeEnum
 from app.models.shock_scenario import ShockScenario
+
+_CANONICAL_ORDER = {scenario: index for index, scenario in enumerate(ShockTypeEnum)}
 
 
 class ShockScenarioRepository:
@@ -21,4 +24,5 @@ class ShockScenarioRepository:
         stmt = select(ShockScenario).where(
             ShockScenario.assessment_id == assessment_id, ShockScenario.deleted_at.is_(None)
         )
-        return list(self._db.execute(stmt).scalars().all())
+        rows = list(self._db.execute(stmt).scalars().all())
+        return sorted(rows, key=lambda row: _CANONICAL_ORDER[row.scenario_type])

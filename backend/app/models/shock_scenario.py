@@ -12,7 +12,7 @@ import uuid
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import BigInteger, ForeignKey, Numeric
+from sqlalchemy import BigInteger, Boolean, ForeignKey, Numeric
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -41,3 +41,5 @@ class ShockScenario(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         sa_enum(AffordEnum, "afford_enum"), nullable=False
     )
     resilience_score_contribution: Mapped[Decimal] = mapped_column(Numeric(6, 2), nullable=False)
+    projection_points_json: Mapped[list[Any] | None] = mapped_column(JSONB(), nullable=True)
+    required_buffer_breached: Mapped[bool | None] = mapped_column(Boolean(), nullable=True)

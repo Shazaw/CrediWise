@@ -5,7 +5,7 @@ import uuid
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import ForeignKey, Integer, Numeric, Text
+from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, Numeric, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -40,3 +40,11 @@ class OfferAssessment(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     warning_flags_json: Mapped[list[Any]] = mapped_column(JSONB(), nullable=False, default=list)
     explanation: Mapped[str] = mapped_column(Text(), nullable=False)
     rank: Mapped[int] = mapped_column(Integer(), nullable=False)
+    remaining_essential_expense_coverage: Mapped[int | None] = mapped_column(
+        BigInteger(), nullable=True
+    )
+    remaining_essential_expense_coverage_ratio: Mapped[Decimal | None] = mapped_column(
+        Numeric(8, 2), nullable=True
+    )
+    refinancing_dependency: Mapped[bool | None] = mapped_column(Boolean(), nullable=True)
+    reason_codes_json: Mapped[list[Any] | None] = mapped_column(JSONB(), nullable=True)

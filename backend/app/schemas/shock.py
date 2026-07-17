@@ -4,10 +4,16 @@
 
 import uuid
 from decimal import Decimal
+from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict
 
 from app.models.enums import AffordEnum, ShockResilienceBandEnum, ShockTypeEnum
+from app.schemas.document import ReasonCodeResponse
+
+
+class ResilienceScoreScope(StrEnum):
+    CANONICAL_BATTERY = "CANONICAL_BATTERY"
 
 
 class SimulateShockRequest(BaseModel):
@@ -28,10 +34,28 @@ class ShockScenarioResponse(BaseModel):
     deficit_amount: int
     affordability_status: AffordEnum
     resilience_score_contribution: Decimal
+    required_liquidity_buffer: int
+    required_buffer_breached: bool
+    projection_points: list["ProjectionPointResponse"]
+
+
+class ProjectionPointResponse(BaseModel):
+    sequence: int
+    day_of_month: int
+    event_type: str
+    amount: int
+    projected_balance: int
 
 
 class ShockResultResponse(BaseModel):
     assessment_id: uuid.UUID
     resilience_score: Decimal | None
+    resilience_score_scope: ResilienceScoreScope = ResilienceScoreScope.CANONICAL_BATTERY
     band: ShockResilienceBandEnum | None
     scenarios: list[ShockScenarioResponse]
+    proposed_instalment: int
+    required_liquidity_buffer: int
+    reason_codes: list[ReasonCodeResponse]
+    explanation: str
+    model_version: str
+    config_hash: str

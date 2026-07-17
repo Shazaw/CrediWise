@@ -10,7 +10,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import BigInteger, ForeignKey, Integer, Numeric
+from sqlalchemy import BigInteger, ForeignKey, Index, Integer, Numeric, Text, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -24,6 +24,18 @@ _RATE = Numeric(6, 4)
 
 class LenderOffer(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "lender_offers"
+    __table_args__ = (
+        Index(
+            "uq_lender_offers_canonical_simulated_set",
+            "assessment_id",
+            "canonical_template_key",
+            unique=True,
+            postgresql_where=text(
+                "deleted_at IS NULL AND offer_source = 'SIMULATED' "
+                "AND canonical_template_key IS NOT NULL"
+            ),
+        ),
+    )
 
     assessment_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("assessments.id", ondelete="RESTRICT"), nullable=False
@@ -34,6 +46,7 @@ class LenderOffer(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     offer_source: Mapped[OfferSourceEnum] = mapped_column(
         sa_enum(OfferSourceEnum, "offer_source_enum"), nullable=False
     )
+    canonical_template_key: Mapped[str | None] = mapped_column(Text(), nullable=True)
     principal_amount: Mapped[int] = mapped_column(BigInteger(), nullable=False)
     net_disbursed_amount: Mapped[int] = mapped_column(BigInteger(), nullable=False)
     instalment_amount: Mapped[int] = mapped_column(BigInteger(), nullable=False)

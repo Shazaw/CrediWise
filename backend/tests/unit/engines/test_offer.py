@@ -4,19 +4,28 @@
 from decimal import Decimal
 
 from app.engines.offer import DEFAULT_CONFIG, OfferInput, offer_safety_band_from_score, run
-from app.models.enums import AffordEnum, OfferSafetyBandEnum, RegStatusEnum
+from app.models.enums import (
+    AffordEnum,
+    OfferSafetyBandEnum,
+    OfferSourceEnum,
+    RegStatusEnum,
+)
 
 
 def _safe_input(**overrides: object) -> OfferInput:
     base: dict[str, object] = {
         "instalment_amount": 350_000,
         "principal_amount": 3_500_000,
-        "effective_annual_rate": Decimal("0.24"),
+        "net_disbursed_amount": 3_500_000,
+        "effective_annual_rate": Decimal("0.50"),
+        "reference_effective_annual_rate": Decimal("0.50"),
         "late_penalty_terms_present": True,
         "due_date": 22,
         "maximum_safe_instalment": 375_000,
-        "safe_loan_amount": 3_800_000,
+        "actual_safe_principal": 3_800_000,
+        "actual_terms_description": "12 months, 0.24 flat, no fees",
         "average_free_cash_flow": 1_000_000,
+        "essential_expenses": 1_200_000,
         "required_liquidity_buffer": 500_000,
         "shock_resilience_score_for_offer": Decimal("90"),
         "regulatory_status": RegStatusEnum.SIMULATED_REGULATED_PROVIDER,
@@ -38,6 +47,9 @@ def test_within_safe_limits_scores_highly_and_raises_no_warnings() -> None:
     assert offer_safety_band_from_score(result.safe_offer_score) is OfferSafetyBandEnum.SAFE
     assert result.warning_flags == []
     assert result.affordability_status is AffordEnum.SURVIVABLE
+    assert result.refinancing_dependency is False
+    assert result.remaining_essential_expense_coverage == 1_850_000
+    assert len(result.reason_codes) >= 3
 
 
 def test_exceeding_safe_instalment_flags_and_penalizes() -> None:
@@ -52,6 +64,8 @@ def test_exceeding_safe_principal_flags_and_penalizes() -> None:
     result = run(_safe_input(principal_amount=6_000_000))
 
     assert "EXCEEDS_SAFE_PRINCIPAL" in result.warning_flags
+    reason = next(r for r in result.reason_codes if r.code == "OFFER_EXCEEDS_SAFE_PRINCIPAL")
+    assert "12 months, 0.24 flat, no fees" in reason.description
 
 
 def test_zero_safe_capacity_ceiling_is_a_full_penalty_unless_actual_is_zero() -> None:
@@ -71,17 +85,42 @@ def test_missing_fee_disclosure_penalizes_and_flags() -> None:
 
 
 def test_high_effective_cost_lowers_total_cost_score() -> None:
-    cheap = run(_safe_input(effective_annual_rate=Decimal("0.20")))
-    expensive = run(_safe_input(effective_annual_rate=Decimal("0.60")))
+    cheap = run(_safe_input(effective_annual_rate=Decimal("0.50")))
+    expensive = run(_safe_input(effective_annual_rate=Decimal("0.70")))
 
     assert expensive.total_cost_score < cheap.total_cost_score
     assert cheap.total_cost_score == Decimal(100)
 
 
+def test_canonical_flat_offer_is_not_penalized_by_rate_basis_mismatch() -> None:
+    canonical = run(
+        _safe_input(
+            effective_annual_rate=Decimal("0.5432"),
+            reference_effective_annual_rate=Decimal("0.5432"),
+        )
+    )
+    higher_cost = run(
+        _safe_input(
+            effective_annual_rate=Decimal("1.00"),
+            reference_effective_annual_rate=Decimal("0.5432"),
+        )
+    )
+
+    assert canonical.total_cost_score == Decimal(100)
+    assert higher_cost.total_cost_score < canonical.total_cost_score
+
+
 def test_unknown_effective_rate_is_a_neutral_score() -> None:
     result = run(_safe_input(effective_annual_rate=None))
 
-    assert result.total_cost_score == Decimal(50)
+    assert result.total_cost_score == Decimal(75)
+
+
+def test_total_cost_penalizes_reduced_actual_net_proceeds() -> None:
+    full_proceeds = run(_safe_input())
+    reduced_proceeds = run(_safe_input(net_disbursed_amount=2_800_000))
+
+    assert reduced_proceeds.total_cost_score < full_proceeds.total_cost_score
 
 
 def test_refinancing_dependency_risk_flag_when_buffer_is_thin() -> None:
@@ -131,6 +170,12 @@ def test_provider_verification_scores_regulated_above_unlisted() -> None:
     assert regulated.provider_verification_score > unlisted.provider_verification_score
 
 
+def test_non_simulated_source_has_no_simulation_reason() -> None:
+    result = run(_safe_input(offer_source=OfferSourceEnum.LENDER_API))
+
+    assert not any(reason.code == "OFFER_SIMULATED_PROVIDER" for reason in result.reason_codes)
+
+
 def test_deficit_affordability_status_when_instalment_exceeds_free_cash_flow() -> None:
     result = run(_safe_input(instalment_amount=1_200_000, average_free_cash_flow=1_000_000))
 
@@ -142,7 +187,7 @@ def test_dangerous_offer_scores_unsafe() -> None:
         _safe_input(
             instalment_amount=900_000,
             principal_amount=4_200_000,
-            effective_annual_rate=Decimal("0.60"),
+            effective_annual_rate=Decimal("1.00"),
             late_penalty_terms_present=False,
             due_date=5,
             regulatory_status=RegStatusEnum.UNLISTED,

@@ -1,54 +1,23 @@
-"""`ShockEngine` — temporal liquidity shock simulations + Shock Resilience
-Score (PLAN §5.8, §15.1; FR-10).
+"""Pure dated-liquidity shock simulations and resilience score (FR-10).
 
-Pure per PLAN §10.1: no DB, network, filesystem, clock, or RNG. Consumes
-plain scalars the service layer extracts from `CashFlowTwinEngine`'s
-`FinancialProfileResult` and `SafeBorrowingEngine`'s `RecommendationResult`
-(`required_liquidity_buffer`) -- this engine never calls another engine
-directly (PLAN §10.1: "engines depend on nothing but their own inputs and
-model_config, not on each other"), matching how `RiskEngine` consumes Twin
-scalars rather than a `FinancialProfile` object.
-
-**Scenario model (ADR-016 gap-fill, §24.11):** PLAN §5.8 names the required
-scenario battery, per-scenario weights, and the SURVIVABLE/STRAINED/DEFICIT
-outcome thresholds, but not the exact cash-flow formula each scenario
-applies. Every scenario reduces to the same two-step evaluation:
-
-    scenario_net_cash_flow = <scenario-specific adjustment to average free
-                               cash flow, or a scenario-specific override>
-    projected_cash_flow = scenario_net_cash_flow - proposed_instalment
-    minimum_projected_balance = savings_buffer + projected_cash_flow
-
-...then classified against `required_liquidity_buffer` per §5.8's outcome
-definitions. The scenario-specific adjustments:
-
-- `INCOME_DROP_{10,20,30}`: `average_free_cash_flow - median_income * pct`.
-- `EMERGENCY_EXPENSE`: `average_free_cash_flow - emergency_expense_amount`
-  (PLAN §5.8's own example, Rp1,000,000 default).
-- `INCOME_SOURCE_LOSS`: `average_free_cash_flow - largest_income_source_amount`
-  (the single largest-concentration income source stops arriving entirely).
-- `DELAYED_INCOME`: `-essential_expenses` -- models the "dominant income
-  arrives late" scenario as: essential expenses must still be covered from
-  the existing buffer before that income shows up, but nothing is
-  permanently lost (unlike `INCOME_SOURCE_LOSS`), so only the committed
-  essential-expense outflow (not discretionary/debt, which can be deferred a
-  few days) is charged against this month's contribution.
-- `WEAKEST_MONTH_REPLAY`: the historical weakest month's net cash flow,
-  replayed as-is.
-
-`ShockCapacity` (PLAN §5.6's fifth `SafeBorrowingEngine` term) is *not*
-computed here — see `app/engines/safe_borrowing.py`'s module docstring and
-ADR-016: because `minimum_projected_balance` is linear in `proposed_instalment`,
-"the highest instalment that keeps the moderate (20% income-drop) scenario at
-or above zero" has a closed form that doesn't require calling this engine at
-all, so `SafeBorrowingEngine` computes it independently from its own inputs.
+Monthly projected cash flow and minimum temporal balance are deliberately
+separate. The former uses the complete Twin aggregate; the latter replays the
+Twin's dated/day-of-month recurring events, the proposed repayment, and a
+deterministic month-end reconciliation point. Same-day debits are applied
+before credits, a conservative ordering that makes due-date risk explicit.
 """
 
 from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal
 
 from app.engines.config import model_config as cfg
-from app.models.enums import AffordEnum, ShockResilienceBandEnum, ShockTypeEnum
+from app.models.enums import (
+    AffordEnum,
+    CashEventEnum,
+    DirEnum,
+    ShockResilienceBandEnum,
+    ShockTypeEnum,
+)
 
 _SCORE_Q = Decimal("0.01")
 _MONEY_Q = Decimal("1")
@@ -61,6 +30,23 @@ class ReasonCode:
 
 
 @dataclass(frozen=True)
+class CashFlowEventInput:
+    day_of_month: int
+    amount: int
+    direction: DirEnum
+    event_type: CashEventEnum
+
+
+@dataclass(frozen=True)
+class ProjectionPoint:
+    sequence: int
+    day_of_month: int
+    event_type: str
+    amount: int
+    projected_balance: int
+
+
+@dataclass(frozen=True)
 class ShockInput:
     median_income: int
     essential_expenses: int
@@ -70,11 +56,14 @@ class ShockInput:
     required_liquidity_buffer: int
     proposed_instalment: int
     largest_income_source_amount: int | None = None
+    cash_flow_events: tuple[CashFlowEventInput, ...] = ()
+    proposed_instalment_day: int = 20
     #: `POST /assessments/{id}/simulate` overrides (PLAN §12.3) -- when
     #: either is set, an extra `CUSTOM` scenario is appended with weight 0
     #: (a what-if preview that never perturbs the canonical resilience score).
     custom_income_drop_pct: Decimal | None = None
     custom_emergency_expense: int | None = None
+    include_custom_scenario: bool = False
 
 
 @dataclass(frozen=True)
@@ -84,6 +73,8 @@ class ShockConfig:
     scenario_weights: dict[str, Decimal]
     resilience_band_thresholds: dict[str, int]
     scenario_points: dict[str, int]
+    delayed_income_days: int
+    emergency_expense_day: int
 
 
 @dataclass(frozen=True)
@@ -95,6 +86,9 @@ class ShockScenarioResult:
     deficit_amount: int
     affordability_status: AffordEnum
     resilience_score_contribution: Decimal
+    required_liquidity_buffer: int
+    required_buffer_breached: bool
+    projection_points: list[ProjectionPoint] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -103,6 +97,7 @@ class ShockResult:
     band: ShockResilienceBandEnum
     scenarios: list[ShockScenarioResult] = field(default_factory=list)
     reason_codes: list[ReasonCode] = field(default_factory=list)
+    proposed_instalment: int = 0
 
 
 def default_config() -> ShockConfig:
@@ -114,6 +109,8 @@ def default_config() -> ShockConfig:
         scenario_weights=raw["scenario_weights"],
         resilience_band_thresholds=raw["resilience_band_thresholds"],
         scenario_points=raw["scenario_points"],
+        delayed_income_days=raw["delayed_income_days"],
+        emergency_expense_day=raw["emergency_expense_day"],
     )
 
 
@@ -146,16 +143,45 @@ def run(inputs: ShockInput, config: ShockConfig = DEFAULT_CONFIG) -> ShockResult
 
     total_score = total_score.quantize(_SCORE_Q, rounding=ROUND_HALF_UP)
     band = _band_for(total_score, config)
-    reason_codes.insert(
-        0,
+    canonical_scenarios = [s for s in scenarios if s.scenario_type is not ShockTypeEnum.CUSTOM]
+    breaches = sum(s.required_buffer_breached for s in canonical_scenarios)
+    deficits = sum(s.affordability_status is AffordEnum.DEFICIT for s in canonical_scenarios)
+    reason_codes[0:0] = [
         ReasonCode(
             code=f"SHOCK_RESILIENCE_{band.value}",
-            description=f"Shock resilience score is {total_score} ({band.value})",
+            description=(
+                f"Canonical-battery shock resilience score is {total_score} ({band.value})"
+            ),
         ),
-    )
+        ReasonCode(
+            code="SHOCK_REQUIRED_BUFFER_COVERAGE",
+            description=(
+                f"{breaches} of {len(canonical_scenarios)} canonical scenarios breach the "
+                "required liquidity buffer"
+            ),
+        ),
+        ReasonCode(
+            code="SHOCK_TEMPORAL_LIQUIDITY",
+            description=(f"{deficits} canonical scenarios create a temporary or month-end deficit"),
+        ),
+    ]
+    if len(canonical_scenarios) != len(scenarios):
+        reason_codes.append(
+            ReasonCode(
+                code="SHOCK_CUSTOM_STANDALONE",
+                description=(
+                    "Custom income and emergency parameters are standalone evidence with zero "
+                    "aggregate contribution; the proposed instalment reruns the canonical battery"
+                ),
+            )
+        )
 
     return ShockResult(
-        resilience_score=total_score, band=band, scenarios=scenarios, reason_codes=reason_codes
+        resilience_score=total_score,
+        band=band,
+        scenarios=scenarios,
+        reason_codes=reason_codes,
+        proposed_instalment=inputs.proposed_instalment,
     )
 
 
@@ -208,8 +234,8 @@ def _scenario_definitions(
         (
             ShockTypeEnum.DELAYED_INCOME,
             weights["DELAYED_INCOME"],
-            -inputs.essential_expenses,
-            {},
+            inputs.average_free_cash_flow,
+            {"delay_days": config.delayed_income_days},
         ),
         (
             ShockTypeEnum.EMERGENCY_EXPENSE,
@@ -231,7 +257,11 @@ def _scenario_definitions(
         ),
     ]
 
-    if inputs.custom_income_drop_pct is not None or inputs.custom_emergency_expense is not None:
+    if (
+        inputs.include_custom_scenario
+        or inputs.custom_income_drop_pct is not None
+        or inputs.custom_emergency_expense is not None
+    ):
         pct = inputs.custom_income_drop_pct or Decimal(0)
         emergency = inputs.custom_emergency_expense or 0
         custom_cash_flow = (
@@ -259,7 +289,10 @@ def _evaluate_scenario(
     parameters: dict[str, object],
 ) -> tuple[ShockScenarioResult, Decimal]:
     projected_cash_flow = scenario_net_cash_flow - inputs.proposed_instalment
-    minimum_projected_balance = inputs.savings_buffer + projected_cash_flow
+    projection_points = _project_timeline(
+        inputs, config, scenario_type, projected_cash_flow, parameters
+    )
+    minimum_projected_balance = min(p.projected_balance for p in projection_points)
     deficit_amount = max(0, -minimum_projected_balance)
 
     if minimum_projected_balance >= inputs.required_liquidity_buffer:
@@ -281,8 +314,75 @@ def _evaluate_scenario(
         deficit_amount=deficit_amount,
         affordability_status=status,
         resilience_score_contribution=contribution,
+        required_liquidity_buffer=inputs.required_liquidity_buffer,
+        required_buffer_breached=minimum_projected_balance < inputs.required_liquidity_buffer,
+        projection_points=projection_points,
     )
     return result, contribution
+
+
+def _project_timeline(
+    inputs: ShockInput,
+    config: ShockConfig,
+    scenario_type: ShockTypeEnum,
+    projected_cash_flow: int,
+    parameters: dict[str, object],
+) -> list[ProjectionPoint]:
+    events: list[tuple[int, str, int, int]] = []
+    dominant_income = max(
+        (e for e in inputs.cash_flow_events if e.direction is DirEnum.CREDIT),
+        key=lambda e: (e.amount, -e.day_of_month),
+        default=None,
+    )
+    drop_pct = Decimal(str(parameters.get("income_drop_pct", "0")))
+    lost_amount_raw = parameters.get("lost_income_amount", 0)
+    lost_amount = lost_amount_raw if isinstance(lost_amount_raw, int) else 0
+
+    for index, event in enumerate(inputs.cash_flow_events):
+        amount = event.amount if event.direction is DirEnum.CREDIT else -event.amount
+        day = event.day_of_month
+        if (
+            scenario_type
+            in {
+                ShockTypeEnum.INCOME_DROP_10,
+                ShockTypeEnum.INCOME_DROP_20,
+                ShockTypeEnum.INCOME_DROP_30,
+                ShockTypeEnum.CUSTOM,
+            }
+            and amount > 0
+        ):
+            amount -= _to_money(Decimal(amount) * drop_pct)
+        if scenario_type is ShockTypeEnum.DELAYED_INCOME and event is dominant_income:
+            day = min(28, day + config.delayed_income_days)
+        if scenario_type is ShockTypeEnum.INCOME_SOURCE_LOSS and amount > 0 and lost_amount > 0:
+            reduction = min(amount, lost_amount)
+            amount -= reduction
+            lost_amount -= reduction
+        if amount:
+            # Debits sort before credits on the same day; source index is the stable tie-breaker.
+            events.append((day, event.event_type.value, amount, index))
+
+    events.append(
+        (inputs.proposed_instalment_day, "PROPOSED_INSTALMENT", -inputs.proposed_instalment, -2)
+    )
+    if scenario_type in {ShockTypeEnum.EMERGENCY_EXPENSE, ShockTypeEnum.CUSTOM}:
+        emergency_raw = parameters.get("emergency_expense", 0)
+        emergency = emergency_raw if isinstance(emergency_raw, int) else 0
+        if emergency:
+            events.append((config.emergency_expense_day, "EMERGENCY_EXPENSE", -emergency, -1))
+
+    represented = sum(amount for _, _, amount, _ in events)
+    reconciliation = projected_cash_flow - represented
+    if reconciliation:
+        events.append((28, "MONTH_END_RECONCILIATION", reconciliation, 10_000))
+    events.sort(key=lambda item: (item[0], item[2] > 0, item[3], item[1]))
+
+    balance = inputs.savings_buffer
+    points = [ProjectionPoint(0, 0, "OPENING_BALANCE", 0, balance)]
+    for sequence, (day, event_type, amount, _) in enumerate(events, start=1):
+        balance += amount
+        points.append(ProjectionPoint(sequence, day, event_type, amount, balance))
+    return points
 
 
 def band_from_score(
