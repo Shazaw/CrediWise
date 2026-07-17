@@ -24,3 +24,14 @@ class PipelineStageRunRepository:
             PipelineStageRun.stage == stage,
         )
         return len(list(self._db.execute(stmt).scalars().all()))
+
+    def count_attempts_for_assessment(
+        self, assessment_id: uuid.UUID, stage: PipelineStageEnum
+    ) -> int:
+        """Sprint 4's `ANALYSIS` stage is assessment-scoped, not
+        document-scoped (see `app/models/enums.py` `PipelineStageEnum`)."""
+        stmt = select(PipelineStageRun).where(
+            PipelineStageRun.assessment_id == assessment_id,
+            PipelineStageRun.stage == stage,
+        )
+        return len(list(self._db.execute(stmt).scalars().all()))

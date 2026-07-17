@@ -71,3 +71,10 @@ verification endpoints committed in the additive Cycle 4 OpenAPI contract. The
 adapter submits structured raw/system/proposed correction lineage and renders
 server-supplied Trust Layer scores without recalculation. `--ui-testing
 --review-flow` continues to use deterministic fixtures for isolated UI coverage.
+
+Cycle 5 adds the financing-need form and assessment dashboard for Risk, Safe
+Borrowing, the Cash-Flow Digital Twin, and the Financial Health plan. Production
+uses the authenticated financing-need and assessment contracts, creates an
+assessment from the confirmed document, polls until analysis completes, and
+renders only server-supplied financial outputs. Run the deterministic isolated
+flow with `--ui-testing --cycle-5-flow`.

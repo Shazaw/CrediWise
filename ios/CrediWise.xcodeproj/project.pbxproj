@@ -97,6 +97,34 @@
 		A00000000000000000000058 /* APIDocumentVerificationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000005A /* APIDocumentVerificationRepository.swift */; };
 		A00000000000000000000059 /* APIDocumentVerificationRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000005B /* APIDocumentVerificationRepositoryTests.swift */; };
 		A0000000000000000000005A /* DocumentVerificationMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000005C /* DocumentVerificationMapper.swift */; };
+		A0000000000000000000005B /* FinancingNeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000005D /* FinancingNeed.swift */; };
+		A0000000000000000000005C /* FinancingNeedRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000005E /* FinancingNeedRepository.swift */; };
+		A0000000000000000000005D /* FinancingNeedRepositoryError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000005F /* FinancingNeedRepositoryError.swift */; };
+		A0000000000000000000005E /* MockFinancingNeedRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000060 /* MockFinancingNeedRepository.swift */; };
+		A0000000000000000000005F /* UnavailableFinancingNeedRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000061 /* UnavailableFinancingNeedRepository.swift */; };
+		A00000000000000000000060 /* FinancingNeedViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000062 /* FinancingNeedViewState.swift */; };
+		A00000000000000000000061 /* FinancingNeedViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000063 /* FinancingNeedViewModel.swift */; };
+		A00000000000000000000062 /* FinancingNeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000064 /* FinancingNeedView.swift */; };
+		A00000000000000000000063 /* AssessmentDashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000065 /* AssessmentDashboard.swift */; };
+		A00000000000000000000064 /* AssessmentDashboardRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000066 /* AssessmentDashboardRepository.swift */; };
+		A00000000000000000000065 /* AssessmentDashboardRepositoryError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000067 /* AssessmentDashboardRepositoryError.swift */; };
+		A00000000000000000000066 /* UnavailableAssessmentDashboardRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000068 /* UnavailableAssessmentDashboardRepository.swift */; };
+		A00000000000000000000067 /* MockAssessmentDashboardRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000069 /* MockAssessmentDashboardRepository.swift */; };
+		A00000000000000000000068 /* AssessmentDashboardViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000006A /* AssessmentDashboardViewState.swift */; };
+		A00000000000000000000069 /* AssessmentDashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000006B /* AssessmentDashboardViewModel.swift */; };
+		A0000000000000000000006A /* RiskBandCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000006C /* RiskBandCard.swift */; };
+		A0000000000000000000006B /* SafeBorrowingCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000006D /* SafeBorrowingCard.swift */; };
+		A0000000000000000000006C /* DigitalTwinSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000006E /* DigitalTwinSummaryView.swift */; };
+		A0000000000000000000006D /* FinancialHealthPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000006F /* FinancialHealthPlanView.swift */; };
+		A0000000000000000000006E /* AssessmentDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000070 /* AssessmentDashboardView.swift */; };
+		A0000000000000000000006F /* FinancingNeedViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000071 /* FinancingNeedViewModelTests.swift */; };
+		A00000000000000000000070 /* AssessmentDashboardViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000072 /* AssessmentDashboardViewModelTests.swift */; };
+		A00000000000000000000071 /* APIFinancingNeedRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000073 /* APIFinancingNeedRepository.swift */; };
+		A00000000000000000000072 /* APIAssessmentDashboardRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000074 /* APIAssessmentDashboardRepository.swift */; };
+		A00000000000000000000073 /* AssessmentDashboardDTOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000075 /* AssessmentDashboardDTOs.swift */; };
+		A00000000000000000000074 /* AssessmentDashboardMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000076 /* AssessmentDashboardMapper.swift */; };
+		A00000000000000000000075 /* APIFinancingNeedRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000077 /* APIFinancingNeedRepositoryTests.swift */; };
+		A00000000000000000000076 /* APIAssessmentDashboardRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000078 /* APIAssessmentDashboardRepositoryTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -208,6 +236,34 @@
 		B0000000000000000000005A /* APIDocumentVerificationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDocumentVerificationRepository.swift; sourceTree = "<group>"; };
 		B0000000000000000000005B /* APIDocumentVerificationRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDocumentVerificationRepositoryTests.swift; sourceTree = "<group>"; };
 		B0000000000000000000005C /* DocumentVerificationMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentVerificationMapper.swift; sourceTree = "<group>"; };
+		B0000000000000000000005D /* FinancingNeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinancingNeed.swift; sourceTree = "<group>"; };
+		B0000000000000000000005E /* FinancingNeedRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinancingNeedRepository.swift; sourceTree = "<group>"; };
+		B0000000000000000000005F /* FinancingNeedRepositoryError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinancingNeedRepositoryError.swift; sourceTree = "<group>"; };
+		B00000000000000000000060 /* MockFinancingNeedRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockFinancingNeedRepository.swift; sourceTree = "<group>"; };
+		B00000000000000000000061 /* UnavailableFinancingNeedRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnavailableFinancingNeedRepository.swift; sourceTree = "<group>"; };
+		B00000000000000000000062 /* FinancingNeedViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinancingNeedViewState.swift; sourceTree = "<group>"; };
+		B00000000000000000000063 /* FinancingNeedViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinancingNeedViewModel.swift; sourceTree = "<group>"; };
+		B00000000000000000000064 /* FinancingNeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinancingNeedView.swift; sourceTree = "<group>"; };
+		B00000000000000000000065 /* AssessmentDashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssessmentDashboard.swift; sourceTree = "<group>"; };
+		B00000000000000000000066 /* AssessmentDashboardRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssessmentDashboardRepository.swift; sourceTree = "<group>"; };
+		B00000000000000000000067 /* AssessmentDashboardRepositoryError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssessmentDashboardRepositoryError.swift; sourceTree = "<group>"; };
+		B00000000000000000000068 /* UnavailableAssessmentDashboardRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnavailableAssessmentDashboardRepository.swift; sourceTree = "<group>"; };
+		B00000000000000000000069 /* MockAssessmentDashboardRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAssessmentDashboardRepository.swift; sourceTree = "<group>"; };
+		B0000000000000000000006A /* AssessmentDashboardViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssessmentDashboardViewState.swift; sourceTree = "<group>"; };
+		B0000000000000000000006B /* AssessmentDashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssessmentDashboardViewModel.swift; sourceTree = "<group>"; };
+		B0000000000000000000006C /* RiskBandCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RiskBandCard.swift; sourceTree = "<group>"; };
+		B0000000000000000000006D /* SafeBorrowingCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeBorrowingCard.swift; sourceTree = "<group>"; };
+		B0000000000000000000006E /* DigitalTwinSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DigitalTwinSummaryView.swift; sourceTree = "<group>"; };
+		B0000000000000000000006F /* FinancialHealthPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinancialHealthPlanView.swift; sourceTree = "<group>"; };
+		B00000000000000000000070 /* AssessmentDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssessmentDashboardView.swift; sourceTree = "<group>"; };
+		B00000000000000000000071 /* FinancingNeedViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinancingNeedViewModelTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000072 /* AssessmentDashboardViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssessmentDashboardViewModelTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000073 /* APIFinancingNeedRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIFinancingNeedRepository.swift; sourceTree = "<group>"; };
+		B00000000000000000000074 /* APIAssessmentDashboardRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIAssessmentDashboardRepository.swift; sourceTree = "<group>"; };
+		B00000000000000000000075 /* AssessmentDashboardDTOs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssessmentDashboardDTOs.swift; sourceTree = "<group>"; };
+		B00000000000000000000076 /* AssessmentDashboardMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssessmentDashboardMapper.swift; sourceTree = "<group>"; };
+		B00000000000000000000077 /* APIFinancingNeedRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIFinancingNeedRepositoryTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000078 /* APIAssessmentDashboardRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIAssessmentDashboardRepositoryTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000100 /* CrediWise.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrediWise.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B00000000000000000000101 /* CrediWiseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrediWiseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B00000000000000000000102 /* CrediWiseUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrediWiseUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -307,6 +363,7 @@
 			isa = PBXGroup;
 			children = (
 				D0000000000000000000001F /* Dashboard */,
+				D00000000000000000000024 /* FinancingNeed */,
 				D0000000000000000000000B /* Onboarding */,
 				D00000000000000000000019 /* Upload */,
 			);
@@ -350,6 +407,7 @@
 				D00000000000000000000023 /* Utils Tests */,
 				D0000000000000000000000F /* Features */,
 				D00000000000000000000022 /* Dashboard Tests */,
+				D0000000000000000000002B /* FinancingNeed Tests */,
 				D0000000000000000000001E /* Upload Tests */,
 			);
 			path = CrediWiseTests;
@@ -533,6 +591,8 @@
 		D0000000000000000000001F /* Dashboard */ = {
 			isa = PBXGroup;
 			children = (
+				D00000000000000000000029 /* Models */,
+				D0000000000000000000002A /* Repositories */,
 				D00000000000000000000020 /* ViewModels */,
 				D00000000000000000000021 /* Views */,
 			);
@@ -542,6 +602,8 @@
 		D00000000000000000000020 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				B0000000000000000000006B /* AssessmentDashboardViewModel.swift */,
+				B0000000000000000000006A /* AssessmentDashboardViewState.swift */,
 				B00000000000000000000047 /* DataConfidenceReport.swift */,
 				B00000000000000000000050 /* DataConfidenceViewModel.swift */,
 				B0000000000000000000004F /* DataConfidenceViewState.swift */,
@@ -552,16 +614,25 @@
 		D00000000000000000000021 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000070 /* AssessmentDashboardView.swift */,
 				B00000000000000000000053 /* DataConfidenceCard.swift */,
 				B00000000000000000000054 /* DataConfidenceDetailView.swift */,
 				B00000000000000000000055 /* DataConfidenceView.swift */,
+				B0000000000000000000006E /* DigitalTwinSummaryView.swift */,
+				B0000000000000000000006F /* FinancialHealthPlanView.swift */,
+				B0000000000000000000006C /* RiskBandCard.swift */,
+				B0000000000000000000006D /* SafeBorrowingCard.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
 		};
 		D00000000000000000000022 /* Dashboard Tests */ = {
 			isa = PBXGroup;
-			children = (B00000000000000000000057 /* DataConfidenceViewModelTests.swift */);
+			children = (
+				B00000000000000000000078 /* APIAssessmentDashboardRepositoryTests.swift */,
+				B00000000000000000000072 /* AssessmentDashboardViewModelTests.swift */,
+				B00000000000000000000057 /* DataConfidenceViewModelTests.swift */,
+			);
 			path = Features/Dashboard;
 			sourceTree = "<group>";
 		};
@@ -569,6 +640,79 @@
 			isa = PBXGroup;
 			children = (B00000000000000000000058 /* IDRFormatterTests.swift */);
 			path = Core/Utils;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000024 /* FinancingNeed */ = {
+			isa = PBXGroup;
+			children = (
+				D00000000000000000000025 /* Models */,
+				D00000000000000000000026 /* Repositories */,
+				D00000000000000000000027 /* ViewModels */,
+				D00000000000000000000028 /* Views */,
+			);
+			path = FinancingNeed;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000025 /* Models */ = {
+			isa = PBXGroup;
+			children = (B0000000000000000000005D /* FinancingNeed.swift */);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000026 /* Repositories */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000073 /* APIFinancingNeedRepository.swift */,
+				B0000000000000000000005E /* FinancingNeedRepository.swift */,
+				B0000000000000000000005F /* FinancingNeedRepositoryError.swift */,
+				B00000000000000000000060 /* MockFinancingNeedRepository.swift */,
+				B00000000000000000000061 /* UnavailableFinancingNeedRepository.swift */,
+			);
+			path = Repositories;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000027 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000063 /* FinancingNeedViewModel.swift */,
+				B00000000000000000000062 /* FinancingNeedViewState.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000028 /* Views */ = {
+			isa = PBXGroup;
+			children = (B00000000000000000000064 /* FinancingNeedView.swift */);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		D00000000000000000000029 /* Models */ = {
+			isa = PBXGroup;
+			children = (B00000000000000000000065 /* AssessmentDashboard.swift */);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		D0000000000000000000002A /* Repositories */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000074 /* APIAssessmentDashboardRepository.swift */,
+				B00000000000000000000066 /* AssessmentDashboardRepository.swift */,
+				B00000000000000000000075 /* AssessmentDashboardDTOs.swift */,
+				B00000000000000000000076 /* AssessmentDashboardMapper.swift */,
+				B00000000000000000000067 /* AssessmentDashboardRepositoryError.swift */,
+				B00000000000000000000069 /* MockAssessmentDashboardRepository.swift */,
+				B00000000000000000000068 /* UnavailableAssessmentDashboardRepository.swift */,
+			);
+			path = Repositories;
+			sourceTree = "<group>";
+		};
+		D0000000000000000000002B /* FinancingNeed Tests */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000077 /* APIFinancingNeedRepositoryTests.swift */,
+				B00000000000000000000071 /* FinancingNeedViewModelTests.swift */,
+			);
+			path = Features/FinancingNeed;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -766,10 +910,34 @@
 				A00000000000000000000057 /* DocumentVerificationDTOs.swift in Sources */,
 				A00000000000000000000058 /* APIDocumentVerificationRepository.swift in Sources */,
 				A0000000000000000000005A /* DocumentVerificationMapper.swift in Sources */,
+				A0000000000000000000005B /* FinancingNeed.swift in Sources */,
+				A0000000000000000000005C /* FinancingNeedRepository.swift in Sources */,
+				A0000000000000000000005D /* FinancingNeedRepositoryError.swift in Sources */,
+				A0000000000000000000005E /* MockFinancingNeedRepository.swift in Sources */,
+				A0000000000000000000005F /* UnavailableFinancingNeedRepository.swift in Sources */,
+				A00000000000000000000060 /* FinancingNeedViewState.swift in Sources */,
+				A00000000000000000000061 /* FinancingNeedViewModel.swift in Sources */,
+				A00000000000000000000062 /* FinancingNeedView.swift in Sources */,
+				A00000000000000000000063 /* AssessmentDashboard.swift in Sources */,
+				A00000000000000000000064 /* AssessmentDashboardRepository.swift in Sources */,
+				A00000000000000000000065 /* AssessmentDashboardRepositoryError.swift in Sources */,
+				A00000000000000000000066 /* UnavailableAssessmentDashboardRepository.swift in Sources */,
+				A00000000000000000000067 /* MockAssessmentDashboardRepository.swift in Sources */,
+				A00000000000000000000068 /* AssessmentDashboardViewState.swift in Sources */,
+				A00000000000000000000069 /* AssessmentDashboardViewModel.swift in Sources */,
+				A0000000000000000000006A /* RiskBandCard.swift in Sources */,
+				A0000000000000000000006B /* SafeBorrowingCard.swift in Sources */,
+				A0000000000000000000006C /* DigitalTwinSummaryView.swift in Sources */,
+				A0000000000000000000006D /* FinancialHealthPlanView.swift in Sources */,
+				A0000000000000000000006E /* AssessmentDashboardView.swift in Sources */,
+				A00000000000000000000071 /* APIFinancingNeedRepository.swift in Sources */,
+				A00000000000000000000072 /* APIAssessmentDashboardRepository.swift in Sources */,
+				A00000000000000000000073 /* AssessmentDashboardDTOs.swift in Sources */,
+				A00000000000000000000074 /* AssessmentDashboardMapper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F00000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A0000000000000000000002A /* APIAuthenticationRepositoryTests.swift in Sources */, A00000000000000000000059 /* APIDocumentVerificationRepositoryTests.swift in Sources */, A00000000000000000000040 /* APIDocumentUploadRepositoryTests.swift in Sources */, A00000000000000000000012 /* AppCoordinatorTests.swift in Sources */, A00000000000000000000027 /* AuthenticationViewModelTests.swift in Sources */, A00000000000000000000026 /* AuthInterceptorTests.swift in Sources */, A00000000000000000000055 /* DataConfidenceViewModelTests.swift in Sources */, A0000000000000000000003B /* DocumentUploadPollingPolicyTests.swift in Sources */, A00000000000000000000054 /* ExtractionReviewViewModelTests.swift in Sources */, A00000000000000000000056 /* IDRFormatterTests.swift in Sources */, A00000000000000000000025 /* SessionManagerTests.swift in Sources */, A0000000000000000000003A /* UploadFileValidatorTests.swift in Sources */, A0000000000000000000003C /* UploadViewModelTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+		F00000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A0000000000000000000002A /* APIAuthenticationRepositoryTests.swift in Sources */, A00000000000000000000076 /* APIAssessmentDashboardRepositoryTests.swift in Sources */, A00000000000000000000059 /* APIDocumentVerificationRepositoryTests.swift in Sources */, A00000000000000000000040 /* APIDocumentUploadRepositoryTests.swift in Sources */, A00000000000000000000075 /* APIFinancingNeedRepositoryTests.swift in Sources */, A00000000000000000000012 /* AppCoordinatorTests.swift in Sources */, A00000000000000000000070 /* AssessmentDashboardViewModelTests.swift in Sources */, A00000000000000000000027 /* AuthenticationViewModelTests.swift in Sources */, A00000000000000000000026 /* AuthInterceptorTests.swift in Sources */, A00000000000000000000055 /* DataConfidenceViewModelTests.swift in Sources */, A0000000000000000000003B /* DocumentUploadPollingPolicyTests.swift in Sources */, A00000000000000000000054 /* ExtractionReviewViewModelTests.swift in Sources */, A0000000000000000000006F /* FinancingNeedViewModelTests.swift in Sources */, A00000000000000000000056 /* IDRFormatterTests.swift in Sources */, A00000000000000000000025 /* SessionManagerTests.swift in Sources */, A0000000000000000000003A /* UploadFileValidatorTests.swift in Sources */, A0000000000000000000003C /* UploadViewModelTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
 		F00000000000000000000007 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000013 /* WelcomeFlowUITests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 

@@ -3,9 +3,11 @@
 
 Scoped to `source_document_id` for Sprint 3 (`EXTRACTION`/`VERIFICATION`
 stages, PLAN §11.3's `pipeline_stage_enum` gap-fill in `app/models/enums.py`).
-`assessment_id` is added by a later migration once `assessments` exists
-(Sprint 4) — PLAN §11.4's expand pattern; a Postgres FK cannot target a
-table that does not exist yet.
+Sprint 4/migration `0007` adds `assessment_id` (PLAN §11.4's expand pattern —
+a Postgres FK couldn't target `assessments` before this migration created
+it): `NORMALIZATION` runs stay scoped to `source_document_id` (one row's own
+transactions); the new `ANALYSIS` stage is scoped to `assessment_id` (Twin/
+Risk/SafeBorrowing run once per assessment, not per document).
 """
 
 import uuid
@@ -26,6 +28,9 @@ class PipelineStageRun(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     source_document_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("source_documents.id", ondelete="RESTRICT"), nullable=True
+    )
+    assessment_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("assessments.id", ondelete="RESTRICT"), nullable=True
     )
     stage: Mapped[PipelineStageEnum] = mapped_column(
         sa_enum(PipelineStageEnum, "pipeline_stage_enum"), nullable=False

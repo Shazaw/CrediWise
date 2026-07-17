@@ -27,6 +27,7 @@ from app.pipeline.celery_app import celery_app
 from app.repositories.source_document_repository import SourceDocumentRepository
 from app.services import audit_service
 from app.services.extraction_service import run_extraction
+from app.services.normalization_service import run_normalization
 from app.services.verification_service import run_verification
 
 
@@ -64,6 +65,23 @@ def process_document(document_id: str) -> None:
     db = SessionLocal()
     try:
         run_document_pipeline(db, uuid.UUID(document_id))
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+
+@celery_app.task(name="app.pipeline.normalize_document")
+def normalize_document(document_id: str) -> None:
+    """Sprint 4/T4.1: `NORMALIZING -> ANALYZING` (PLAN §8.2). Dispatched by
+    `DocumentService.confirm()` (`app/pipeline/dispatch.py`
+    `dispatch_document_normalization`), separately from `process_document`
+    because normalization only starts once the *user* confirms the review
+    state (FR-14 AC2), not automatically after extraction/verification."""
+    db = SessionLocal()
+    try:
+        run_normalization(db, uuid.UUID(document_id))
     except Exception:
         db.rollback()
         raise

@@ -17,6 +17,13 @@ class DocumentVerificationResultRepository:
         self._db.flush()
         return result
 
+    def get_by_id(self, result_id: uuid.UUID) -> DocumentVerificationResult | None:
+        stmt = select(DocumentVerificationResult).where(
+            DocumentVerificationResult.id == result_id,
+            DocumentVerificationResult.deleted_at.is_(None),
+        )
+        return self._db.execute(stmt).scalar_one_or_none()
+
     def get_latest_for_document(
         self, source_document_id: uuid.UUID
     ) -> DocumentVerificationResult | None:

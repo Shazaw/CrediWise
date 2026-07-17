@@ -3,7 +3,7 @@
 > **Single Source of Truth.** This is the *only* document a coding agent is expected to read before implementing any feature in this repository. It is a hybrid **Product Requirements Document (PRD) + Technical Design Document (TDD)**. If a decision is not written here, it is either (a) not yet decided — raise it and update this file via the process in [§24 Coding Agent Instructions](#24-coding-agent-instructions), or (b) governed by the closest analogous decision already documented. **Do not invent architecture silently.**
 
 - **Product:** CrediWise — *Two-Way Credit Safety Engine, Trust Layer & Open Finance Roadmap*
-- **Document version:** `1.3.1`
+- **Document version:** `1.4.1`
 - **Status:** Approved for Sprint 0
 - **Last updated:** 2026-07-17
 - **Approval note:** Native iOS, the full backend/worker infrastructure, and terminal-agent-driven parallel implementation are confirmed team decisions following mentor review.
@@ -981,10 +981,13 @@ Index: `(user_id, transaction_date)`, `(financial_account_id, transaction_date)`
 
 **`pipeline_stage_runs`** — resumability and observability. Implemented Sprint 3/T3.2, scoped to `source_document_id`.
 `source_document_id FK NULL`, `assessment_id FK NULL`, `stage pipeline_stage_enum`, `status stage_status_enum`, `attempt_number INT`, `input_hash CHAR(64)`, `output_hash CHAR(64)`, `worker_version TEXT`, `started_at`, `completed_at`, `error_code TEXT NULL`, `sanitized_error_message TEXT NULL`.
-Sprint 3's migration (`0004`) omits the `assessment_id` column — `assessments` doesn't exist until Sprint 4 and Postgres cannot FK to a nonexistent table; Sprint 4's migration adds it (§11.4 expand pattern). `pipeline_stage_enum`'s Sprint 3 member set is `EXTRACTION, VERIFICATION` only (gap-fill, §24.11); later sprints extend it as their stages ship.
+Sprint 3's migration (`0004`) omits the `assessment_id` column — `assessments` doesn't exist until Sprint 4 and Postgres cannot FK to a nonexistent table; Sprint 4's migration adds it (§11.4 expand pattern). `pipeline_stage_enum`'s Sprint 3 member set is `EXTRACTION, VERIFICATION` only (gap-fill, §24.11); later sprints extend it as their stages ship. Sprint 4/migration `0007` adds `assessment_id` (nullable, mirroring `source_document_id`) plus two `pipeline_stage_enum` members: `NORMALIZATION` (document-scoped — `NormalizationEngine`) and `ANALYSIS` (assessment-scoped — Twin/Risk/SafeBorrowing). See ADR-015 for why the split exists rather than one stage per engine.
+
+Sprint 4/T4.5 implements `financing_needs`, `assessments`, `assessment_documents`, `assessment_transactions`, `assessment_input_snapshots`, `financial_profiles`, `monthly_cash_flow_snapshots`, `income_sources`, `recurring_series`, `cash_flow_events`, and `assessment_reason_codes` (migration `0007`) exactly per their §11.3 column lists above, plus these gap-fills (§24.11): `urgency_enum`, `income_source_enum`, `recurring_type_enum`, `cash_event_enum`, `coverage_enum`, `inclusion_enum`, and `severity_enum` member sets are not enumerated in Appendix A (added below); `reason_type_enum`'s set is the one given inline in this section's `assessment_reason_codes` row. `assessments.data_confidence_score` is a mean across every included document's latest `document_verification_results` row (equal weight) — the simplest deterministic reducer for the single-document golden path; multi-document averaging beyond that is not further validated this sprint (same class of gap as T3.3's cross-document consistency note). The corresponding band is computed on read from that score using §5.2's thresholds (`band_from_score`, `app/services/assessment_service.py`), not stored as a separate column — `assessments` doesn't list one in this section's table.
 
 **`assessments`** — the central aggregate.
-`user_id FK`, `financing_need_id FK`, `model_version_id FK→model_versions`, `data_confidence_score NUMERIC(6,2)`, `indicative_risk_band risk_band_enum`, `model_confidence band_enum`, `shock_resilience_score NUMERIC(6,2)`, `safe_loan_amount BIGINT`, `maximum_safe_instalment BIGINT`, `recommended_tenor_months INT`, `recommended_due_date_start INT`, `recommended_due_date_end INT`, `recommended_frequency freq_enum`, `status assessment_status_enum NOT NULL DEFAULT 'PENDING'`.
+`user_id FK`, `financing_need_id FK`, `model_version_id FK→model_versions`, `data_confidence_score NUMERIC(6,2)`, `indicative_risk_band risk_band_enum`, `model_confidence band_enum`, `shock_resilience_score NUMERIC(6,2)`, `safe_loan_amount BIGINT`, `maximum_safe_instalment BIGINT`, `required_liquidity_buffer BIGINT`, `recommended_tenor_months INT`, `recommended_due_date_start INT`, `recommended_due_date_end INT`, `recommended_frequency freq_enum`, `status assessment_status_enum NOT NULL DEFAULT 'PENDING'`.
+Migration `0008` adds nullable `required_liquidity_buffer` for backward-compatible expansion; every newly completed assessment stores the exact versioned `SafeBorrowingEngine` result so API reads never recalculate it.
 Index: `(user_id, created_at DESC)`, `(status)`.
 
 **`assessment_reason_codes`** — explainability.
@@ -1096,6 +1099,19 @@ verification responses expose the exact model-version reference and separately a
 local-AI signal; review corrections carry bounded scalar `raw_extracted_value`,
 `system_normalized_value`, and `user_proposed_value` fields. These fields let clients render
 and submit FR-5/FR-14 evidence without reproducing Trust Layer or normalization rules.
+
+**Cycle 5 additive financing-need/assessment contract (Sprint 4):** implements
+`POST/GET /financing-needs`, `POST /assessments`, `GET /assessments/{id}[/twin|
+/recommendation|/dashboard|/lineage]` exactly as catalogued above (`/lineage` is a
+cheap FR-18/NFR-17 addition once `assessment_input_snapshots` exists, not
+originally itemised in T4.6's checklist prose but within the same endpoint
+catalogue row). `GET /documents/{id}/transactions` rows now populate real
+`category`/`transaction_context`/`is_recurring` once a document reaches
+`ANALYZING` (Sprint 3 shipped these fields defaulted to `UNKNOWN`/`false`).
+Dashboard's `shock_resilience` card and offers remain absent until Sprint 5
+(`assessments.shock_resilience_score` stays `NULL`) — clients should render
+Data Confidence/Risk Band/Safe Borrowing/Twin only, per §7.11's "4 cards
+partial" Sprint 4 scope.
 
 ### 12.3 Representative Payloads
 
@@ -1653,6 +1669,7 @@ Every PR body includes: **What/Why**, **PLAN sections & FR/NFR touched**, **How 
 | **ADR-012** | **Model config as versioned code + config_hash** | Governance/reproducibility; every threshold change is a traceable version. |
 | **ADR-013** | **File-security stage runs synchronously in `POST /documents`**, not in the `documents` worker | Passwords must never cross the Celery/Redis boundary (§24.10); dedup must gate the HTTP response before any row/storage write (FR-3 AC3). |
 | **ADR-014** | **Extraction auto-provisions `financial_accounts`** when a `source_document` has none | `transactions.financial_account_id` is `NOT NULL` per §11.3, but no create-account route ships in MVP (T2.1); server-side inference from `source_type` keeps the golden path (§1.6) a single upload step. |
+| **ADR-015** | **`SafeBorrowingEngine` ships without `ShockCapacity`**; document→assessment pipeline splits into document-scoped `NORMALIZATION` and assessment-scoped `ANALYSIS` stages | `ShockEngine` doesn't exist until Sprint 5, so §5.6's fifth `min(...)` term can't be computed yet — the other four terms are a documented conservative upper bound. `pipeline_stage_runs.assessment_id` (§11.3) only makes sense if an assessment-scoped stage exists alongside the document-scoped ones. |
 
 ---
 
@@ -1846,14 +1863,14 @@ Follow the sprint plan (§25). Within a feature, build **inside-out**: model/mig
 - [x] T3.8 Tests: engine golden tests (`trust_layer.py` 96%, `extraction/*` 92-100% — all ≥90% coverage gate)
 
 ### 26.5 Sprint 4 — Twin, Risk & Safe Borrowing
-- [ ] T4.1 `NormalizationEngine`: categorize, personal/business context, multi-source internal-transfer, recurring, merchant
-- [ ] T4.2 `CashFlowTwinEngine` + `financial_profiles`, monthly snapshots, income sources, recurring series, cash-flow events models/migration
-- [ ] T4.3 `RiskEngine` (band + model confidence + reasons) (§5.3–5.5)
-- [ ] T4.4 `SafeBorrowingEngine` (required buffer/max instalment/illustrative amount/tenor/due-date/frequency) (§5.6–5.7)
-- [ ] T4.5 `assessments`, `assessment_documents`, `assessment_transactions`, immutable `assessment_input_snapshots`, reason codes, and financing needs models/migration
-- [ ] T4.6 `POST /financing-needs`, `POST /assessments`, `GET /assessments/{id}`, `/twin`, `/recommendation`, `/dashboard`
-- [ ] T4.7 iOS: Financing-need form, Dashboard + Twin summary + Financial Health Improvement Plan
-- [ ] T4.8 Tests: engine golden tests + assessment integration
+- [x] T4.1 `NormalizationEngine`: categorize, personal/business context, multi-source internal-transfer, recurring, merchant. Keyword/pattern categorization rules (§24.11 gap-fill, `model_config.py NORMALIZATION_CATEGORY_RULES`) — an initial fixture-driven vocabulary, extended as new statement formats are supported.
+- [x] T4.2 `CashFlowTwinEngine` + `financial_profiles`, monthly snapshots, income sources, recurring series, cash-flow events models/migration
+- [x] T4.3 `RiskEngine` (band + model confidence + reasons) (§5.3–5.5)
+- [x] T4.4 `SafeBorrowingEngine` (required buffer/max instalment/illustrative amount/tenor/due-date/frequency) (§5.6–5.7). **Gap:** `ShockCapacity` term omitted pending Sprint 5's `ShockEngine` — see ADR-015. The four implemented terms are a documented conservative upper bound, not silently claimed complete.
+- [x] T4.5 `assessments`, `assessment_documents`, `assessment_transactions`, immutable `assessment_input_snapshots`, reason codes, and financing needs models/migration (migration `0007`)
+- [x] T4.6 `POST /financing-needs`, `POST /assessments`, `GET /assessments/{id}`, `/twin`, `/recommendation`, `/dashboard` — also added `GET /assessments/{id}/lineage` (FR-18/NFR-17, cheap addition once `assessment_input_snapshots` exists)
+- [x] T4.7 iOS: Financing-need form, authenticated assessment creation/polling, Dashboard + Twin summary + Financial Health Improvement Plan
+- [x] T4.8 Tests: engine golden tests (`normalization.py` 97%, `cash_flow_twin.py` 99%, `risk.py` 96%, `safe_borrowing.py` 100% — all ≥90% coverage gate) + assessment integration tests (full upload→confirm→assessment→dashboard pipeline, zero-cash-flow safe-amount case, ownership/validation edge cases) run against a real Postgres 16
 
 ### 26.6 Sprint 5 — Shocks, Offers & Full Dashboard
 - [ ] T5.1 `ShockEngine` + temporal liquidity scenarios/model + resilience score (§5.8)
@@ -1934,9 +1951,16 @@ Where an older sentence conflicts with these additions, the more specific v1.1.0
 - `consent_status_enum`: ACTIVE, EXPIRED, REVOKED
 - `source_type_enum`: BANK_API, SIGNED_STATEMENT, ORIGINAL_PDF, EXPORTED_CSV, SCREENSHOT, PHOTO
 - `processing_status_enum`: RUNNING, COMPLETE, FAILED (added Sprint 3/T3.2 — gap-fill, see §11.3 `document_processing_runs`)
-- `pipeline_stage_enum`: EXTRACTION, VERIFICATION (added Sprint 3/T3.2 — gap-fill, scoped to Sprint 3's stages; later sprints extend this set, see §11.3 `pipeline_stage_runs`)
+- `pipeline_stage_enum`: EXTRACTION, VERIFICATION, NORMALIZATION, ANALYSIS (`EXTRACTION`/`VERIFICATION` added Sprint 3/T3.2; `NORMALIZATION`/`ANALYSIS` added Sprint 4 — gap-fill, see §11.3 `pipeline_stage_runs`, ADR-015)
 - `stage_status_enum`: RUNNING, SUCCEEDED, FAILED (added Sprint 3/T3.2 — gap-fill, see §11.3 `pipeline_stage_runs`)
 - `dir_enum`: CREDIT, DEBIT (added Sprint 3/T3.2 — gap-fill, see §11.3 `transactions`)
+- `urgency_enum`: LOW, MEDIUM, HIGH (added Sprint 4/T4.5 — gap-fill, see §11.3 `financing_needs`)
+- `income_source_enum`: SALARY, BUSINESS_REVENUE, FREELANCE, QRIS_SETTLEMENT, MARKETPLACE_SETTLEMENT, OTHER (added Sprint 4/T4.2 — gap-fill, see §11.3 `income_sources`)
+- `recurring_type_enum`: INCOME, EXPENSE, DEBT_PAYMENT (added Sprint 4/T4.1 — gap-fill, see §11.3 `recurring_series`)
+- `cash_event_enum`: INCOME, ESSENTIAL_EXPENSE (added Sprint 4/T4.2 — gap-fill, scoped to the two event classes `CashFlowTwinEngine` produces; see §11.3 `cash_flow_events`)
+- `coverage_enum`: SUFFICIENT, LOW_COVERAGE (added Sprint 4/T4.2 — gap-fill, see §11.3 `financial_profiles`, FR-7 EC)
+- `inclusion_enum`: INCLUDED, EXCLUDED (added Sprint 4/T4.5 — gap-fill, see §11.3 `assessment_documents`/`assessment_transactions`)
+- `severity_enum`: INFO, LOW, MEDIUM, HIGH (added Sprint 4/T4.5 — gap-fill, see §11.3 `assessment_reason_codes`)
 
 ## Appendix B — Positioning Copy (approved)
 

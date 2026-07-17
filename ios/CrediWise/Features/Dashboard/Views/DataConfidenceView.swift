@@ -4,9 +4,17 @@ struct DataConfidenceView: View {
     @StateObject private var viewModel: DataConfidenceViewModel
     @State private var operationTask: Task<Void, Never>?
     @State private var isDetailPresented = false
+    @State private var isCreatingAssessment = false
+    @State private var assessmentCreationFailed = false
 
-    init(viewModel: DataConfidenceViewModel) {
+    let onContinueToDashboard: (() async throws -> Void)?
+
+    init(
+        viewModel: DataConfidenceViewModel,
+        onContinueToDashboard: (() async throws -> Void)? = nil
+    ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.onContinueToDashboard = onContinueToDashboard
     }
 
     var body: some View {
@@ -70,6 +78,34 @@ struct DataConfidenceView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(CrediWiseColors.surface)
             .clipShape(RoundedRectangle(cornerRadius: RadiusTokens.card))
+
+            if let onContinueToDashboard {
+                if assessmentCreationFailed {
+                    Text("confidence.assessment_error")
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(CrediWiseColors.danger)
+                }
+                CTAButton(
+                    title: isCreatingAssessment
+                        ? "confidence.creating_assessment"
+                        : "confidence.continue_dashboard"
+                ) {
+                    operationTask = Task {
+                        isCreatingAssessment = true
+                        assessmentCreationFailed = false
+                        do {
+                            try await onContinueToDashboard()
+                        } catch is CancellationError {
+                            return
+                        } catch {
+                            assessmentCreationFailed = true
+                        }
+                        isCreatingAssessment = false
+                    }
+                }
+                .disabled(isCreatingAssessment)
+                    .accessibilityIdentifier("confidence.continue_dashboard")
+            }
         case let .failed(errorKey):
             VStack(alignment: .leading, spacing: SpacingTokens.standard) {
                 Text("confidence.error.title")

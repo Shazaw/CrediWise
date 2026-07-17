@@ -96,6 +96,27 @@ def _inline_document_processing(db_session: Session) -> Iterator[None]:
 
 
 @pytest.fixture(autouse=True)
+def _inline_normalization_and_analysis(db_session: Session) -> Iterator[None]:
+    """Sprint 4: same inline-override pattern as `_inline_document_processing`,
+    for the `NORMALIZATION` stage `DocumentService.confirm()` dispatches and
+    the `ANALYSIS` stage `AssessmentService.create()` dispatches -- both run
+    synchronously against the test's own `db_session` instead of a real
+    Celery broker."""
+    from app.services.assessment_service import run_assessment_analysis
+    from app.services.normalization_service import run_normalization
+
+    dispatch.set_normalization_dispatch_override(
+        lambda document_id: run_normalization(db_session, document_id)
+    )
+    dispatch.set_assessment_analysis_dispatch_override(
+        lambda assessment_id: run_assessment_analysis(db_session, assessment_id)
+    )
+    yield
+    dispatch.set_normalization_dispatch_override(None)
+    dispatch.set_assessment_analysis_dispatch_override(None)
+
+
+@pytest.fixture(autouse=True)
 def _mock_storage() -> Iterator[None]:
     """`moto` intercepts AWS-shaped endpoints (see `tests/unit/test_storage_adapter.py`
     for why the endpoint here differs from the app's real MinIO `STORAGE_ENDPOINT_URL`)."""
