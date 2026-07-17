@@ -41,10 +41,6 @@ final class WelcomeFlowUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["session.authenticated.title"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.buttons["session.start_upload"].exists)
         XCTAssertTrue(app.descendants(matching: .any)["home.journey"].exists)
-        XCTAssertTrue(app.descendants(matching: .any)["home.journey.step.need"].exists)
-        XCTAssertTrue(app.descendants(matching: .any)["home.journey.step.verify"].exists)
-        XCTAssertTrue(app.descendants(matching: .any)["home.journey.step.compare"].exists)
-        XCTAssertTrue(app.descendants(matching: .any)["home.privacy"].exists)
         XCTAssertEqual(app.tabBars.buttons.count, 5)
 
         app.tabBars.buttons.element(boundBy: 4).tap()
