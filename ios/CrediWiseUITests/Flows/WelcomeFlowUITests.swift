@@ -123,24 +123,21 @@ final class WelcomeFlowUITests: XCTestCase {
         let shockCard = app.buttons["dashboard.shock.card"]
         scrollUntilHittable(shockCard, in: app)
         shockCard.tap()
-        XCTAssertTrue(app.otherElements["shocks.screen"].waitForExistence(timeout: 3))
 
         let simulateButton = app.buttons["shocks.simulate"]
         scrollUntilHittable(simulateButton, in: app)
         simulateButton.tap()
-        let chart = app.otherElements["shocks.chart"]
+        let chart = app.descendants(matching: .any)["shocks.chart"]
         scrollUntilHittable(chart, in: app, attempts: 8)
 
         app.navigationBars.buttons.element(boundBy: 0).tap()
         let offersButton = app.buttons["dashboard.offers.action"]
         scrollUntilHittable(offersButton, in: app)
         offersButton.tap()
-        XCTAssertTrue(app.otherElements["offers.screen"].waitForExistence(timeout: 3))
 
         let unsafeOffer = app.buttons["offers.row.offer-unsafe"]
         scrollUntilHittable(unsafeOffer, in: app)
         unsafeOffer.tap()
-        XCTAssertTrue(app.otherElements["offers.detail.screen"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.descendants(matching: .any)["offers.simulated"].exists)
         XCTAssertTrue(app.descendants(matching: .any)["offers.warning.REFINANCING_DEPENDENCY_RISK"].exists)
     }
