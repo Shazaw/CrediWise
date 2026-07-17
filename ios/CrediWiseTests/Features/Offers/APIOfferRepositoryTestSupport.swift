@@ -1,4 +1,5 @@
 import Foundation
+@testable import CrediWise
 
 let offerContractFixtureID = UUID(uuidString: "BFA50DD7-F269-4013-BABF-11FD3EF142FE")!
 
