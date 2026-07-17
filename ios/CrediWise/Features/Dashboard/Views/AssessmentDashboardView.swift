@@ -78,6 +78,9 @@ struct AssessmentDashboardView: View {
                 isConfidenceDetailPresented = true
             }
             RiskBandCard(risk: report.risk)
+            if let repaymentModel = report.repaymentModel {
+                ExperimentalRepaymentModelCard(model: repaymentModel)
+            }
             SafeBorrowingCard(recommendation: report.safeBorrowing)
             if showsCompleteDashboard {
                 shockContent
@@ -138,5 +141,62 @@ struct AssessmentDashboardView: View {
             .background(CrediWiseColors.surface)
             .clipShape(RoundedRectangle(cornerRadius: RadiusTokens.card))
         }
+    }
+}
+
+private struct ExperimentalRepaymentModelCard: View {
+    let model: AssessmentDashboard.RepaymentModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.medium) {
+            HStack {
+                Text("dashboard.ml.title")
+                    .font(TypographyTokens.cardTitle)
+                Spacer()
+                Text("dashboard.ml.badge")
+                    .font(TypographyTokens.caption.weight(.bold))
+                    .foregroundStyle(CrediWiseColors.primary)
+                    .padding(.horizontal, SpacingTokens.small)
+                    .padding(.vertical, 4)
+                    .background(CrediWiseColors.primary.opacity(0.12))
+                    .clipShape(Capsule())
+            }
+            switch model.status {
+            case .complete:
+                if let probability = model.adverseOutcomeProbability {
+                    Text(
+                        String(
+                            format: NSLocalizedString(
+                                "dashboard.ml.probability",
+                                comment: "Experimental adverse outcome estimate"
+                            ),
+                            Int((probability * 100).rounded())
+                        )
+                    )
+                    .font(TypographyTokens.title)
+                }
+                Text("dashboard.ml.low_confidence")
+                    .font(TypographyTokens.caption.weight(.semibold))
+                    .foregroundStyle(CrediWiseColors.warning)
+            case .ineligible:
+                Text("dashboard.ml.ineligible")
+                    .font(TypographyTokens.body)
+            case .unavailable:
+                Text("dashboard.ml.unavailable")
+                    .font(TypographyTokens.body)
+            }
+            Text("dashboard.ml.scope")
+                .font(TypographyTokens.caption)
+                .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))
+            Text("dashboard.ml.notice")
+                .font(TypographyTokens.caption)
+                .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.62))
+        }
+        .padding(SpacingTokens.large)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(CrediWiseColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: RadiusTokens.card))
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("dashboard.ml.card")
     }
 }

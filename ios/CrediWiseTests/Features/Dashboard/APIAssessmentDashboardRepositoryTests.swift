@@ -32,6 +32,10 @@ final class APIAssessmentDashboardRepositoryTests: XCTestCase {
         XCTAssertEqual(dashboard.twin.businessIncome, 2_450_000)
         XCTAssertEqual(dashboard.recommendations.map(\.id), ["protect-buffer", "stabilize-income"])
         XCTAssertEqual(dashboard.modelVersion, modelVersionID.uuidString)
+        XCTAssertEqual(dashboard.repaymentModel?.status, .complete)
+        XCTAssertEqual(dashboard.repaymentModel?.adverseOutcomeProbability, 0.1274)
+        XCTAssertEqual(dashboard.repaymentModel?.confidence, .low)
+        XCTAssertEqual(dashboard.repaymentModel?.modelVersion, "v1-research")
 
         let requests = await session.requests()
         XCTAssertEqual(requests.filter { $0.url?.path.hasSuffix("/dashboard") == true }.count, 2)
@@ -137,6 +141,27 @@ final class APIAssessmentDashboardRepositoryTests: XCTestCase {
             "amount": 3500000, "max_instalment": 375000,
             "required_liquidity_buffer": 1250000,
             "tenor_months": 12, "due_date_window": [20,25], "frequency": "MONTHLY"
+          },
+          "repayment_model": {
+            "status": "COMPLETE",
+            "mode": "SHADOW_RESEARCH",
+            "estimated_adverse_outcome_probability": "0.127400",
+            "model_confidence": "LOW",
+            "model_name": "crediwise-cashflow-risk",
+            "model_version": "v1-research",
+            "feature_schema_version": "crediwise-cashflow-v1",
+            "target_definition": "Historical benchmark",
+            "reason_codes": [
+              {
+                "code": "ML_FREE_CASH_FLOW_MARGIN",
+                "feature": "free_cash_flow_margin",
+                "contribution": "0.12",
+                "direction": "INCREASES_ESTIMATE"
+              }
+            ],
+            "out_of_domain_features": [],
+            "limitations": [],
+            "positioning_notice": "Experimental evidence"
           },
           "twin": \(twin)
         }

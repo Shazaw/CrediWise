@@ -325,6 +325,14 @@
 "dashboard.reason.safe_limit.detail" = "Jumlah yang lebih aman dibatasi oleh batas keterjangkauan atau likuiditas deterministik.";
 "dashboard.reason.server.title" = "Bukti penilaian";
 "dashboard.model_version" = "Versi model: %@";
+"dashboard.ml.title" = "Sinyal pelunasan berbasis ML";
+"dashboard.ml.badge" = "RISET EKSPERIMENTAL";
+"dashboard.ml.probability" = "%d%% estimasi sinyal risiko";
+"dashboard.ml.low_confidence" = "Keyakinan model: rendah";
+"dashboard.ml.ineligible" = "Riwayat arus kas belum cukup untuk sinyal model riset.";
+"dashboard.ml.unavailable" = "Sinyal model riset sedang tidak tersedia.";
+"dashboard.ml.scope" = "Dilatih pada tolok ukur historis Ceko dan belum dikalibrasi untuk pengguna Indonesia.";
+"dashboard.ml.notice" = "Bukti riset tambahan saja. Hasil deterministik CrediWise tetap menjadi acuan. Ini bukan skor kredit resmi dan tidak memengaruhi keputusan persetujuan.";
 "dashboard.error.title" = "Ringkasan belum tersedia";
 "dashboard.error.unavailable" = "Ringkasan penilaian belum tersedia. Coba lagi; aplikasi tidak membuat atau menghitung hasil pengganti.";
 "dashboard.offers.action" = "Bandingkan penawaran simulasi berdasarkan keamanan";

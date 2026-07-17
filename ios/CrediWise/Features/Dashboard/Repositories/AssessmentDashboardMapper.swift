@@ -12,7 +12,8 @@ enum AssessmentDashboardMapper {
             safeBorrowing: try mappedSafeBorrowing(summary.safeBorrowing, codes: codes),
             twin: mappedTwin(twin),
             recommendations: recommendations(codes),
-            modelVersion: summary.modelVersionID.uuidString
+            modelVersion: summary.modelVersionID.uuidString,
+            repaymentModel: try mappedRepaymentModel(summary.repaymentModel)
         )
     }
 
@@ -163,6 +164,31 @@ enum AssessmentDashboardMapper {
             values.append(recommendation(id: "stabilize-income", prefix: "dashboard.plan.stabilize_income"))
         }
         return values
+    }
+
+    private static func mappedRepaymentModel(
+        _ response: AssessmentRepaymentModelResponse?
+    ) throws -> AssessmentDashboard.RepaymentModel? {
+        guard let response else { return nil }
+        guard response.mode == "SHADOW_RESEARCH",
+              let status = AssessmentDashboard.RepaymentModelStatus(
+                  rawValue: response.status.lowercased()
+              ) else {
+            throw AssessmentDashboardRepositoryError.unavailable
+        }
+        let probability = response.estimatedAdverseOutcomeProbability.flatMap { Double($0) }
+        let confidence = response.modelConfidence.flatMap(modelConfidence)
+        if status == .complete && (probability == nil || confidence == nil) {
+            throw AssessmentDashboardRepositoryError.unavailable
+        }
+        return .init(
+            status: status,
+            adverseOutcomeProbability: probability,
+            confidence: confidence,
+            modelVersion: response.modelVersion,
+            reasonCodes: response.reasonCodes.map(\.code),
+            hasOutOfDomainFeatures: !response.outOfDomainFeatures.isEmpty
+        )
     }
 
     private static func recommendation(

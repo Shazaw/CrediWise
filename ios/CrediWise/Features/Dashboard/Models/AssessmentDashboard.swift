@@ -67,6 +67,21 @@ struct AssessmentDashboard: Equatable, Sendable {
         let targetMetricKey: String
     }
 
+    enum RepaymentModelStatus: String, Equatable, Sendable {
+        case complete
+        case ineligible
+        case unavailable
+    }
+
+    struct RepaymentModel: Equatable, Sendable {
+        let status: RepaymentModelStatus
+        let adverseOutcomeProbability: Double?
+        let confidence: ModelConfidence?
+        let modelVersion: String
+        let reasonCodes: [String]
+        let hasOutOfDomainFeatures: Bool
+    }
+
     let assessmentID: String
     let dataConfidence: DataConfidenceReport
     let risk: Risk
@@ -74,4 +89,25 @@ struct AssessmentDashboard: Equatable, Sendable {
     let twin: Twin
     let recommendations: [Recommendation]
     let modelVersion: String
+    let repaymentModel: RepaymentModel?
+
+    init(
+        assessmentID: String,
+        dataConfidence: DataConfidenceReport,
+        risk: Risk,
+        safeBorrowing: SafeBorrowing,
+        twin: Twin,
+        recommendations: [Recommendation],
+        modelVersion: String,
+        repaymentModel: RepaymentModel? = nil
+    ) {
+        self.assessmentID = assessmentID
+        self.dataConfidence = dataConfidence
+        self.risk = risk
+        self.safeBorrowing = safeBorrowing
+        self.twin = twin
+        self.recommendations = recommendations
+        self.modelVersion = modelVersion
+        self.repaymentModel = repaymentModel
+    }
 }
