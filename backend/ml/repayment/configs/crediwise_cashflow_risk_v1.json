@@ -1,0 +1,12 @@
+{
+  "model_name": "crediwise-cashflow-risk",
+  "model_version": "v1-research",
+  "target_version": "berka-finished-loan-a-vs-b-v1",
+  "feature_schema_version": "crediwise-cashflow-v1",
+  "train_fraction": 0.7,
+  "calibration_fraction": 0.15,
+  "l2_penalty": 1.0,
+  "max_iterations": 100,
+  "convergence_tolerance": 1e-9,
+  "minimum_months": 2
+}

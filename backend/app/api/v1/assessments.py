@@ -37,6 +37,8 @@ from app.schemas.assessment import (
     LineageResponse,
     MonthlySnapshotResponse,
     RecommendationResponse,
+    RepaymentModelReasonResponse,
+    RepaymentModelSummary,
     RiskBandSummary,
     SafeBorrowingSummary,
     ShockResilienceSummary,
@@ -59,7 +61,12 @@ from app.schemas.shock import (
     ShockScenarioResponse,
     SimulateShockRequest,
 )
-from app.services.assessment_service import AssessmentService, TwinView, band_from_score
+from app.services.assessment_service import (
+    AssessmentService,
+    RepaymentModelView,
+    TwinView,
+    band_from_score,
+)
 from app.services.offer_service import OfferService, OfferView
 
 router = APIRouter(prefix="/assessments", tags=["assessments"])
@@ -163,6 +170,48 @@ def _to_lineage_response(
         parser_versions=snapshot.parser_versions_json,
         categorizer_version=snapshot.categorizer_version,
         engine_config_hash=snapshot.engine_config_hash,
+    )
+
+
+def _to_repayment_model_response(view: RepaymentModelView) -> RepaymentModelSummary:
+    prediction = view.prediction
+    reasons = []
+    for item in prediction.reason_codes_json:
+        contribution = item.get("contribution")
+        reasons.append(
+            RepaymentModelReasonResponse(
+                code=item["reason_code"] if "reason_code" in item else item["code"],
+                feature=item.get("feature"),
+                contribution=contribution,
+                direction=(
+                    "INCREASES_ESTIMATE"
+                    if contribution is not None and Decimal(str(contribution)) > 0
+                    else "DECREASES_ESTIMATE" if contribution is not None else None
+                ),
+            )
+        )
+    return RepaymentModelSummary(
+        status=prediction.status,
+        mode=prediction.mode,
+        estimated_adverse_outcome_probability=prediction.calibrated_probability,
+        model_confidence=prediction.model_confidence,
+        model_name=view.model_version.model_name,
+        model_version=view.model_version.version,
+        feature_schema_version=prediction.feature_schema_version,
+        target_definition=(
+            "Observed repayment trouble on completed historical Berka loans; "
+            "not an Indonesian default probability"
+        ),
+        reason_codes=reasons,
+        out_of_domain_features=[str(value) for value in prediction.out_of_domain_features_json],
+        limitations=[
+            "Historical Czech benchmark with a small adverse-outcome holdout.",
+            "Research evidence only; deterministic CrediWise outputs remain authoritative.",
+        ],
+        positioning_notice=(
+            "Experimental estimated repayment-risk evidence — not an approval decision "
+            "or official credit score."
+        ),
     )
 
 
@@ -293,6 +342,13 @@ def get_assessment_dashboard(
         else None
     )
 
+    try:
+        repayment_model = _to_repayment_model_response(
+            service.get_repayment_model(current_user, assessment_id)
+        )
+    except NotFoundError:
+        repayment_model = None
+
     return DashboardResponse(
         assessment_id=assessment.id,
         status=assessment.status,
@@ -340,7 +396,22 @@ def get_assessment_dashboard(
             frequency=assessment.recommended_frequency,
         ),
         twin=twin_summary,
+        repayment_model=repayment_model,
     )
+
+
+@router.get(
+    "/{assessment_id}/repayment-model",
+    response_model=RepaymentModelSummary,
+    dependencies=[Depends(rate_limit("general"))],
+)
+def get_assessment_repayment_model(
+    assessment_id: uuid.UUID,
+    current_user: User = Depends(require(RoleEnum.USER)),
+    db: Session = Depends(get_db),
+) -> RepaymentModelSummary:
+    view = AssessmentService(db).get_repayment_model(current_user, assessment_id)
+    return _to_repayment_model_response(view)
 
 
 @router.get(

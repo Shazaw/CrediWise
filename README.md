@@ -10,10 +10,11 @@ behaviour, repayment capacity, shock resilience, and safe borrowing capacity.
 
 ## Project Status
 
-CrediWise is currently in **Sprint 0: repository and environment foundation**.
-The architecture and product requirements are approved, but application
-development has not started. The directories in this repository establish
-module ownership and dependency boundaries for upcoming work.
+CrediWise now implements the native iOS and backend MVP golden path through
+secure upload, verification, Cash-Flow Digital Twin analysis, deterministic
+risk and safe-borrowing results, shocks, and simulated offer safety. It also
+contains an explicitly experimental, LOW-confidence repayment-model research
+signal trained by the CrediWise team on attributed public benchmark data.
 
 The complete product and technical specification is [`PLAN.md`](PLAN.md).
 Terminal coding agents must also follow [`CLAUDE.md`](CLAUDE.md).
@@ -31,6 +32,8 @@ Terminal coding agents must also follow [`CLAUDE.md`](CLAUDE.md).
   tenor, repayment timing, and liquidity buffer.
 - **Safe Offer Score:** a safety-first comparison of simulated loan offers,
   ranked by user suitability rather than commission.
+- **Experimental ML evidence:** a separately versioned shadow repayment signal
+  that never changes deterministic financial or safety outputs.
 
 CrediWise provides an estimated financial-risk, affordability, and
 credit-readiness assessment based on the data provided, not an official credit
@@ -80,6 +83,7 @@ deterministic engines.
 |   |   |-- schemas/            # Pydantic request and response DTOs
 |   |   `-- services/           # Application use cases
 |   |-- alembic/versions/       # Database migrations
+|   |-- ml/repayment/           # Reproducible public-data research training lane
 |   `-- tests/                  # Unit, integration, and end-to-end tests
 |-- docs/
 |   |-- adr/                    # Architecture Decision Records

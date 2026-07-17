@@ -1,0 +1,38 @@
+{
+  "artifact_sha256": "57c4230f02f7f261da1eb1bdcea22ccfe9ea4688b705b5c2c41b9aba0977a267",
+  "metrics": {
+    "calibration": {
+      "adverse_events": 3,
+      "average_precision": 0.4284221525600836,
+      "brier_score": 0.07457249710223086,
+      "log_loss": 0.2765727107675047,
+      "prevalence": 0.08571428571428572,
+      "roc_auc": 0.6354166666666666,
+      "rows": 35
+    },
+    "test": {
+      "adverse_events": 3,
+      "average_precision": 0.6960784313725491,
+      "brier_score": 0.040600874482911685,
+      "log_loss": 0.20459317067186042,
+      "prevalence": 0.08333333333333333,
+      "roc_auc": 0.6868686868686869,
+      "rows": 36
+    },
+    "training": {
+      "adverse_events": 25,
+      "average_precision": 0.7346756373501643,
+      "brier_score": 0.08903392424446688,
+      "log_loss": 0.2969742190859835,
+      "prevalence": 0.15337423312883436,
+      "roc_auc": 0.8828985507246376,
+      "rows": 163
+    }
+  },
+  "split": {
+    "calibration_latest": "1997-03-17",
+    "method": "chronological 70/15/15",
+    "test_latest": "1997-12-28",
+    "train_latest": "1996-04-29"
+  }
+}
