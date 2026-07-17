@@ -62,7 +62,8 @@ struct AppRootView: View {
     private var authenticatedFlow: some View {
         NavigationStack(path: $coordinator.path) {
             AuthenticatedHomeView(
-                onStartUpload: coordinator.showUpload,
+                onStart: startAuthenticatedFlow,
+                showsCycle5Preview: coordinator.shouldOfferSyntheticAssessment,
                 onSignOut: coordinator.signOut
             )
             .navigationDestination(for: AppRoute.self) { route in
@@ -88,6 +89,11 @@ struct AppRootView: View {
                 onSignedIn: coordinator.completeSignIn,
                 onSwitchMode: { coordinator.switchAuthenticationMode(from: .signIn) }
             )
+        case .financingNeed:
+            FinancingNeedView(
+                viewModel: coordinator.makeFinancingNeedViewModel(),
+                onSaved: coordinator.completeFinancingNeed
+            )
         case .upload:
             UploadView(
                 viewModel: coordinator.makeUploadViewModel(),
@@ -102,8 +108,25 @@ struct AppRootView: View {
             )
         case let .dataConfidence(documentID):
             DataConfidenceView(
-                viewModel: coordinator.makeDataConfidenceViewModel(documentID: documentID)
+                viewModel: coordinator.makeDataConfidenceViewModel(documentID: documentID),
+                onContinueToDashboard: dashboardContinuation
+            )
+        case let .assessmentDashboard(assessmentID):
+            AssessmentDashboardView(
+                viewModel: coordinator.makeAssessmentDashboardViewModel(assessmentID: assessmentID)
             )
         }
+    }
+
+    private var startAuthenticatedFlow: () -> Void {
+        if coordinator.shouldOfferSyntheticAssessment {
+            return { coordinator.showFinancingNeed() }
+        }
+        return { coordinator.showUpload() }
+    }
+
+    private var dashboardContinuation: (() -> Void)? {
+        guard coordinator.shouldOfferSyntheticAssessment else { return nil }
+        return { coordinator.showSyntheticAssessmentDashboard() }
     }
 }

@@ -1,18 +1,12 @@
 import SwiftUI
 
-struct DataConfidenceView: View {
-    @StateObject private var viewModel: DataConfidenceViewModel
+struct AssessmentDashboardView: View {
+    @StateObject private var viewModel: AssessmentDashboardViewModel
     @State private var operationTask: Task<Void, Never>?
-    @State private var isDetailPresented = false
+    @State private var isConfidenceDetailPresented = false
 
-    let onContinueToDashboard: (() -> Void)?
-
-    init(
-        viewModel: DataConfidenceViewModel,
-        onContinueToDashboard: (() -> Void)? = nil
-    ) {
+    init(viewModel: AssessmentDashboardViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
-        self.onContinueToDashboard = onContinueToDashboard
     }
 
     var body: some View {
@@ -27,26 +21,26 @@ struct DataConfidenceView: View {
                 .padding(SpacingTokens.large)
             }
         }
-        .navigationTitle("confidence.navigation_title")
+        .navigationTitle("dashboard.navigation_title")
         .navigationBarTitleDisplayMode(.inline)
         .task { await viewModel.load() }
         .onDisappear { operationTask?.cancel() }
-        .navigationDestination(isPresented: $isDetailPresented) {
+        .navigationDestination(isPresented: $isConfidenceDetailPresented) {
             if case let .loaded(report) = viewModel.state {
-                DataConfidenceDetailView(report: report)
+                DataConfidenceDetailView(report: report.dataConfidence)
             }
         }
-        .accessibilityIdentifier("confidence.screen")
+        .accessibilityIdentifier("dashboard.screen")
     }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.small) {
-            Text("confidence.eyebrow")
+            Text("dashboard.eyebrow")
                 .font(TypographyTokens.caption.weight(.bold))
                 .foregroundStyle(CrediWiseColors.primary)
-            Text("confidence.title")
+            Text("dashboard.title")
                 .font(TypographyTokens.title)
-            Text("confidence.subtitle")
+            Text("dashboard.subtitle")
                 .font(TypographyTokens.body)
                 .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))
         }
@@ -56,34 +50,29 @@ struct DataConfidenceView: View {
     private var content: some View {
         switch viewModel.state {
         case .idle, .loading:
-            ProgressView("confidence.loading")
+            ProgressView("dashboard.loading")
                 .tint(CrediWiseColors.primary)
                 .frame(maxWidth: .infinity)
                 .padding(SpacingTokens.xxLarge)
         case let .loaded(report):
-            DataConfidenceCard(report: report) {
-                isDetailPresented = true
+            DataConfidenceCard(report: report.dataConfidence) {
+                isConfidenceDetailPresented = true
             }
-
-            VStack(alignment: .leading, spacing: SpacingTokens.medium) {
-                Text("confidence.next.title")
-                    .font(TypographyTokens.cardTitle)
-                Text(LocalizedStringKey(report.recommendationKey))
-                    .font(TypographyTokens.body)
-                    .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))
-            }
-            .padding(SpacingTokens.large)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(CrediWiseColors.surface)
-            .clipShape(RoundedRectangle(cornerRadius: RadiusTokens.card))
-
-            if let onContinueToDashboard {
-                CTAButton(title: "confidence.continue_dashboard", action: onContinueToDashboard)
-                    .accessibilityIdentifier("confidence.continue_dashboard")
-            }
+            RiskBandCard(risk: report.risk)
+            SafeBorrowingCard(recommendation: report.safeBorrowing)
+            DigitalTwinSummaryView(twin: report.twin)
+            FinancialHealthPlanView(recommendations: report.recommendations)
+            Text(
+                String(
+                    format: NSLocalizedString("dashboard.model_version", comment: "Model version"),
+                    report.modelVersion
+                )
+            )
+            .font(TypographyTokens.caption)
+            .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.62))
         case let .failed(errorKey):
-            VStack(alignment: .leading, spacing: SpacingTokens.standard) {
-                Text("confidence.error.title")
+            VStack(alignment: .leading, spacing: SpacingTokens.medium) {
+                Text("dashboard.error.title")
                     .font(TypographyTokens.cardTitle)
                 Text(LocalizedStringKey(errorKey))
                     .font(TypographyTokens.body)

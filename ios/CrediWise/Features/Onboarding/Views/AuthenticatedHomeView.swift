@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct AuthenticatedHomeView: View {
-    let onStartUpload: () -> Void
+    let onStart: () -> Void
+    let showsCycle5Preview: Bool
     let onSignOut: @MainActor () async -> Void
 
     var body: some View {
@@ -26,10 +27,18 @@ struct AuthenticatedHomeView: View {
                             .foregroundStyle(CrediWiseColors.textPrimary.opacity(0.72))
                     }
 
-                    CTAButton(title: "session.start_upload") {
-                        onStartUpload()
+                    CTAButton(
+                        title: showsCycle5Preview
+                            ? "session.start_assessment"
+                            : "session.start_upload"
+                    ) {
+                        onStart()
                     }
-                    .accessibilityIdentifier("session.start_upload")
+                    .accessibilityIdentifier(
+                        showsCycle5Preview
+                            ? "session.start_assessment"
+                            : "session.start_upload"
+                    )
 
                     Button("session.sign_out") {
                         Task { await onSignOut() }

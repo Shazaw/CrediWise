@@ -10,26 +10,36 @@ final class AppCoordinator: ObservableObject {
     private let authenticationRepository: any AuthenticationRepository
     private let documentUploadRepository: any DocumentUploadRepository
     private let documentVerificationRepository: any DocumentVerificationRepository
+    private let financingNeedRepository: any FinancingNeedRepository
+    private let assessmentDashboardRepository: any AssessmentDashboardRepository
     private let uploadPollingPolicy: DocumentUploadPollingPolicy
     private let allowsSyntheticUpload: Bool
     private let isDocumentUploadAvailable: Bool
+    private let allowsSyntheticAssessment: Bool
+    private(set) var financingNeedID: String?
 
     init(
         sessionManager: SessionManager,
         authenticationRepository: any AuthenticationRepository,
         documentUploadRepository: any DocumentUploadRepository,
         documentVerificationRepository: any DocumentVerificationRepository,
+        financingNeedRepository: any FinancingNeedRepository,
+        assessmentDashboardRepository: any AssessmentDashboardRepository,
         uploadPollingPolicy: DocumentUploadPollingPolicy = DocumentUploadPollingPolicy(),
         allowsSyntheticUpload: Bool = false,
-        isDocumentUploadAvailable: Bool = true
+        isDocumentUploadAvailable: Bool = true,
+        allowsSyntheticAssessment: Bool = false
     ) {
         self.sessionManager = sessionManager
         self.authenticationRepository = authenticationRepository
         self.documentUploadRepository = documentUploadRepository
         self.documentVerificationRepository = documentVerificationRepository
+        self.financingNeedRepository = financingNeedRepository
+        self.assessmentDashboardRepository = assessmentDashboardRepository
         self.uploadPollingPolicy = uploadPollingPolicy
         self.allowsSyntheticUpload = allowsSyntheticUpload
         self.isDocumentUploadAvailable = isDocumentUploadAvailable
+        self.allowsSyntheticAssessment = allowsSyntheticAssessment
     }
 
     convenience init() {
@@ -37,7 +47,9 @@ final class AppCoordinator: ObservableObject {
             sessionManager: SessionManager(tokenStore: VolatileTokenStore()),
             authenticationRepository: MockAuthenticationRepository(),
             documentUploadRepository: MockDocumentUploadRepository(),
-            documentVerificationRepository: MockDocumentVerificationRepository()
+            documentVerificationRepository: MockDocumentVerificationRepository(),
+            financingNeedRepository: MockFinancingNeedRepository(),
+            assessmentDashboardRepository: MockAssessmentDashboardRepository()
         )
     }
 
@@ -53,12 +65,30 @@ final class AppCoordinator: ObservableObject {
         path.append(.upload)
     }
 
+    func showFinancingNeed() {
+        path.append(.financingNeed)
+    }
+
+    func completeFinancingNeed(_ receipt: FinancingNeedReceipt) {
+        financingNeedID = receipt.financingNeedID
+        path.append(.upload)
+    }
+
     func showExtractionReview(documentID: String) {
         path.append(.extractionReview(documentID: documentID))
     }
 
     func showDataConfidence(documentID: String) {
         path.append(.dataConfidence(documentID: documentID))
+    }
+
+    func showAssessmentDashboard(assessmentID: String) {
+        path.append(.assessmentDashboard(assessmentID: assessmentID))
+    }
+
+    func showSyntheticAssessmentDashboard() {
+        guard allowsSyntheticAssessment else { return }
+        showAssessmentDashboard(assessmentID: "synthetic-assessment-id")
     }
 
     func returnToWelcome() {
@@ -92,6 +122,10 @@ final class AppCoordinator: ObservableObject {
         )
     }
 
+    func makeFinancingNeedViewModel() -> FinancingNeedViewModel {
+        FinancingNeedViewModel(repository: financingNeedRepository)
+    }
+
     func makeExtractionReviewViewModel(documentID: String) -> ExtractionReviewViewModel {
         ExtractionReviewViewModel(
             documentID: documentID,
@@ -106,6 +140,13 @@ final class AppCoordinator: ObservableObject {
         )
     }
 
+    func makeAssessmentDashboardViewModel(assessmentID: String) -> AssessmentDashboardViewModel {
+        AssessmentDashboardViewModel(
+            assessmentID: assessmentID,
+            repository: assessmentDashboardRepository
+        )
+    }
+
     var shouldOfferSyntheticUpload: Bool {
         allowsSyntheticUpload
     }
@@ -114,9 +155,14 @@ final class AppCoordinator: ObservableObject {
         isDocumentUploadAvailable
     }
 
+    var shouldOfferSyntheticAssessment: Bool {
+        allowsSyntheticAssessment
+    }
+
     func signOut() async {
         try? await authenticationRepository.signOut()
         await sessionManager.signOut()
+        financingNeedID = nil
         path.removeAll()
     }
 }

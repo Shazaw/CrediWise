@@ -33,6 +33,17 @@ final class AppCoordinatorTests: XCTestCase {
         XCTAssertEqual(coordinator.path, [.upload])
     }
 
+    func testFinancingNeedPrecedesUpload() {
+        let coordinator = AppCoordinator()
+        coordinator.showFinancingNeed()
+        coordinator.completeFinancingNeed(
+            FinancingNeedReceipt(financingNeedID: "need-123")
+        )
+
+        XCTAssertEqual(coordinator.path, [.financingNeed, .upload])
+        XCTAssertEqual(coordinator.financingNeedID, "need-123")
+    }
+
     func testRoutesDocumentFromUploadThroughReviewAndConfidence() {
         let coordinator = AppCoordinator()
 
@@ -48,6 +59,14 @@ final class AppCoordinatorTests: XCTestCase {
                 .dataConfidence(documentID: "document-123")
             ]
         )
+    }
+
+    func testRoutesToAssessmentDashboardWithAssessmentIdentity() {
+        let coordinator = AppCoordinator()
+
+        coordinator.showAssessmentDashboard(assessmentID: "assessment-123")
+
+        XCTAssertEqual(coordinator.path, [.assessmentDashboard(assessmentID: "assessment-123")])
     }
 
     func testReturnsToWelcomeFromNestedRoute() {
