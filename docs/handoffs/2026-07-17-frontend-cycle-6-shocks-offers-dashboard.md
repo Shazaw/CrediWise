@@ -4,7 +4,7 @@
 - Workstream: FRONTEND
 - Branch: `frontend/cycle-6-shocks-offers-dashboard`
 - Base commit: `f7d2b3f` (`origin/main` after Cycle 5 integration)
-- Latest commit: this task's branch HEAD (see `git log -1`)
+- Latest validated implementation commit: `04e935a`
 - PLAN.md sections / requirement IDs: FR-10, FR-11, FR-12, §5.7-5.9, §7.9-7.11, §13, §14, Sprint 5, T5.6, NFR-11, NFR-12
 
 ## User request
@@ -22,7 +22,7 @@ Start workflow Cycle 6 frontend work while following `PLAN.md`, `CLAUDE.md`, and
 - Added ViewModel, coordinator, loan-invariant, and synthetic golden-flow tests.
 
 ## Current state
-- What is implemented: the isolated Cycle 6 UI-test flow covers financing need through upload/review/dashboard, shock simulation, safety-ranked simulated offers, and unsafe-offer detail.
+- What works: the isolated Cycle 6 UI-test flow passes from financing need through upload/review/dashboard, shock simulation, safety-ranked simulated offers, and unsafe-offer detail.
 - What is partially complete: frontend UI, state, navigation, and deterministic presentation fixtures are complete without a production shock/offer wire adapter.
 - What is not started: Cycle 6 API DTOs, mappers, authenticated repositories, and contract tests because the authoritative OpenAPI snapshot has no shock or offer endpoints.
 
@@ -39,7 +39,7 @@ Start workflow Cycle 6 frontend work while following `PLAN.md`, `CLAUDE.md`, and
 - `git diff --check` passed locally.
 - Localization key parity and duplicate-key validation passed for 450 keys per locale.
 - Xcode project membership validation found all 24 new app files and 3 new unit-test files in the correct source phases.
-- Strict SwiftLint, Xcode build-for-testing, unit tests, and UI tests are pending the first branch push to GitHub `frontend-ci`.
+- GitHub `frontend-ci` run `29555051323` passed for commit `04e935a`: strict SwiftLint, simulator boot, Xcode build-for-testing, unit tests, and UI tests all succeeded.
 - Local Xcode execution is unavailable on this Linux host.
 
 ## Files changed
