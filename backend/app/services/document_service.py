@@ -39,7 +39,7 @@ from app.models.enums import ActorTypeEnum, DocStatusEnum, SourceTypeEnum
 from app.models.source_document import SourceDocument
 from app.models.transaction import Transaction
 from app.models.user import User
-from app.pipeline.dispatch import dispatch_document_processing
+from app.pipeline.dispatch import dispatch_document_normalization, dispatch_document_processing
 from app.repositories.correction_repository import CorrectionRepository
 from app.repositories.document_verification_result_repository import (
     DocumentVerificationResultRepository,
@@ -248,6 +248,9 @@ class DocumentService:
             entity_id=document.id,
         )
         self._db.commit()
+
+        dispatch_document_normalization(document.id)
+
         return document
 
 

@@ -21,6 +21,16 @@ by PLAN Appendix A. `ProcessingStatusEnum`, `PipelineStageEnum`,
 definitions but their member sets are not enumerated in Appendix A — the
 Sprint 3 implementation choice (PLAN §24.11 gap-filling, documented in
 PLAN.md in the same PR — see §11.3).
+
+`PurposeEnum`, `AssessmentStatusEnum`, `RiskBandEnum`, and `FreqEnum` member
+sets are fixed by PLAN Appendix A. `UrgencyEnum`, `IncomeSourceEnum`,
+`RecurringTypeEnum`, `CashEventEnum`, `CoverageEnum`, `InclusionEnum`, and
+`SeverityEnum` are referenced by PLAN §11.3's table definitions but their
+member sets are not enumerated in Appendix A; `ReasonTypeEnum`'s set is
+given inline in §11.3 prose rather than in Appendix A. `PipelineStageEnum`
+gains `NORMALIZATION`/`ANALYSIS` members. All of these are the Sprint 4
+implementation choice (PLAN §24.11 gap-filling, documented in PLAN.md in the
+same PR — see §11.3).
 """
 
 from enum import StrEnum
@@ -132,10 +142,20 @@ class PipelineStageEnum(StrEnum):
     stages Sprint 3 actually records (`EXTRACTION`, `VERIFICATION`); later
     sprints extend this set in their own migration (expand pattern, §11.4)
     as `NormalizationEngine`/analysis engines land.
+
+    Sprint 4/T4.1-T4.5 adds two members: `NORMALIZATION` is document-scoped
+    (like `EXTRACTION`/`VERIFICATION` — one run per `source_document_id`,
+    driven by `NormalizationEngine` categorizing that document's own
+    transactions). `ANALYSIS` is assessment-scoped (one run per
+    `assessment_id`, driven by the Twin/Risk/SafeBorrowing engines) — this
+    is why migration `0007` adds `pipeline_stage_runs.assessment_id`
+    (§11.3's `pipeline_stage_runs` note: "Sprint 4's migration adds it").
     """
 
     EXTRACTION = "EXTRACTION"
     VERIFICATION = "VERIFICATION"
+    NORMALIZATION = "NORMALIZATION"
+    ANALYSIS = "ANALYSIS"
 
 
 class StageStatusEnum(StrEnum):
@@ -183,6 +203,134 @@ class BandEnum(StrEnum):
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
     LOW = "LOW"
+
+
+class PurposeEnum(StrEnum):
+    """PLAN Appendix A `purpose_enum` (`financing_needs.purpose`, FR-2 AC2)."""
+
+    MEDICAL = "MEDICAL"
+    EDUCATION = "EDUCATION"
+    HOUSEHOLD_EMERGENCY = "HOUSEHOLD_EMERGENCY"
+    PRODUCTIVE_BUSINESS = "PRODUCTIVE_BUSINESS"
+    EQUIPMENT = "EQUIPMENT"
+    WORKING_CAPITAL = "WORKING_CAPITAL"
+    VEHICLE_DEVICE_REPAIR = "VEHICLE_DEVICE_REPAIR"
+
+
+class UrgencyEnum(StrEnum):
+    """Gap-fill (PLAN §24.11): `financing_needs.urgency` is named in §11.3
+    but its member set isn't enumerated in Appendix A. Added Sprint 4/T4.5.
+    """
+
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+
+
+class AssessmentStatusEnum(StrEnum):
+    """PLAN Appendix A `assessment_status_enum`."""
+
+    PENDING = "PENDING"
+    ANALYZING = "ANALYZING"
+    COMPLETE = "COMPLETE"
+    FAILED = "FAILED"
+    HUMAN_REVIEW = "HUMAN_REVIEW"
+
+
+class RiskBandEnum(StrEnum):
+    """PLAN Appendix A `risk_band_enum` (§5.3)."""
+
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+    INSUFFICIENT_DATA = "INSUFFICIENT_DATA"
+
+
+class FreqEnum(StrEnum):
+    """PLAN Appendix A `freq_enum`."""
+
+    MONTHLY = "MONTHLY"
+    BIWEEKLY = "BIWEEKLY"
+    WEEKLY = "WEEKLY"
+
+
+class IncomeSourceEnum(StrEnum):
+    """Gap-fill (PLAN §24.11): `income_sources.source_type` is named in
+    §11.3 but its member set isn't enumerated in Appendix A. Added
+    Sprint 4/T4.2, mirrors the UMKM/gig-worker income categories FR-6 AC4
+    names for `transaction_context`/category enrichment.
+    """
+
+    SALARY = "SALARY"
+    BUSINESS_REVENUE = "BUSINESS_REVENUE"
+    FREELANCE = "FREELANCE"
+    QRIS_SETTLEMENT = "QRIS_SETTLEMENT"
+    MARKETPLACE_SETTLEMENT = "MARKETPLACE_SETTLEMENT"
+    OTHER = "OTHER"
+
+
+class RecurringTypeEnum(StrEnum):
+    """Gap-fill (PLAN §24.11): `recurring_series.series_type` — not
+    enumerated in Appendix A. Added Sprint 4/T4.1.
+    """
+
+    INCOME = "INCOME"
+    EXPENSE = "EXPENSE"
+    DEBT_PAYMENT = "DEBT_PAYMENT"
+
+
+class CashEventEnum(StrEnum):
+    """Gap-fill (PLAN §24.11): `cash_flow_events.event_type` — not
+    enumerated in Appendix A. Scoped to the two event classes Sprint 4's
+    `CashFlowTwinEngine` actually produces (dominant income arrival,
+    essential-expense due dates); Sprint 5's `ShockEngine` extends this set
+    if a distinct shock-scenario event class is needed.
+    """
+
+    INCOME = "INCOME"
+    ESSENTIAL_EXPENSE = "ESSENTIAL_EXPENSE"
+
+
+class CoverageEnum(StrEnum):
+    """Gap-fill (PLAN §24.11): `financial_profiles.coverage_flag` — not
+    enumerated in Appendix A. PLAN §7.6/FR-7 EC names the `LOW_COVERAGE`
+    flag explicitly (<2 months of data); `SUFFICIENT` is the complement.
+    """
+
+    SUFFICIENT = "SUFFICIENT"
+    LOW_COVERAGE = "LOW_COVERAGE"
+
+
+class InclusionEnum(StrEnum):
+    """Gap-fill (PLAN §24.11): `assessment_documents`/`assessment_transactions
+    .inclusion_status` — not enumerated in Appendix A. Added Sprint 4/T4.5.
+    """
+
+    INCLUDED = "INCLUDED"
+    EXCLUDED = "EXCLUDED"
+
+
+class ReasonTypeEnum(StrEnum):
+    """PLAN §11.3 `assessment_reason_codes.reason_type` — member set given
+    inline (`POSITIVE, RISK, DATA_QUALITY, OFFER`), not in Appendix A.
+    """
+
+    POSITIVE = "POSITIVE"
+    RISK = "RISK"
+    DATA_QUALITY = "DATA_QUALITY"
+    OFFER = "OFFER"
+
+
+class SeverityEnum(StrEnum):
+    """Gap-fill (PLAN §24.11): `assessment_reason_codes.severity` — not
+    enumerated in Appendix A. Added Sprint 4/T4.5.
+    """
+
+    INFO = "INFO"
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
 
 
 class DocStatusEnum(StrEnum):

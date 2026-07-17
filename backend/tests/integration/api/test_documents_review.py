@@ -113,17 +113,23 @@ def test_review_before_review_pending_is_rejected(authed_client: TestClient) -> 
     assert response.json()["error"]["code"] == "VALIDATION_ERROR"
 
 
-def test_confirm_transitions_to_normalizing(authed_client: TestClient) -> None:
+def test_confirm_transitions_through_normalizing_to_analyzing(authed_client: TestClient) -> None:
+    """`confirm()` itself flips `REVIEW_PENDING -> NORMALIZING` and returns
+    that status (PLAN §8.2), but in the gate-test environment the dispatched
+    `NORMALIZATION` stage also runs inline within the same request (Sprint 4
+    `_inline_normalization_and_analysis`, mirroring `_inline_document_processing`),
+    so by the time the response is built the document has already advanced
+    to `ANALYZING`, ready for `POST /assessments`."""
     headers = _register_and_login(authed_client)
     document_id = _upload_reviewable_document(authed_client, headers)
 
     response = authed_client.post(f"/api/v1/documents/{document_id}/confirm", headers=headers)
 
     assert response.status_code == 200
-    assert response.json()["status"] == "NORMALIZING"
+    assert response.json()["status"] == "ANALYZING"
 
     status_response = authed_client.get(f"/api/v1/documents/{document_id}/status", headers=headers)
-    assert status_response.json()["status"] == "NORMALIZING"
+    assert status_response.json()["status"] == "ANALYZING"
 
 
 def test_confirm_twice_is_rejected(authed_client: TestClient) -> None:
